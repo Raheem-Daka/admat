@@ -13,7 +13,7 @@ class ItemSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'description', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'created_at', 'updated_at']
 
         def __str__ ():
             return f"{self.name}"

@@ -1,22 +1,22 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from django.shortcuts import get_object_or_404
 from .serializers import ItemSerializer, CategorySerializer
 from .models import Item, Category
 
 @api_view(['GET'])
-def products(request):
+def products(request, slug):
 
-    items = Item.objects.all()
-    ctegories = Item.objects.all()
+    category = get_object_or_404(Category, slug=slug)
+    items = category.items.all()
 
-    item_serializers = ItemSerializer(items, many=True)
-    category_serializers = CategorySerializer(categories, many=True)
+    item_serializer = ItemSerializer(items, many=True)
+    category_serializer = CategorySerializer(categories)
 
     data = {
         'message': 'welcome to the products API',
-        items: 'item_serializers',
-        categories: 'category_serializers'
+        'items': item_serializer.data,
+        'categories': category_serializer.data
         }
 
     return Response(data)
