@@ -8,7 +8,10 @@ const Home = () => {
     return (
         <div>
             <Hero />
-            <DesignCard />
+            <div className="border-t border-slate-100">
+                <DesignCard />
+
+            </div>
         </div>
     )
 }
