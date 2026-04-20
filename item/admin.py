@@ -3,7 +3,7 @@ from .models import Item, Category
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'created_at', 'updated_at')
+    list_display = ('category', 'name', 'price', 'discount', 'created_at', 'updated_at')
     search_fields = ('name', 'description')
     list_filter = ('created_at', 'updated_at')
     ordering = ('-created_at',)
@@ -11,7 +11,7 @@ class ItemAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('name', 'description', 'price')
+            'fields': ('category','name', 'description', 'price', 'discount')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -36,5 +36,5 @@ class CategoryAdmin(admin.ModelAdmin):
         }),
     )
     
-admin.site.site_header = "Admat Admin"
-admin.site.site_title = "Admat Admin Portal"
+admin.site.site_header = "My Admin"
+admin.site.site_title = "My Admin Portal"
