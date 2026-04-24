@@ -42,3 +42,17 @@ def product_details(request, pk, slug):
         'item': serializer.data
     }
     return Response(data)
+
+@api_view(['GET'])
+def discount_products(request):
+
+    items = Item.objects.filter(discount=True)
+
+    items_serializer = ItemSerializer(items, many=True)
+
+    data = {
+        'message': 'Get quality products on discount',
+        'items': items_serializer.data
+    }
+
+    return Response(data)

@@ -6,18 +6,26 @@ import Contact from './pages/Contact'
 import About from './pages/About'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import DiscountProducts from './pages/DiscountProducts'
 
 function App() {
 
   return (
     <>
     <Navbar />
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/products" element={<Products />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/about" element={<About />} />
-    </Routes>
+    <div>
+      <div className="flex flex-col min-h-screen">
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/discount_products" element={<DiscountProducts/>} />
+          </Routes>
+        </main>
+      </div>
+    </div>
     <Footer />
     </>
   )

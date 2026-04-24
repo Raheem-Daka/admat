@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react'
+import DesignCard from '../components/DesignCard'
 
 const Products = () => {
     const [message, setMessage] = useState('')
