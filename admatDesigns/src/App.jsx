@@ -7,6 +7,7 @@ import About from './pages/About'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import DiscountProducts from './pages/DiscountProducts'
+import ProductDetails from './pages/ProductDetails'
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/about" element={<About />} />
             <Route path="/discount_products" element={<DiscountProducts/>} />
+            <Route path="/products/:id/:slug" element={<ProductDetails />} />
           </Routes>
         </main>
       </div>

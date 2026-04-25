@@ -14,7 +14,8 @@ const Products = () => {
     }, [])
 
     return (
-        <div>{message}</div>
+        <div>
+            <h1 className="text-4xl font-bold flex justify-center pt-10">{message}</h1></div>
     )
 }
 

@@ -1,58 +1,54 @@
-from rest_framework.decorators import api_view
+from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .serializers import ItemSerializer, CategorySerializer
-from .models import Item, Category
-
-# views.py
-@api_view(['GET'])
-def products(request):
-    items = Item.objects.all()
-
-    item_serializer = ItemSerializer(items, many=True)
-    
-    data = {
-      'message': 'All products',
-        'items': item_serializer.data,
-    }
-    return Response(data)
-
-@api_view(['GET'])
-def categories(request):
-    categories = Category.objects.all()
-
-    category_serializer = CategorySerializer(categories, many=True)
-
-    data = {
-        'message': 'welcome to the products API',
-        'categories': category_serializer.data
-        }
-
-    return Response(data)
+from .models import Item, Category, Discount
+from .serializers import ItemSerializer, CategorySerializer, DiscountSerializer
 
 
-@api_view(['GET'])
-def product_details(request, pk, slug):
-    item = get_object_or_404(Item, pk=pk, slug=slug)
+class ItemViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Item.objects.all()
+    serializer_class = ItemSerializer
+    lookup_field = 'slug'   # use slug instead of pk if you want
 
-    item_serializer = ItemSerializer(Item)
+    @action(detail=True, methods=['get'], url_path='details/(?P<pk>[^/.]+)')
+    def details(self, request, pk=None, slug=None):
+        """Custom action to fetch product details by pk + slug"""
+        item = get_object_or_404(Item, pk=pk, slug=slug)
+        serializer = ItemSerializer(item)
+        return Response({
+            'message': 'Product details retrieved successfully',
+            'item': serializer.data
+        })
 
-    data = {
-        'message': 'Product details retrived successfully',
-        'item': serializer.data
-    }
-    return Response(data)
+    @action(detail=False, methods=['get'], url_path='discounts')
+    def discount_products(self, request):
+        """Custom action to fetch only discounted products"""
+        discounted_items = Item.objects.filter(discounts__active=True).distinct()
+        serializer = ItemSerializer(discounted_items, many=True)
+        return Response({
+            'message': 'Get quality products on discount',
+            'items': serializer.data
+        })
 
-@api_view(['GET'])
-def discount_products(request):
 
-    items = Item.objects.filter(discount=True)
+class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    lookup_field = 'slug'
 
-    items_serializer = ItemSerializer(items, many=True)
+    @action(detail=True, methods=['get'])
+    def items(self, request, slug=None):
+        """Fetch all items in a category"""
+        category = self.get_object()
+        items = category.items.all()
+        serializer = ItemSerializer(items, many=True)
+        return Response({
+            'message': f'Items in category {category.name}',
+            'items': serializer.data
+        })
 
-    data = {
-        'message': 'Get quality products on discount',
-        'items': items_serializer.data
-    }
 
-    return Response(data)
+class DiscountViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Discount.objects.all()
+    serializer_class = DiscountSerializer

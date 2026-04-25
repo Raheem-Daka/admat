@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
+from django.utils import timezone
+
 
 class Category(models.Model):
     FURNITURE_CATEGORY_CHOICES = [
@@ -52,10 +54,19 @@ class Item(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to='design_images/', blank=False, null=False)    
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    discount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(unique=True, blank=True)
+
+    @property
+    def current_price(self):
+        """Return price after applying the latest valid discount, if any."""
+        valid_discount = self.discounts.filter(active=True).order_by('-start_date').first()
+        if valid_discount and valid_discount.is_valid():
+            return valid_discount.apply_discount(self.price)
+        return self.price
+
+
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -71,3 +82,46 @@ class Item(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class Discount(models.Model):
+    DISCOUNT_TYPE_CHOICES = [
+        ('percentage', 'Percentage'),
+        ('fixed', 'Fixed Amount'),
+    ]
+
+    item = models.ForeignKey(
+        'Item',
+        on_delete=models.CASCADE,
+        related_name='discounts'
+    )
+    discount_type = models.CharField(
+        max_length=20,
+        choices=DISCOUNT_TYPE_CHOICES
+    )
+    discount_price = models.DecimalField(max_digits=10, decimal_places=2)
+    start_date = models.DateTimeField(default=timezone.now)
+    end_date = models.DateTimeField(blank=True, null=True)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return f"{self.discount_price} {self.get_discount_type_display()} for {self.item.name}"
+
+    def is_valid(self):
+        """Check if discount is currently active and within date range."""
+        now = timezone.now()
+        return self.active and (self.start_date <= now) and (
+            not self.end_date or now <= self.end_date
+        )
+
+    def apply_discount(self, price):
+        """Return the discounted price based on type."""
+        if self.discount_type == 'percentage':
+            return price - (price * (self.discount_price / 100))
+        elif self.discount_type == 'fixed':
+            return max(price - self.discount_price, 0)
+        return price
+

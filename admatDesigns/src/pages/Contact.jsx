@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FaCheckCircle } from "react-icons/fa";
 
 const Contact = () => {
   const [backendMessage, setBackendMessage] = useState("");
@@ -50,18 +51,17 @@ const Contact = () => {
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-12 p-6 bg-white shadow-md rounded-lg">
-      <h1 className="text-2xl font-bold text-center mb-4">Contact Us</h1>
+    <div className="max-w-lg mx-auto pt-12 p-6 bg-white rounded-lg">
+      <h1 className="text-4xl font-bold text-gray-800 mb-6 flex justify-center">
+        Contact Us
+      </h1>
+      <div className="bg-slate-100 shadow-md px-4 py-3">
+        {backendMessage && (
+          <p className="text-center text-gray-600 italic mb-4">
+            {backendMessage}
+          </p>
+        )}
 
-      {backendMessage && (
-        <p className="text-center text-gray-600 italic mb-4">{backendMessage}</p>
-      )}
-
-      {submitted ? (
-        <p className="text-green-600 font-semibold text-center">
-          Thank you for reaching out! We'll get back to you soon.
-        </p>
-      ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block font-medium">Name</label>
@@ -70,7 +70,7 @@ const Contact = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+              className="bg-white w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
             />
             {errors.name && (
               <span className="text-red-500 text-sm">{errors.name}</span>
@@ -84,7 +84,7 @@ const Contact = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+              className="bg-white w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
             />
             {errors.email && (
               <span className="text-red-500 text-sm">{errors.email}</span>
@@ -97,7 +97,7 @@ const Contact = () => {
               name="message"
               value={formData.message}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300 min-h-[100px]"
+              className="bg-white w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300 min-h-[100px]"
             />
             {errors.message && (
               <span className="text-red-500 text-sm">{errors.message}</span>
@@ -111,6 +111,28 @@ const Contact = () => {
             Submit
           </button>
         </form>
+      </div>
+
+      {/* Success Modal */}
+      {submitted && (
+        <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
+          <div className="w-full h-full rounded-lg flex flex-col items-center justify-center text-center max-w-md w-full p-6">
+            <FaCheckCircle className="text-green-500 text-5xl mx-auto mb-4" />
+            <h2 className="text-xl font-bold mb-2 text-gray-800">
+              Thank You!
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Your message has been successfully submitted. We’ll get back to
+              you soon.
+            </p>
+            <button
+              onClick={() => setSubmitted(false)}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

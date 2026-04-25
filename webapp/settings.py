@@ -123,7 +123,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'static'
 STATICFILES_DIRS = [
-    BASE_DIR / 'admatDesigns/build',
+    BASE_DIR / 'admatDesigns' / 'build' / 'static',
 ]
 
 MEDIA_URL = 'media/'
@@ -134,6 +134,10 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
     "DELETE",
-    ""
+    "OPTIONS",
 ]

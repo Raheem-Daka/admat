@@ -26,7 +26,7 @@ const Navbar = () => {
       <nav className="flex items-center border w-full justify-between border-slate-700 px-6 py-4 rounded text-white text-sm bg-black">
         <Link to={"/"} target="_blank" rel="noopener noreferrer">
           <h1 className="text-2xl font-bold">admatFurniture</h1>
-          
+
         </Link>
 
         {/* Desktop links */}
@@ -63,7 +63,7 @@ const Navbar = () => {
             
             <input
               type="text"
-              placeholder="Search"
+              placeholder="category, product name..."
               className="w-full h-full outline-none text-gray-500 bg-transparent placeholder-gray-500 text-sm"
             />
           </div>

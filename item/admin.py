@@ -1,9 +1,16 @@
 from django.contrib import admin
-from .models import Item, Category
+from .models import Item, Category, Discount
+
+@admin.register(Discount)
+class DiscountAdmin(admin.ModelAdmin):
+    list_display = ('item', 'discount_type', 'discount_price', 'start_date', 'end_date', 'active')
+    search_fields = ('item__name',)
+    list_filter = ('discount_type', 'active', 'start_date', 'end_date')
+    ordering = ('-start_date',)
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('category', 'name','image', 'price', 'discount', 'created_at', 'updated_at')
+    list_display = ('category', 'name','image', 'price', 'slug',  'created_at', 'updated_at')
     search_fields = ('name', 'description', 'price')
     list_filter = ('created_at', 'updated_at')
     ordering = ('-created_at',)
@@ -11,7 +18,7 @@ class ItemAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('category','name','image', 'description', 'price', 'discount')
+            'fields': ('category','name','image', 'description', 'price')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
