@@ -1,14 +1,32 @@
 from rest_framework import serializers
-from .models import Item, Category, Discount
+from .models import Item, Category, Discount, ItemImages
 
 
 class DiscountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Discount
-        fields = ['id', 'item', 'discount_type', 'discount_price', 'start_date', 'end_date', 'active']
+        ordering = ["-start_date"]
+        fields = [
+            'id',
+            'discount_type',
+            'discount_price',
+            'start_date',
+            'end_date',
+            'active',
+            'item',
+        ]
 
-    def __str__(self):
-        return f"{self.item.name} - {self.discount_type} {self.discount_price}"
+    def get_discounts(self, obj):
+        return DiscountSerializer(
+            obj.discounts.filter(active=True),
+            many=True
+        ).data
+
+
+class ItemImagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemImages
+        fields = ['id', 'order', 'image']
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -16,23 +34,28 @@ class ItemSerializer(serializers.ModelSerializer):
     current_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     category_name = serializers.CharField(source='category.get_name_display', read_only=True)
     discounts = DiscountSerializer(many=True, read_only=True)
+    images = ItemImagesSerializer(many=True, read_only=True)
 
     class Meta:
         model = Item
         fields = [
-            'id', 'category', 'name', 'description', 'price',
-            'imageUrl', 'slug', 'created_at', 'updated_at',
-            'current_price', 'category_name', 'discounts'
+            'id',
+            'category',
+            'name',
+            'description',
+            'price',
+            'imageUrl',
+            'images',
+            'slug',
+            'created_at',
+            'updated_at',
+            'current_price',
+            'category_name',
+            'discounts',
         ]
-
-    def __str__(self):
-        return f"{self.name}"
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'slug', 'created_at', 'updated_at']
-
-    def __str__(self):
-        return f"{self.name}"

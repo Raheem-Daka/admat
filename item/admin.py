@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Item, Category, Discount
+from .models import Item, Category, Discount, ItemImages
 
 @admin.register(Discount)
 class DiscountAdmin(admin.ModelAdmin):
@@ -25,6 +25,20 @@ class ItemAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
     )
+
+@admin.register(ItemImages)
+class ItemImagesAdmin(admin.ModelAdmin):
+    list_display = ('item', 'image', 'order')
+    search_fields = ('item__name',)
+    list_filter = ('item__category',)
+
+    fieldsets = (
+        (None, {
+            'fields': ('item', 'image')
+        }),
+    )
+
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'created_at', 'updated_at')

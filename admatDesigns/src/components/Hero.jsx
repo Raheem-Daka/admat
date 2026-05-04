@@ -50,7 +50,7 @@ const Hero = () => {
             
               <button
                 onClick={navigateProducts} 
-                className="bg-indigo-600 hover:bg-indigo-700 text-white active:scale-95 transition rounded-md px-7 h-11">
+                className="bg-indigo-700 hover:bg-indigo-700 text-white active:scale-95 transition rounded-md px-7 h-11">
                 View Designs
               </button>
          
@@ -74,7 +74,7 @@ const Hero = () => {
       </div>
       <div className="flex items-end justify-center py-14">
         <button 
-        className="rounded-full animate-bounce p-2 bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 transition"
+        className="rounded-full animate-bounce p-2 bg-indigo-700 text-white hover:bg-indigo-800 active:scale-95 transition"
         onClick={handleScrollDown}
         ><FaArrowDown size={32}/></button>
       </div>

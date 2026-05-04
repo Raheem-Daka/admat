@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 
 const Contact = () => {
-  const [backendMessage, setBackendMessage] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -10,12 +9,14 @@ const Contact = () => {
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/contact/")
       .then((response) => response.json())
       .then((data) => {
-        setBackendMessage(data.message);
+
+        setMessage(data.message);
       })
       .catch((error) => console.error("Error fetching message:", error));
   }, []);
@@ -53,15 +54,9 @@ const Contact = () => {
   return (
     <div className="max-w-lg mx-auto pt-12 p-6 bg-white rounded-lg">
       <h1 className="text-4xl font-bold text-gray-800 mb-6 flex justify-center">
-        Contact Us
+        {message}
       </h1>
       <div className="bg-slate-100 shadow-md px-4 py-3">
-        {backendMessage && (
-          <p className="text-center text-gray-600 italic mb-4">
-            {backendMessage}
-          </p>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block font-medium">Name</label>

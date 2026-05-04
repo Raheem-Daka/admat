@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 # Create your views here.
 @api_view(['GET'])
 def contact(request):
-    data = {
-        'message': 'Contact us at'
-    }
-    return Response(data)
+    return Response({
+        'message': 'Contact us at',
+        'email': 'info@company.com'
+    })

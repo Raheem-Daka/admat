@@ -1,93 +1,107 @@
-import React from 'react';
-import heroImage from "../assets/heroImage.webp";
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const DiscountComponent = ({ items = [] }) => {
+const DiscountComponent = () => {
   const navigate = useNavigate();
+  const [items, setItems] = useState([]);
+  const [current, setCurrent] = useState(0);
 
   const navigateDiscountProducts = () => {
-    navigate('/discount_products');
+    navigate("/discount_products");
   };
 
-  // Filter items to only those with a discount
-  const discountedItems = items.filter(item => item.discount);
+  const handleNavigate = (id, slug) => {
+    navigate(`/products/${id}/${slug}`);
+  };
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/products/discounts/")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Discount products API Response:", data);
+        setItems(data.items || []);
+      })
+      .catch((error) =>
+        console.error("Error fetching discount products:", error)
+      );
+  }, []);
+
+  // ✅ Extract ONLY discounted item images
+  const discountImages = items
+    .filter(
+      (item) =>
+        Number(item.current_price) < Number(item.price) &&
+        item.imageUrl
+    )
+    .map((item) => item.imageUrl);
+
+  // ✅ Auto-slide logic
+  useEffect(() => {
+    if (discountImages.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % discountImages.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [discountImages.length]);
 
   return (
-    <section className="flex bg-slate-100 py-20 px-6 justify-center w-full sm:flex-col lg:flex-row items-center gap-8">
-      {/* Image Section */}
-      <div className="px-6 border p-3 flex flex-grow-0 justify-start items-center">
-        {discountedItems.length > 0 ? (
-          discountedItems.map((item) => (
-            <div
-              key={item.id}
-              className="border border-zinc-200 hover:border-zinc-300 transition-colors rounded-xl p-4 flex flex-col w-46 cursor-pointer mb-4"
-              onClick={() => navigate(`/product/${item.slug}`)}
-            >
-              {/* Discount badge */}
-              <div className="flex items-center justify-between mb-2">
-                <span className="bg-lime-300 text-neutral-800 text-xs px-2 py-0.5 rounded-full">
-                  <span className="font-bold">{item.discount}</span> off
-                </span>
-              </div>
+    <div className="flex bg-slate-100 py-20 px-6 justify-center w-full sm:flex-col lg:flex-row items-center gap-10">
 
-              {/* Product image */}
-              <div className="flex items-center justify-center h-30 mb-2">
-                <img
-                  src={item.imageUrl || "https://assets.prebuiltui.com/images/components/card/card-lamp-image.png"}
-                  alt={item.name}
-                  className="max-h-full max-w-full object-contain"
-                />
-              </div>
-
-              {/* Product name */}
-              <p className="text-sm text-neutral-500 mb-2 px-2">{item.name}</p>
-
-              {/* Price */}
-              <div className="flex items-center gap-2 px-2">
-                <span className="text-sm font-semibold text-neutral-800">
-                  {item.price}
-                </span>
-                <span className="text-xs text-neutral-500 line-through">
-                  {item.originalPrice}
-                </span>
-              </div>
-
-              {/* Description */}
-              <p className="text-xs text-neutral-600 px-2 mt-2">
-                {item.description}
-              </p>
-            </div>
+      {/* ✅ Slideshow Section */}
+      <div className="relative w-full max-w-md h-64 overflow-hidden rounded-xl bg-white shadow">
+        {discountImages.length > 0 ? (
+          discountImages.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt="Discount products"
+              onClick={handleNavigate}
+              className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-700 ${
+                index === current ? "opacity-100" : "opacity-0"
+              }`}
+            />
           ))
         ) : (
-          <p className="text-2xl text-center text-gray-500 col-span-full">
-            No discounted items available.
-          </p>
+          <div className="flex items-center justify-center w-full h-full text-slate-500">
+            No discount images available
+          </div>
         )}
 
-
-      </div>
-
-      {/* Text Section */}
-      <div className="flex-1 text-center lg:text-left">
-        <h1 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800">
-          Transform your living space into a masterpiece.
-        </h1>
-        <div className="flex flex-col justify-start items-center lg:items-start w-full">
-          <p className="mt-4 text-lg font-light max-w-md">
-            Discover premium furniture, unique design rights, and creative custom designs 
-            to bring marvels into your living space.
-          </p>
-
-          <button
-            className="flex justify-center items-center mt-6 rounded-xl bg-red-600 lg:px-10 lg:py-3 sm:px-6 sm:py-3 text-white hover:bg-red-700 transition w-40"
-            aria-label="View all furniture designs"
-            onClick={navigateDiscountProducts}
-          >
-            View all
-          </button>
+        {/* ✅ Dots indicator */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+          {discountImages.map((_, index) => (
+            <span
+              key={index}
+              className={`h-2 w-2 rounded-full ${
+                index === current ? "bg-red-600" : "bg-gray-300"
+              }`}
+            />
+          ))}
         </div>
       </div>
-    </section>
+
+      {/* ✅ Text Section */}
+      <div className="flex-1 text-center lg:text-left">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800">
+          Transform your living space into a masterpiece.
+        </h1>
+
+        <p className="mt-4 text-lg font-light max-w-md mx-auto lg:mx-0">
+          Discover premium furniture, exclusive discounts, and stunning designs
+          to bring marvels into your living space.
+        </p>
+
+        <button
+          className="mt-6 rounded-xl bg-red-600 px-10 py-3 text-white hover:bg-red-700 transition"
+          onClick={navigateDiscountProducts}
+          aria-label="View all discounted products"
+        >
+          View all
+        </button>
+      </div>
+    </div>
   );
 };
 

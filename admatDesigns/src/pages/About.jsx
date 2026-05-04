@@ -29,7 +29,7 @@ const About = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen">
       <main className="flex-grow px-6 py-12">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-gray-800 mb-6">
@@ -54,7 +54,7 @@ const About = () => {
             {sections.map((section, idx) => (
               <p
                 key={idx}
-                className="bg-slate-100 p-6 rounded-lg shadow hover:shadow-lg transition cursor-pointer"
+                className="border hover:bg-slate-200 bg-slate-100 p-6 rounded-lg shadow hover:shadow-lg transition-transform ease-out cursor-pointer"
                 onClick={() => handleClick(section.full)}
               >
                 <span className="text-xl font-semibold text-gray-800 block mb-3">
@@ -66,12 +66,7 @@ const About = () => {
           </div>
           
           <p
-            className="text-lg text-gray-600 cursor-pointer hover:text-blue-600"
-            onClick={() =>
-              handleClick(
-                "Whether you’re furnishing a cozy apartment or a spacious office, AdmatFurniture brings comfort, style, and functionality into everyday life."
-              )
-            }
+            className="text-lg text-gray-600 "      
           >
             Whether you’re furnishing a cozy apartment or a spacious office,
             AdmatFurniture is here to bring comfort, style, and functionality
@@ -79,7 +74,7 @@ const About = () => {
           </p>
 
         </div>
-        <div className="bg-slate-200 py-10 w-full min-h-[70px] flex flex-col items-center justify-center lg:mt-20 sm:mt-10">
+        <div className="rounded bg-slate-200 py-10 w-full min-h-[70px] flex flex-col items-center justify-center lg:mt-20 sm:mt-10">
            <h1 className="text-4xl font-bold text-gray-800 mb-6">
             Where to find us
           </h1>

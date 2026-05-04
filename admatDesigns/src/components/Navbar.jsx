@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { FaSearch, FaTimes } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { FaTimes } from "react-icons/fa";
+import { Link, NavLink, useLocation } from "react-router-dom";
 
-const Navbar = () => {
+const Navbar = ({ isAuthenticated }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchOpen, setSearchOpen] =useState(false)
+  const location = useLocation(window.location.pathname);
 
-  const toggleSearch = () => {
-    setSearchOpen(!searchOpen)
-  }
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]); // ✅ FIX 2
 
   const navlinks = [
     { name: "Home", path: "/" },
@@ -17,97 +17,102 @@ const Navbar = () => {
     { name: "About", path: "/about" },
   ];
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <div>
-      <nav className="flex items-center border w-full justify-between border-slate-700 px-6 py-4 rounded text-white text-sm bg-black">
-        <Link to={"/"} target="_blank" rel="noopener noreferrer">
-          <h1 className="text-2xl font-bold">admatFurniture</h1>
+    <nav className="flex items-center w-full justify-between px-6 py-4 text-white bg-indigo-700">
+      <Link to="/">
+        <h1 className="text-2xl font-bold">admatFurniture</h1>
+      </Link>
 
-        </Link>
-
-        {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-6 ml-7">
-          {navlinks.map((link, i) => (
-            <Link key={i} to={link.path} className="relative overflow-hidden h-6 group">
-              <span className="block group-hover:-translate-y-full transition-transform duration-300">{link.name}</span>
-              <span className="block flex absolute top-full left-0 group-hover:translate-y-[-100%] transition-transform duration-300">
-                {link.name === "Products" ? "Our Products" :
-                 link.name === "About" ? "About Us" :
-                 link.name === "Contact" ? "Contact Us" : link.name}
-              </span>
-            </Link>
-          ))}
-        </div>
-
-        {/* Desktop Search buttons */}
-        <div className="relative hidden ml-14 md:flex items-center ">
-          <button
-            onClick={toggleSearch}
-            className="hover:cursor-pointer hover:transition-transform duration-300 px-4 py-2 rounded-full text-sm font-medium transition"
+      {/* ✅ Desktop links */}
+      <div className="hidden md:flex items-center gap-6 ml-7">
+        {navlinks.map((link, i) => (
+          <NavLink
+            key={i}
+            to={link.path}
+            className={({ isActive }) =>
+              isActive
+                ? "underline font-semibold"
+                : "relative overflow-hidden h-6 group"
+            }
           >
-            {searchOpen ? <FaTimes size={16} /> : <FaSearch size={16} />}
-          </button>
+            <span className="block group-hover:-translate-y-full transition-transform duration-300">
+              {link.name}
+            </span>
+            <span className="block absolute top-full left-0 group-hover:translate-y-[-100%] transition-transform duration-300">
+              {link.name}
+            </span>
+          </NavLink>
+        ))}
+      </div>
 
-          <div
-            className={`flex items-center border pl-4 gap-2 border-gray-500/30 h-[46px] rounded-full overflow-hidden transition-all duration-300 ${
-              searchOpen ? "max-w-md opacity-100" : "max-w-0 opacity-0"
-            }`}
-          >
-            <button >
-              <FaSearch />
-            </button>
-            
-            <input
-              type="text"
-              placeholder="category, product name..."
-              className="w-full h-full outline-none text-gray-500 bg-transparent placeholder-gray-500 text-sm"
-            />
-          </div>
-        </div>
-
-
-
-        {/* Mobile hamburger */}
-        <button id="toggleMenu" className="md:hidden text-gray-600 hover:cursor-pointer" onClick={toggleMenu}>
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-
-        {/* Mobile menu */}
-        <div
-          id="mobileMenu"
-          className={`absolute fixed top-0 left-0 min-h-[100vh] text-base bg-black min-w-full flex-col justify-center items-center gap-4 transition-all duration-300 ${
-            isOpen ? "flex" : "hidden"
-          }`}
-          
-        >
-            <button>
-              <FaTimes 
-              className="w-6 h-6 top-5 absolute right-5 text-slate-400"
-              onClick={toggleMenu} />
-            </button>
-          {navlinks.map((link, i) => (
+      {/* ✅ Desktop Auth Buttons */}
+      <div className="hidden md:flex items-center gap-3">
+        {isAuthenticated ? (
+          <>
             <Link
-              className="hover:underline hover:transition-all ease-out pb-2 duration-300"
+              to="/cart"
+              className="border px-4 py-2 rounded-full hover:bg-white hover:text-black transition"
+            >
+              Cart
+            </Link>
+            <Link
+              to="/profile"
+              className="border px-4 py-2 rounded-full hover:bg-white hover:text-black transition"
+            >
+              Profile
+            </Link>
+          </>
+        ) : (
+          <Link
+            to="/signin"
+            className="border px-4 py-2 rounded-full hover:bg-white hover:text-black transition"
+          >
+            Login
+          </Link>
+        )}
+      </div>
+
+      {/* ✅ Mobile Hamburger */}
+      <button className="md:hidden" onClick={toggleMenu}>
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* ✅ Mobile Menu */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-black flex flex-col items-center justify-center gap-4 z-50">
+          <FaTimes
+            className="absolute top-5 right-5 w-6 h-6 cursor-pointer"
+            onClick={toggleMenu}
+          />
+
+          {navlinks.map((link, i) => (
+            <NavLink
               key={i}
               to={link.path}
-              onClick={() => setIsOpen(false)}
+              onClick={toggleMenu}
+              className={({ isActive }) =>
+                isActive ? "underline font-semibold" : ""
+              }
             >
               {link.name}
-            </Link>
+            </NavLink>
           ))}
-          {/*}
-          <button className="mb-4 border border-slate-600 hover:bg-white hover:text-black px-4 py-2 rounded-full text-sm font-medium transition">
-          Login
-          </button>*/}
+
+          {isAuthenticated ? (
+            <>
+              <Link to="/cart" onClick={toggleMenu}>Cart</Link>
+              <Link to="/profile" onClick={toggleMenu}>Profile</Link>
+            </>
+          ) : (
+            <Link to="/signin" onClick={toggleMenu}>Login</Link>
+          )}
         </div>
-      </nav>
-    </div>
+      )}
+    </nav>
   );
 };
 
