@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
-const SignIn = () => {
+const API_BASE = "http://127.0.0.1:8000"
+
+const SignIn = ({ onLogin }) => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -27,20 +29,25 @@ const SignIn = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/signin/", {
+      const res = await fetch(`${API_BASE}/api/signin/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json" 
+        },
         credentials: "include",
         body: JSON.stringify(formData),
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message || "Sign in failed");
-      }
 
-      navigate("/");
+      if (!res.ok) {
+        throw new Error(data.message || "Login failed, Please try again");
+      }        
+        localStorage.setItem("accessToken", data.access);
+        localStorage.setItem("refreshToken", data.refresh);
+        onLogin();
+        navigate("/");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -63,7 +70,7 @@ const SignIn = () => {
           <input
             type="email"
             name="email"
-            placeholder="Email address"
+            placeholder="Enter your email"
             required
             onChange={handleChange}
             className="w-full mb-3 p-3 rounded-lg border border-slate-300 focus:outline-none focus:border-indigo-600"
@@ -73,7 +80,7 @@ const SignIn = () => {
             <input
               type={showPassword ? "text" : "password"}
               name="password"
-              placeholder="Password"
+              placeholder="Enter your Password"
               required
               onChange={handleChange}
               className="w-full p-3 pr-10 rounded-lg border border-slate-300 focus:outline-none focus:border-indigo-600"

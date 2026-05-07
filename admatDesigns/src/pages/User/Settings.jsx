@@ -1,12 +1,13 @@
 import React from 'react'
 import ProfileSidePanel from '../../components/ProfileSidePanel'
 
-const Profile = () => {
+const Settings = () => {
   return (
     <div>
+        
         <ProfileSidePanel />
     </div>
   )
 }
 
-export default Profile
+export default Settings

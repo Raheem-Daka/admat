@@ -12,22 +12,21 @@ import DiscountProducts from "./pages/DiscountProducts";
 import ProductDetails from "./pages/ProductDetails";
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
-import Cart from "./pages/User/Cart";
+
 import Profile from "./pages/User/Profile";
+import Settings from "./pages/User/Settings";
+
+import Cart from "./pages/Orders/Cart";
+import Orders from "./pages/Orders/Orders";
+import Payments from "./pages/Orders/Payments";
+import Checkout from "./pages/Orders/Checkout";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const checkAuth = async () => {
-    try {
-      const res = await fetch(
-        "http://127.0.0.1:8000/api/auth/check/",
-        { credentials: "include" }
-      );
-      setIsAuthenticated(res.ok);
-    } catch {
-      setIsAuthenticated(false);
-    }
+    const token = localStorage.getItem("accessToken");
+    setIsAuthenticated(!!token);
   };
 
   useEffect(() => {
@@ -85,6 +84,38 @@ function App() {
                   : <Navigate to="/signin" />
               }
             />
+            <Route 
+              path="/orders"
+              element={
+                isAuthenticated
+                ? <Orders />
+                : <Navigate to="/signin" />
+              }
+              />
+            <Route 
+              path="/settings"
+              element={
+                isAuthenticated
+                ? <Settings />
+                : <Navigate to="/signin" />
+              }
+              />
+            <Route 
+              path="/checkout"
+              element={
+                isAuthenticated
+                ? <Checkout />
+                : <Navigate to="/signin" />
+              }
+              />
+            <Route 
+              path="/payments"
+              element={
+                isAuthenticated
+                ? <Payments />
+                : <Navigate to="/signin" />
+              }
+              />
           </Routes>
         </main>
       </div>

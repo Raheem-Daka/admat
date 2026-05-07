@@ -1,5 +1,7 @@
 from django.urls import path
 from .views import SignUpViewSet, SignInViewSet, SignOutViewSet, AuthCheckViewSet
+from rest_framework_simplejwt.views import  TokenObtainPairView, TokenRefreshView
+
 
 urlpatterns = [
     path(
@@ -17,7 +19,17 @@ urlpatterns = [
         SignOutViewSet.as_view({"post": "signout"}),
         name="signout",
     ),
-    path('auth/check/', 
+    path(
+        'auth/check/', 
         AuthCheckViewSet.as_view({"get": "check_auth"}),
-        name="check_auth"),
+        name="check_auth"),    
+    path(
+        "token/", 
+        TokenObtainPairView.as_view(), 
+        name="token_obtain_pair"),
+    path(
+        "token/refresh/", 
+    TokenRefreshView.as_view(), 
+    name="token_refresh"),
+
 ]

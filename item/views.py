@@ -2,8 +2,9 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Q, Prefetch
 from rest_framework import viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 
 from .models import Item, Category, Discount
 from .serializers import ItemSerializer, CategorySerializer, DiscountSerializer
@@ -11,6 +12,7 @@ from .serializers import ItemSerializer, CategorySerializer, DiscountSerializer
 
 # Product detail (pk + slug)
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def product_detail_view(request, pk, slug):
     item = get_object_or_404(
         Item.objects
@@ -38,6 +40,7 @@ def product_detail_view(request, pk, slug):
 # Products
 class ItemViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ItemSerializer
+    permission_classes = [AllowAny]
     lookup_field = "slug"
 
     queryset = (
@@ -49,7 +52,7 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
         )
     )
 
-    @action(detail=False, methods=['get'], url_path='discounts')
+    @action(detail=False, methods=['get'], url_path='discounts', permission_classes=[AllowAny])
     def discount_products(self, request):
         now = timezone.now()
 
@@ -75,10 +78,11 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
 # Categories
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
+    permission_classes = [AllowAny]
     serializer_class = CategorySerializer
     lookup_field = 'slug'
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get'], permission_classes=[AllowAny])
     def items(self, request, slug=None):
         category = self.get_object()
 
@@ -97,6 +101,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 # Discounts
 class DiscountViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DiscountSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         now = timezone.now()

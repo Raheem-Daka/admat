@@ -1,3 +1,6 @@
+
+from rest_framework_simplejwt.settings import api_settings
+from datetime import timedelta
 from pathlib import Path
 import os
 
@@ -14,7 +17,7 @@ SECRET_KEY = 'django-insecure-i7d)f@20t+c)k#)9so5t&b70gt$t!&1@9d3)6rty-)0ypa9^g3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -27,12 +30,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'api',
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
+    'api',
     'item',
     'contact',
     'authentication',
+    'cart'
 ]
 
 MIDDLEWARE = [
@@ -133,3 +138,11 @@ CORS_ALLOW_METHODS = [
     "OPTIONS",
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
+}

@@ -5,13 +5,15 @@ import DesignCard from "../components/DesignCard";
 import Hero from "../components/Hero";
 import DiscountComponent from "../components/DiscountComponent";
 
+const API_BASE = "http://127.0.0.1:8000"
+
 const Home = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/products/")
+    fetch(`${API_BASE}/api/products/`)
       .then((res) => res.json())
       .then((productsData) => {
         console.log("Products:", productsData);
@@ -49,7 +51,7 @@ const Home = () => {
         )}
 
         {!loading && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4 px-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 lg:gap-4 md:gap-3 sm:gap-2 px-4">
             {items.map((item) => (
               <DesignCard
                 key={item.id}

@@ -1,15 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { FaTimes } from "react-icons/fa";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { FaCaretRight, FaCartPlus, FaPersonBooth, FaTimes, FaUser } from "react-icons/fa";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import ProfileDropdown from "./ProfileDropdown";
 
 const Navbar = ({ isAuthenticated }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation(window.location.pathname);
+  const location = useLocation();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsOpen(false);
-  }, [location.pathname]); // ✅ FIX 2
+    setProfileOpen(false)
+  }, [location.pathname]); 
 
+  const logout = () => {  
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    close()
+    window.location.reload()
+  }
+
+  const profileLinks = [
+    {label: "Account", path: "/account"},
+    {label: "Settings", path: "/setting"},
+    {label: "Logout", path: "/logout"}
+  ]
   const navlinks = [
     { name: "Home", path: "/" },
     { name: "Products", path: "/products" },
@@ -48,26 +64,39 @@ const Navbar = ({ isAuthenticated }) => {
       </div>
 
       {/* ✅ Desktop Auth Buttons */}
-      <div className="hidden md:flex items-center gap-3">
+      <div className="hidden md:flex items-center gap-1">
         {isAuthenticated ? (
-          <>
+          <div className="relative flex">
             <Link
               to="/cart"
-              className="border px-4 py-2 rounded-full hover:bg-white hover:text-black transition"
+              className="px-3 py-1 rounded hover:bg-white hover:text-black transition hover:cursor-pointer"
+              aria-label="Cart"
             >
-              Cart
+              <FaCartPlus size={26}/>
+              
             </Link>
-            <Link
-              to="/profile"
-              className="border px-4 py-2 rounded-full hover:bg-white hover:text-black transition"
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className=" px-3 py-1 rounded hover:bg-white hover:text-black transition hover:cursor-pointer"
+              aria-label="Profile menu"
             >
-              Profile
-            </Link>
-          </>
+              <FaUser size={26}/>
+              
+            </button>
+
+            {profileOpen && (
+              <ProfileDropdown 
+                close={() => setProfileOpen(false)} 
+                onClick={logout}
+                
+              />
+            )}
+            
+          </div>
         ) : (
           <Link
             to="/signin"
-            className="border px-4 py-2 rounded-full hover:bg-white hover:text-black transition"
+            className="border px-4 py-2 rounded hover:bg-white hover:text-black transition hover:cursor-pointer"
           >
             Login
           </Link>
@@ -103,10 +132,14 @@ const Navbar = ({ isAuthenticated }) => {
           ))}
 
           {isAuthenticated ? (
-            <>
-              <Link to="/cart" onClick={toggleMenu}>Cart</Link>
-              <Link to="/profile" onClick={toggleMenu}>Profile</Link>
-            </>
+            
+            <div className="absolute top-5 left-5 flex gap-3">
+              <Link to="/cart" onClick={toggleMenu}>
+              <FaCartPlus size={24} /></Link>
+              <Link to="/profile" onClick={toggleMenu}>
+              <FaUser size={24}/>
+              </Link>
+            </div>
           ) : (
             <Link to="/signin" onClick={toggleMenu}>Login</Link>
           )}

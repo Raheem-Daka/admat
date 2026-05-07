@@ -14,6 +14,46 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [mainImage, setMainImage] = useState(placeHolder);
 
+  const [adding, setAdding] = useState(false)
+
+  const addToCart = async () => {
+    if (adding) return;
+
+    try {
+      setAdding(true);
+
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        navigate("/signin");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/api/cart/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          item_id: item.id,   // ✅ FIXED
+          quantity: 1,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to add item to cart");
+      }
+
+      alert("✅ Item added to cart");
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      alert(error.message);
+    } finally {
+      setAdding(false);
+    }
+  };
   useEffect(() => {
     setLoading(true);
 
@@ -76,26 +116,33 @@ const ProductDetails = () => {
         </div>
 
         {/* Thumbnails */}
-        {item.imageUrl.imagesUrl?.length > 0 && (
-          <div className="border border-black grid sm:grid-col sm:grid-cols-2 md:grid-cols-2 gap-4 lg:w-1/2 w-full">
+        {item.images?.length > 0 && (
+          <div className="grid grid-cols-2 gap-4 lg:w-1/2 w-full">
             {item.images.map((img, idx) => {
-              const imgUrl = `${API_BASE}${item.imageUrl.image}`;
+              const imgUrl = `${API_BASE}${img.image}`
 
               return (
-                <img
+                <div
                   key={img.id || idx}
-                  src={item.imageUrl.images}
-                  alt={`${item.name} ${idx + 1}`}
                   onClick={() => setMainImage(imgUrl)}
-                  className="cursor-pointer h-32 w-full object-cover rounded-lg border hover:border-black transition"
-                />
-              );
+                  className={`rounded-xl overflow-hidden cursor-pointer border-2 ${
+                    mainImage === imgUrl
+                      ? "border-indigo-500"
+                      : "border-transparent"
+                  }`}
+                >
+                  <img
+                    src={imgUrl}
+                    alt={`${item.name} ${idx + 1}`}
+                    className="h-48 w-full object-cover rounded-lg transition"
+                  />
+                </div>
+              )
             })}
           </div>
-        )}
+        )}      
       </div>
 
-      <p>wagwawawah</p>
       {/* Description */}
       <p className="text-gray-700 my-4">{item.description}</p>
 
@@ -125,6 +172,18 @@ const ProductDetails = () => {
         </div>
       )}
 
+      {/* Cart Button */}
+      <div>
+        <button 
+        onClick={addToCart}
+        disabled={adding}
+        className={`rounded bg-indigo-500 text-white px-4 py-2 ${
+          adding ? "bg-gray-400" : "bg-indigo-500 hover:bg-indigo-600"
+        }`}>
+          {adding ? "Adding.." : "Add to Cart"}
+        </button>
+      </div>
+
       {/* Related Items */}
       <div className="bg-gray-50 mt-10 p-6 rounded-lg">
         <h2 className="text-2xl font-bold mb-4">Related items</h2>
@@ -135,21 +194,11 @@ const ProductDetails = () => {
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {/*
-                {relatedItems.map(item => (
-                  <DesignCard
-                    key={item.id}
-                    item={item}
-                    onClick={handleNavigate}
-
-            */}
             {relatedItems.map(related => (
               <DesignCard
                 key={related.id}
                 item={related}
-                onClick={handleNavigate}
-            
-          
+                onClick={handleNavigate}            
               />
             ))}
           </div>
