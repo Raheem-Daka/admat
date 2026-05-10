@@ -2,8 +2,8 @@ import React, {useState, useEffect} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DesignCard from "../components/DesignCard";
 import placeHolder from "../assets/placeHolder.png";
-const API_BASE = "http://127.0.0.1:8000";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const ProductDetails = () => {
   const { id, slug } = useParams();
@@ -17,7 +17,7 @@ const ProductDetails = () => {
   const [adding, setAdding] = useState(false)
 
   const addToCart = async () => {
-    if (adding) return;
+    if (adding || !item) return;
 
     try {
       setAdding(true);
@@ -35,41 +35,59 @@ const ProductDetails = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          item_id: item.id,   // ✅ FIXED
+          item_id: item.id,
           quantity: 1,
         }),
       });
 
-      const data = await res.json();
+      // ✅ TOKEN EXPIRED OR INVALID
+      if (res.status === 401) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        navigate("/signin");
+        return;
+      }
 
       if (!res.ok) {
+        const data = await res.json();
         throw new Error(data.error || "Failed to add item to cart");
       }
 
       alert("✅ Item added to cart");
+      navigate("/cart", {replace: true })
     } catch (error) {
       console.error("Add to cart error:", error);
-      alert(error.message);
+      alert("Session expired. Please sign in again.");
     } finally {
       setAdding(false);
     }
   };
+
   useEffect(() => {
     setLoading(true);
 
     fetch(`${API_BASE}/api/products/${id}/${slug}/`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to load item");
+        setLoading(true);
         return res.json();
       })
       .then(data => {
         setItem(data.item);
         setRelatedItems(data.related_items || []);
 
-        if (data.item?.imageUrl) {
-          setMainImage(`${API_BASE}${data.item.imageUrl}`);
-        }
+      const resolveImageUrl = (url) => {
+        if (!url) return placeHolder;
+        return url.startsWith("http") ? url : `${API_BASE}${url}`;
+      };
 
+      if (data.item?.imageUrl) {
+        setMainImage(resolveImageUrl(data.item.imageUrl));
+      } else if (data.item?.images?.length) {
+        setMainImage(resolveImageUrl(data.item.images[0].imageUrl));
+      } else {
+        setMainImage(placeHolder);
+      }        
         setLoading(false);
       })
       .catch(err => {
@@ -105,13 +123,16 @@ const ProductDetails = () => {
       <h1 className="text-3xl font-bold mb-6">{item.name}</h1>
 
       {/* Images */}
-      <div className="flex sm:flex-col lg:flex-row gap-6">
+      <div className="flex sm:flex-col lg:flex-row gap-6" >
         {/* Main Image */}
         <div className="lg:w-1/2 w-full ">
           <img
             src={mainImage}
             alt={item.name}
-            className="w-full h-[420px] rounded-xl shadow-lg object-contain"
+            className="w-full h-[420px] rounded-xl shadow-lg object-cover"
+            onError={(e) => {
+              e.currentTarget.src = placeHolder;
+            }}
           />
         </div>
 
@@ -119,7 +140,9 @@ const ProductDetails = () => {
         {item.images?.length > 0 && (
           <div className="grid grid-cols-2 gap-4 lg:w-1/2 w-full">
             {item.images.map((img, idx) => {
-              const imgUrl = `${API_BASE}${img.image}`
+            const imgUrl = img.imageUrl.startsWith("http")
+              ? img.imageUrl
+              : `${API_BASE}${img.imageUrl}`;
 
               return (
                 <div
@@ -137,26 +160,41 @@ const ProductDetails = () => {
                     className="h-48 w-full object-cover rounded-lg transition"
                   />
                 </div>
-              )
+              );
             })}
           </div>
         )}      
       </div>
 
-      {/* Description */}
-      <p className="text-gray-700 my-4">{item.description}</p>
-
       {/* Price */}
-      <div className="mb-6">
-        {item.current_price !== item.price && (
-          <p className="text-red-500 line-through">
+      <div className="mb-6 pt-5 w-1/2">
+        {Number(item.current_price) !== Number(item.price) ? (
+          /* ✅ DISCOUNTED ITEM */
+          <div className="flex justify-between">
+            <div className="flex gap-2">
+              <span className="font-semibold text-xl">Was:</span>
+              <p className="text-red-500 line-through border rounded bg-red-600 text-white px-2">
+                MWK {item.price}
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <span className="font-semibold text-xl">Now:</span>
+              <p className="text-green-600 text-xl font-semibold">
+                MWK {item.current_price}
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* ✅ NORMAL ITEM (NO DISCOUNT) */
+          <p className="text-green-600 text-2xl font-semibold">
             MWK {item.price}
           </p>
         )}
-        <p className="text-green-600 text-xl font-semibold">
-          MWK {item.current_price}
-        </p>
       </div>
+
+      {/* Description */}
+      <p className="text-gray-700 my-4">{item.description}</p>
 
       {/* Discounts */}
       {item.discounts?.length > 0 && (

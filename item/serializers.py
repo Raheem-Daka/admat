@@ -24,9 +24,18 @@ class DiscountSerializer(serializers.ModelSerializer):
 
 
 class ItemImagesSerializer(serializers.ModelSerializer):
+    imageUrl = serializers.ImageField(source="image", read_only=True)
+
     class Meta:
         model = ItemImages
-        fields = ['id', 'order', 'image']
+        fields = ['id', 'order', 'imageUrl']
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        request = self.context.get("request")
+        if rep.get("imageUrl") and request:
+            rep["imageUrl"] = request.build_absolute_uri(rep["imageUrl"])
+        return rep
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -53,6 +62,15 @@ class ItemSerializer(serializers.ModelSerializer):
             'category_name',
             'discounts',
         ]
+    
+    
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        request = self.context.get("request")
+        if rep.get("imageUrl") and request:
+            rep["imageUrl"] = request.build_absolute_uri(rep["imageUrl"])
+        return rep
+
 
 
 class CategorySerializer(serializers.ModelSerializer):

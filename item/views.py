@@ -32,8 +32,10 @@ def product_detail_view(request, pk, slug):
 
     return Response({
         "message": "Product details retrieved successfully",
-        "item": ItemSerializer(item).data,
-        "related_items": ItemSerializer(related_items, many=True).data,
+        "item": ItemSerializer(item, context={"request": request}).data,
+        "related_items": ItemSerializer(related_items, many=True, context={
+            "request": request
+        }).data,
     })
 
 
@@ -51,6 +53,11 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
             Prefetch("discounts", queryset=Discount.objects.filter(active=True))
         )
     )
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
 
     @action(detail=False, methods=['get'], url_path='discounts', permission_classes=[AllowAny])
     def discount_products(self, request):
@@ -71,7 +78,7 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response({
             "message": "Get quality products on discount",
-            "items": ItemSerializer(items, many=True).data,
+            "items": ItemSerializer(items, many=True, context={"request": request}).data,
         })
 
 
@@ -94,7 +101,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response({
             "message": f"Items in category {category.get_name_display()}",
-            "items": ItemSerializer(items, many=True).data,
+            "item": ItemSerializer(item, many=True, context={"request": request}).data,
         })
 
 

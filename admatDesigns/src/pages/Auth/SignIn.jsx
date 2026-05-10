@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
-const API_BASE = "http://127.0.0.1:8000"
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const SignIn = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -44,8 +44,8 @@ const SignIn = ({ onLogin }) => {
       if (!res.ok) {
         throw new Error(data.message || "Login failed, Please try again");
       }        
-        localStorage.setItem("accessToken", data.access);
-        localStorage.setItem("refreshToken", data.refresh);
+        localStorage.setItem("access_token", data.access);
+        localStorage.setItem("refresh_token", data.refresh);
         onLogin();
         navigate("/");
     } catch (err) {

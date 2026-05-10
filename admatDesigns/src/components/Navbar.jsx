@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaCaretRight, FaCartPlus, FaPersonBooth, FaTimes, FaUser } from "react-icons/fa";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ProfileDropdown from "./ProfileDropdown";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../utils/authKeys";
 
 const Navbar = ({ isAuthenticated }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,12 +15,12 @@ const Navbar = ({ isAuthenticated }) => {
     setProfileOpen(false)
   }, [location.pathname]); 
 
-  const logout = () => {  
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    close()
-    window.location.reload()
-  }
+  const logout = () => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    setProfileOpen(false);
+    navigate("/signin");
+  };
 
   const profileLinks = [
     {label: "Account", path: "/account"},

@@ -20,13 +20,14 @@ import Cart from "./pages/Orders/Cart";
 import Orders from "./pages/Orders/Orders";
 import Payments from "./pages/Orders/Payments";
 import Checkout from "./pages/Orders/Checkout";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const checkAuth = async () => {
-    const token = localStorage.getItem("accessToken");
-    setIsAuthenticated(!!token);
+  const checkAuth = () => {
+    const token = localStorage.getItem("access_token");
+    setIsAuthenticated(Boolean(token));
   };
 
   useEffect(() => {
@@ -35,13 +36,13 @@ function App() {
 
   return (
     <>
+      {/* ✅ use real auth state */}
       <Navbar isAuthenticated={isAuthenticated} />
 
       <div className="flex flex-col min-h-screen">
         <main className="flex-grow">
           <Routes>
-
-            {/* ✅ Auth routes (ONLY ONCE) */}
+            {/* ✅ Auth routes */}
             <Route
               path="/signin"
               element={
@@ -66,56 +67,33 @@ function App() {
             <Route path="/discount_products" element={<DiscountProducts />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="*" element={<NotFoundPage />} />
 
             {/* ✅ Protected routes */}
             <Route
               path="/cart"
-              element={
-                isAuthenticated
-                  ? <Cart />
-                  : <Navigate to="/signin" />
-              }
+              element={isAuthenticated ? <Cart /> : <Navigate to="/signin" />}
             />
             <Route
               path="/profile"
-              element={
-                isAuthenticated
-                  ? <Profile />
-                  : <Navigate to="/signin" />
-              }
+              element={isAuthenticated ? <Profile /> : <Navigate to="/signin" />}
             />
-            <Route 
+            <Route
               path="/orders"
-              element={
-                isAuthenticated
-                ? <Orders />
-                : <Navigate to="/signin" />
-              }
-              />
-            <Route 
+              element={isAuthenticated ? <Orders /> : <Navigate to="/signin" />}
+            />
+            <Route
               path="/settings"
-              element={
-                isAuthenticated
-                ? <Settings />
-                : <Navigate to="/signin" />
-              }
-              />
-            <Route 
+              element={isAuthenticated ? <Settings /> : <Navigate to="/signin" />}
+            />
+            <Route
               path="/checkout"
-              element={
-                isAuthenticated
-                ? <Checkout />
-                : <Navigate to="/signin" />
-              }
-              />
-            <Route 
+              element={isAuthenticated ? <Checkout /> : <Navigate to="/signin" />}
+            />
+            <Route
               path="/payments"
-              element={
-                isAuthenticated
-                ? <Payments />
-                : <Navigate to="/signin" />
-              }
-              />
+              element={isAuthenticated ? <Payments /> : <Navigate to="/signin" />}
+            />
           </Routes>
         </main>
       </div>
