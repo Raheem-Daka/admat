@@ -1,27 +1,43 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { ACCESS_TOKEN_KEY } from "../../utils/authKeys";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Orders = () => {
-  // ✅ Mock orders (replace with API data later)
-  const orders = [
-    {
-      id: 101,
-      date: "2026-05-06",
-      status: "Delivered",
-      total: 125000,
-    },
-    {
-      id: 102,
-      date: "2026-05-04",
-      status: "Processing",
-      total: 89000,
-    },
-    {
-      id: 103,
-      date: "2026-05-01",
-      status: "Cancelled",
-      total: 54000,
-    },
-  ];
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (!token) {
+      navigate("/signin");
+      return;
+    }
+
+    fetchOrders(token);
+  }, [navigate]);
+
+  const fetchOrders = async (token) => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/orders/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setOrders(res.data || []);
+    } catch (err) {
+      toast.error("Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <p className="p-6">Loading orders…</p>;
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -40,11 +56,9 @@ const Orders = () => {
             >
               {/* Order Info */}
               <div>
-                <p className="font-semibold">
-                  Order #{order.id}
-                </p>
+                <p className="font-semibold">Order #{order.id}</p>
                 <p className="text-sm text-gray-500">
-                  Date: {order.date}
+                  Date: {new Date(order.created_at).toLocaleDateString()}
                 </p>
                 <p className="text-sm">
                   Status:{" "}
@@ -65,9 +79,12 @@ const Orders = () => {
               {/* Order Total */}
               <div className="flex flex-col items-start sm:items-end">
                 <p className="font-bold text-lg text-indigo-600">
-                  MWK {order.total.toLocaleString()}
+                  MWK {Number(order.total).toLocaleString()}
                 </p>
-                <button className="mt-2 px-4 py-2 border rounded hover:bg-indigo-600 hover:text-white transition">
+                <button
+                  onClick={() => navigate(`/orders/${order.id}`)}
+                  className="mt-2 px-4 py-2 border rounded hover:bg-indigo-600 hover:text-white transition"
+                >
                   View Order
                 </button>
               </div>

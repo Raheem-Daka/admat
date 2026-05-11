@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Toaster, toast } from "sonner";
+
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
@@ -12,8 +14,9 @@ import DiscountProducts from "./pages/DiscountProducts";
 import ProductDetails from "./pages/ProductDetails";
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
+import CategoryProducts from "./pages/CategoryProducts";
 
-import Profile from "./pages/User/Profile";
+import Account from "./pages/User/Account";
 import Settings from "./pages/User/Settings";
 
 import Cart from "./pages/Orders/Cart";
@@ -36,8 +39,21 @@ function App() {
 
   return (
     <>
-      {/* ✅ use real auth state */}
+      {/* auth state */}
       <Navbar isAuthenticated={isAuthenticated} />
+
+      <Toaster
+        position="top-center"
+        richColors
+        toastOptions={{
+          duration: 2500,
+          style: {
+            borderRadius: "12px",
+            background: "#4F46E5",
+            color: "#fff",
+          },
+        }}
+      />
 
       <div className="flex flex-col min-h-screen">
         <main className="flex-grow">
@@ -63,7 +79,8 @@ function App() {
             {/* ✅ Public routes */}
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
-            <Route path="/products/:id/:slug" element={<ProductDetails />} />
+            <Route path="/product/:id/:slug" element={<ProductDetails />} />
+            <Route path="/category/:slug" element={<CategoryProducts/>} />
             <Route path="/discount_products" element={<DiscountProducts />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
@@ -75,8 +92,8 @@ function App() {
               element={isAuthenticated ? <Cart /> : <Navigate to="/signin" />}
             />
             <Route
-              path="/profile"
-              element={isAuthenticated ? <Profile /> : <Navigate to="/signin" />}
+              path="/account"
+              element={isAuthenticated ? <Account /> : <Navigate to="/signin" />}
             />
             <Route
               path="/orders"

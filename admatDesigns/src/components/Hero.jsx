@@ -6,8 +6,10 @@ import { FaArrowDown, FaArrowRight } from "react-icons/fa";
 const Hero = () => {
   const navigate = useNavigate();
 
-  const handleScrollDown = () => {
-    window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+  const scrollToProducts = () => {
+    document.getElementById("products")?.scrollIntoView({
+      behavior: "smooth",
+    });
   };
 
   const navigateProducts = () => {
@@ -15,7 +17,7 @@ const Hero = () => {
   }
   return (
     <section
-      className="min-h-[100vh] md:px-16 lg:px-5 py-10 
+      className="min-h-[100vh] md:px-16 lg:px-5
                  bg-cover bg-center bg-no-repeat 
                  lg:bg-none bg-[url('assets/HeroImage.webp')]"
       
@@ -72,10 +74,10 @@ const Hero = () => {
           loading="lazy"
         />
       </div>
-      <div className="flex items-end justify-center py-14">
+      <div className="flex items-end justify-center py-10">
         <button 
         className="rounded-full animate-bounce p-2 bg-indigo-700 text-white hover:bg-indigo-800 active:scale-95 transition"
-        onClick={handleScrollDown}
+        onClick={scrollToProducts}
         ><FaArrowDown size={32}/></button>
       </div>
     </section>

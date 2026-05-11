@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import DesignCard from "../components/DesignCard";
 import { useNavigate } from "react-router-dom";
+import CategoryList from "../components/CartegoryList";
+import SearchComponent from "../components/SearchComponent";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Products = () => {
   const [items, setItems] = useState([]);
@@ -8,7 +12,7 @@ const Products = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/products/")
+    fetch(`${API_BASE}/api/products/`)
       .then(res => res.json())
       .then(data => {
         setItems(Array.isArray(data) ? data : []);
@@ -22,7 +26,7 @@ const Products = () => {
 
   const handleNavigate = (id, slug) => {
     console.log(id, slug);
-    navigate(`/products/${id}/${slug}`);
+    navigate(`/product/${id}/${slug}`);
   };
 
   return (
@@ -30,6 +34,17 @@ const Products = () => {
       <h1 className="text-4xl font-bold text-center pt-10">
         All Products
       </h1>
+      <div className="sticky top-0 z-10 bg-white py-2 w-full">
+
+        {/*Search Panel */}
+        <div className="">
+          <SearchComponent />
+        </div>
+
+        <div>
+          <CategoryList />
+        </div>
+      </div>
 
       {loading ? (
         <p className="text-center text-gray-500 mt-10">Loading...</p>

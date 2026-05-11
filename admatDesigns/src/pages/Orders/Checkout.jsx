@@ -1,142 +1,99 @@
-import React, { useState } from "react";
- 
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { ACCESS_TOKEN_KEY } from "../../utils/authKeys";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Checkout = () => {
+  const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (!token) {
+      toast.error("Session expired. Please sign in again.")
+      navigate("/signin");
+      return;
+    }
 
-  const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
-    address: "",
-    city: "",
-    paymentMethod: "cod",
-  });
+    fetchCart(token);
+  }, [navigate]);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const fetchCart = async (token) => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/cart/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.data?.items?.length) {
+        toast.info("Your cart is empty 🛒");
+        navigate("/cart");
+        return;
+      }
+
+      setCart(res.data);
+    } catch (err) {
+      toast.error("Failed to load checkout items");
+      navigate("/cart");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const placeOrder = () => {
-    // ✅ Later you will send this to backend
-    console.log("Order placed:", formData);
+  if (loading) return <p className="p-6">Loading checkout…</p>;
+  if (!cart) return null;
 
-    alert("✅ Order placed successfully!");
-    navigate("/orders");
-  };
+  const subtotal = cart.items.reduce(
+    (sum, ci) =>
+      sum + Number(ci.item.current_price) * ci.quantity,
+    0
+  );
+
+  const deliveryFee = cart.delivery_fee ?? 5000; // or backend-provided later
+  const total = cart.total ?? subtotal + deliveryFee;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Checkout</h1>
+    <div className="border rounded-xl mt-20 px-6 py-5 bg-white shadow xl:w-7xl mx-auto text-center  items-center">
+      <h2 className="text-2xl font-semibold mb-4 pt-5">Order Summary</h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* ✅ Shipping Details */}
-        <div className="border rounded-xl p-6 shadow-sm bg-white">
-          <h2 className="text-xl font-semibold mb-4">
-            Shipping Information
-          </h2>
+      {cart.items.map((ci) => (
+        <div
+          key={ci.id}
+          className="flex justify-between mb-3 text-sm"
+        >
+          <div>
+            <p className="font-medium">{ci.item.name}</p>
+            <p className="text-gray-500">Qty: {ci.quantity}</p>
+          </div>
 
-          <input
-            type="text"
-            name="fullName"
-            placeholder="Full Name"
-            value={formData.fullName}
-            onChange={handleChange}
-            className="w-full mb-3 p-3 border rounded focus:outline-none focus:border-indigo-600"
-          />
-
-          <input
-            type="text"
-            name="phone"
-            placeholder="Phone Number"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full mb-3 p-3 border rounded focus:outline-none focus:border-indigo-600"
-          />
-
-          <input
-            type="text"
-            name="address"
-            placeholder="Address"
-            value={formData.address}
-            onChange={handleChange}
-            className="w-full mb-3 p-3 border rounded focus:outline-none focus:border-indigo-600"
-          />
-
-          <input
-            type="text"
-            name="city"
-            placeholder="City"
-            value={formData.city}
-            onChange={handleChange}
-            className="w-full mb-3 p-3 border rounded focus:outline-none focus:border-indigo-600"
-          />
+          <p className="font-semibold">
+            MWK {(ci.item.current_price * ci.quantity).toFixed(2)}
+          </p>
         </div>
+      ))}
 
-        {/* ✅ Order Summary */}
-        <div className="border rounded-xl p-6 shadow-sm bg-white">
-          <h2 className="text-xl font-semibold mb-4">
-            Order Summary
-          </h2>
+      <hr className="my-3" />
 
-          <div className="flex justify-between mb-2">
-            <span>Subtotal</span>
-            <span>MWK 120,000</span>
-          </div>
+      <div className="flex justify-between">
+        <span>Subtotal</span>
+        <span>MWK {subtotal.toFixed(2)}</span>
+      </div>
 
-          <div className="flex justify-between mb-2">
-            <span>Delivery</span>
-            <span>MWK 5,000</span>
-          </div>
+      <div className="flex justify-between">
+        <span>Delivery</span>
+        <span>MWK {deliveryFee.toFixed(2)}</span>
+      </div>
 
-          <hr className="my-3" />
+      <hr className="my-3" />
 
-          <div className="flex justify-between font-bold text-lg">
-            <span>Total</span>
-            <span>MWK 125,000</span>
-          </div>
-
-          {/* ✅ Payment */}
-          <div className="mt-6">
-            <h3 className="font-semibold mb-2">
-              Payment Method
-            </h3>
-
-            <label className="flex items-center gap-2 mb-2">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="cod"
-                checked={formData.paymentMethod === "cod"}
-                onChange={handleChange}
-              />
-              Cash on Delivery
-            </label>
-
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="mobile"
-                checked={formData.paymentMethod === "mobile"}
-                onChange={handleChange}
-              />
-              Mobile Money
-            </label>
-          </div>
-
-          {/* ✅ Place Order */}
-          <button
-            onClick={placeOrder}
-            className="mt-6 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
-          >
-            Place Order
-          </button>
-        </div>
+      <div className="flex justify-between font-bold text-lg">
+        <span>Total</span>
+        <span>MWK {total.toFixed(2)}</span>
       </div>
     </div>
   );

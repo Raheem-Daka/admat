@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import DesignCard from "../components/DesignCard";
 import Hero from "../components/Hero";
 import DiscountComponent from "../components/DiscountComponent";
+import SearchComponent from "../components/SearchComponent";
+import CategoryList from "../components/CartegoryList";
 
-const API_BASE = "http://127.0.0.1:8000"
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Home = () => {
   const [items, setItems] = useState([]);
@@ -31,7 +33,7 @@ const Home = () => {
   }, []);
 
   const handleCardClick = (id, slug) => {
-    navigate(`/products/${id}/${slug}`);
+    navigate(`/product/${id}/${slug}`);
   };
 
   return (
@@ -39,10 +41,15 @@ const Home = () => {
       <Hero />
 
       {/* ✅ Products section */}
-      <section className="border-t border-slate-100 py-10">
-        <h1 className="text-4xl font-bold text-center mb-6">
+      <section className="border-t border-slate-100 pb-5">
+        <h1 id="products" className="text-4xl font-bold text-center pt-5">
           All Our Featured Products
         </h1>
+
+        <div className="text-center sticky bg-white top-0 z-10 py-1 w-full">
+          <SearchComponent />
+        </div>
+
 
         {loading && (
           <p className="text-center text-gray-500 animate-pulse">
@@ -51,7 +58,7 @@ const Home = () => {
         )}
 
         {!loading && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 lg:gap-4 md:gap-3 sm:gap-2 px-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8 lg:grid-cols-7 lg:gap-4 md:gap-3 sm:gap-2 px-4">
             {items.map((item) => (
               <DesignCard
                 key={item.id}
@@ -61,12 +68,14 @@ const Home = () => {
             ))}
           </div>
         )}
+
+        {/* ✅ Discount slideshow (self‑contained) */}
+        <section className="w-full my-10">
+          <DiscountComponent />
+        </section>
+
       </section>
 
-      {/* ✅ Discount slideshow (self‑contained) */}
-      <section className="w-full">
-        <DiscountComponent />
-      </section>
     </div>
   );
 };

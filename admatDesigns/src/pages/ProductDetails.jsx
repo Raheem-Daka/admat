@@ -1,7 +1,9 @@
-import React, {useState, useEffect} from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DesignCard from "../components/DesignCard";
 import placeHolder from "../assets/placeHolder.png";
+import {toast} from "sonner"
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../utils/authKeys";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -12,9 +14,11 @@ const ProductDetails = () => {
   const [item, setItem] = useState(null);
   const [relatedItems, setRelatedItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [mainImage, setMainImage] = useState(placeHolder);
+  const [mainImage, setMainImage] = useState(placeHolder)
 
   const [adding, setAdding] = useState(false)
+
+  //Add to Cart function
 
   const addToCart = async () => {
     if (adding || !item) return;
@@ -22,8 +26,9 @@ const ProductDetails = () => {
     try {
       setAdding(true);
 
-      const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem(ACCESS_TOKEN_KEY);
       if (!token) {
+        toast.error("Please sign in first");
         navigate("/signin");
         return;
       }
@@ -40,10 +45,12 @@ const ProductDetails = () => {
         }),
       });
 
-      // ✅ TOKEN EXPIRED OR INVALID
+      // TOKEN EXPIRED OR INVALID
+
       if (res.status === 401) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        toast.error("Session expired. Please sign in again")
         navigate("/signin");
         return;
       }
@@ -52,12 +59,16 @@ const ProductDetails = () => {
         const data = await res.json();
         throw new Error(data.error || "Failed to add item to cart");
       }
+      
+        toast.success(`${item.name} added to cart 🛒`);
 
-      alert("✅ Item added to cart");
-      navigate("/cart", {replace: true })
+      setTimeout(() => {
+        navigate("/cart", { replace: true });
+      }, 800);    
     } catch (error) {
       console.error("Add to cart error:", error);
-      alert("Session expired. Please sign in again.");
+      toast.error(
+        error.message || "Failed to add item to cart. Please try again.");
     } finally {
       setAdding(false);
     }
@@ -66,7 +77,7 @@ const ProductDetails = () => {
   useEffect(() => {
     setLoading(true);
 
-    fetch(`${API_BASE}/api/products/${id}/${slug}/`)
+    fetch(`${API_BASE}/api/product/${id}/${slug}/`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to load item");
         setLoading(true);
@@ -96,8 +107,8 @@ const ProductDetails = () => {
       });
   }, [id, slug]);
 
-  const handleNavigate = (id, slug) => {
-    navigate(`/products/${id}/${slug}`);
+  const handleNavigate = (item) => {
+    navigate(`/product/${item.id}/${item.slug}`);
   };
 
   if (loading) {
@@ -232,11 +243,11 @@ const ProductDetails = () => {
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {relatedItems.map(related => (
+            {relatedItems.map((related) => (
               <DesignCard
                 key={related.id}
                 item={related}
-                onClick={handleNavigate}            
+                onClick={() => handleNavigate(related)}            
               />
             ))}
           </div>

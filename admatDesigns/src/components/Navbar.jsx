@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { FaCaretRight, FaCartPlus, FaPersonBooth, FaTimes, FaUser } from "react-icons/fa";
+import { FaCartPlus, FaTimes, FaUser } from "react-icons/fa";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ProfileDropdown from "./ProfileDropdown";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../utils/authKeys";
+import { useAuth } from "../utils/AuthContent";
 
-const Navbar = ({ isAuthenticated }) => {
+const Navbar = () => {
+  
+  const { isAuthenticated, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -15,17 +18,10 @@ const Navbar = ({ isAuthenticated }) => {
     setProfileOpen(false)
   }, [location.pathname]); 
 
-  const logout = () => {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    setProfileOpen(false);
-    navigate("/signin");
-  };
-
   const profileLinks = [
     {label: "Account", path: "/account"},
     {label: "Settings", path: "/setting"},
-    {label: "Logout", path: "/logout"}
+
   ]
   const navlinks = [
     { name: "Home", path: "/" },
@@ -86,10 +82,13 @@ const Navbar = ({ isAuthenticated }) => {
             </button>
 
             {profileOpen && (
-              <ProfileDropdown 
+              <ProfileDropdown
+                links={profileLinks}
                 close={() => setProfileOpen(false)} 
-                onClick={logout}
-                
+                onLogout={() => {
+                  logout();
+                  setProfileOpen();
+                }}            
               />
             )}
             
@@ -137,7 +136,7 @@ const Navbar = ({ isAuthenticated }) => {
             <div className="absolute top-5 left-5 flex gap-3">
               <Link to="/cart" onClick={toggleMenu}>
               <FaCartPlus size={24} /></Link>
-              <Link to="/profile" onClick={toggleMenu}>
+              <Link to="/account" onClick={toggleMenu}>
               <FaUser size={24}/>
               </Link>
             </div>

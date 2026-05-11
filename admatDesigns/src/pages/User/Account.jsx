@@ -1,7 +1,7 @@
 import React from 'react'
 import ProfileSidePanel from '../../components/ProfileSidePanel'
 
-const Profile = () => {
+const Account = () => {
   return (
     <div>
         <ProfileSidePanel />
@@ -9,4 +9,4 @@ const Profile = () => {
   )
 }
 
-export default Profile
+export default Account

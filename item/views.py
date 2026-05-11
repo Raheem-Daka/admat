@@ -5,7 +5,6 @@ from rest_framework import viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-
 from .models import Item, Category, Discount
 from .serializers import ItemSerializer, CategorySerializer, DiscountSerializer
 
@@ -32,8 +31,9 @@ def product_detail_view(request, pk, slug):
 
     return Response({
         "message": "Product details retrieved successfully",
-        "item": ItemSerializer(item, context={"request": request}).data,
-        "related_items": ItemSerializer(related_items, many=True, context={
+        "item": ItemSerializer(item, context={
+            "request": request}).data,
+            "related_items": ItemSerializer(related_items, many=True, context={
             "request": request
         }).data,
     })
@@ -77,7 +77,6 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         return Response({
-            "message": "Get quality products on discount",
             "items": ItemSerializer(items, many=True, context={"request": request}).data,
         })
 
@@ -85,8 +84,8 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
 # Categories
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
-    permission_classes = [AllowAny]
     serializer_class = CategorySerializer
+    permission_classes = [AllowAny]
     lookup_field = 'slug'
 
     @action(detail=True, methods=['get'], permission_classes=[AllowAny])
@@ -94,16 +93,31 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
         category = self.get_object()
 
         items = (
-            category.items
+            Item.objects
+            .filter(category=category)
             .select_related("category")
             .prefetch_related("images", "discounts")
         )
+        
+        # Pagination
+        page = self.paginate_queryset(items)
+        if page is not None:
+            serializer = ItemSerializer(
+                page, 
+                many=True, 
+                context={"request": request}
+            )
+            return self.get_paginated_response(serializer.data)
+
 
         return Response({
-            "message": f"Items in category {category.get_name_display()}",
-            "item": ItemSerializer(item, many=True, context={"request": request}).data,
+            "message": f"Items in category {category.get_name_display() if hasattr(category, 'get_name_display') else category.name}",
+            "items": ItemSerializer(
+                items,
+                many=True,
+                context={"request": request}
+            ).data,
         })
-
 
 # Discounts
 class DiscountViewSet(viewsets.ReadOnlyModelViewSet):

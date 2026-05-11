@@ -59,7 +59,7 @@ const DiscountComponent = () => {
                 src={imageSrc}
                 alt={item.name}
                 onClick={() => handleNavigate(item.id, item.slug)}
-                className={`absolute inset-0 w-full h-full object-contain cursor-pointer transition-opacity duration-700 ${
+                className={`absolute inset-0 w-full h-full object-cover cursor-pointer transition-opacity duration-700 ${
                   index === current ? "opacity-100" : "opacity-0"
                 }`}
               />

@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../../utils/authKeys";
+import { useAuth } from "../../utils/AuthContent";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-const SignIn = ({ onLogin }) => {
+const SignIn = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -44,10 +47,8 @@ const SignIn = ({ onLogin }) => {
       if (!res.ok) {
         throw new Error(data.message || "Login failed, Please try again");
       }        
-        localStorage.setItem("access_token", data.access);
-        localStorage.setItem("refresh_token", data.refresh);
-        onLogin();
-        navigate("/");
+        login(data.access);
+        navigate("/", {replace : true });
     } catch (err) {
       setError(err.message);
     } finally {

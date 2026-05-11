@@ -1,17 +1,21 @@
 import { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../utils/authKeys";
+import { useAuth } from "../utils/AuthContent";
+
 
 const ProfileDropdown = ({ close }) => {
-  const ref = useRef();
+  const ref = useRef(null);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const options = [
-    { label: "Profile", path: "/profile" },
+    { label: "Account", path: "/account" },
     { label: "Cart", path: "/cart" },
     { label: "Orders", path: "/orders" },
   ];
 
-  // Close when clicking outside
+  // ✅ Close on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (ref.current && !ref.current.contains(e.target)) {
@@ -24,12 +28,11 @@ const ProfileDropdown = ({ close }) => {
       document.removeEventListener("mousedown", handleClickOutside);
   }, [close]);
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+  const handleLogout = () => {
+    logout();
     close();
-    navigate("/signin");
-  };
+    navigate("/", {replace: true})
+  }
 
   return (
     <div
@@ -50,8 +53,8 @@ const ProfileDropdown = ({ close }) => {
       <div className="border-t my-1" />
 
       <button
-        onClick={logout}
-        className="w-full text-left px-4 py-2 text-white bg-red-500 hover:cursor-pointer hover:bg-red-400 transition"
+        onClick={handleLogout}
+        className="w-full text-left px-4 py-2 text-white bg-red-500 hover:bg-red-400 transition"
       >
         Logout
       </button>

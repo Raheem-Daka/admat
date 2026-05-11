@@ -1,12 +1,14 @@
 import React from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '../utils/authKeys';
+import { useAuth } from '../utils/AuthContent';
 
 const ProfileSidePanel = () => {
     const navigate = useNavigate();
+    const { logout } = useAuth
 
-    const logout = () => {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken")
+    const handleLogout = () => {
+        logout();
         navigate("/", {replace: true})
     }
 
@@ -36,8 +38,10 @@ const ProfileSidePanel = () => {
         <div className="border-t border-white pt-5 mt-10">
             <button 
             className="bg-red-600 w-full py-3 text-white" 
-            onClick={logout}
->Logout</button>
+            onClick={handleLogout}
+>
+            Logout
+        </button>
         </div>
     </div>
   )
