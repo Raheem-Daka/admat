@@ -22,7 +22,7 @@ const DiscountComponent = () => {
   );
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/products/discounts/`)
+    fetch(`${API_BASE}/products/discounts/`)
       .then((res) => res.json())
       .then((data) => {
         setItems(data.items || []);
@@ -90,7 +90,7 @@ const DiscountComponent = () => {
           Transform your living space into a masterpiece.
         </h1>
 
-        <p className="mt-4 text-lg font-light max-w-md mx-auto lg:mx-0">
+        <p className="mt-4 text font-light max-w-md mx-auto lg:mx-0 text-gray-500">
           Discover premium furniture, exclusive discounts, and stunning designs
           to bring marvels into your living space.
         </p>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -20,6 +21,8 @@ const Cart = () => {
     if (!token) {
       setCart(null);
       setLoading(false);
+      toast.info("Please sign in to view your cart.")
+      navigate("/signin")
       return;
     }
 
@@ -28,7 +31,7 @@ const Cart = () => {
 
   const fetchCart = async (authToken) => {
     try {
-      const res = await axios.get(`${API_BASE}/api/cart/`, {
+      const res = await axios.get(`${API_BASE}/cart/`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
@@ -51,7 +54,7 @@ const Cart = () => {
     if (quantity < 1) return;
 
     await axios.patch(
-      `${API_BASE}/api/cart/items/${itemId}/`,
+      `${API_BASE}/cart/items/${itemId}/`,
       { quantity },
       {
         headers: {
@@ -65,7 +68,7 @@ const Cart = () => {
 
   const removeItem = async (itemId) => {
     await axios.delete(
-      `${API_BASE}/api/cart/items/${itemId}/delete/`,
+      `${API_BASE}/cart/items/${itemId}/delete/`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -76,7 +79,7 @@ const Cart = () => {
     fetchCart(token);
   };
 
-  if (loading) return <div className="p-6">Loading cart…</div>;
+  if (loading) return <div className="p-6 text-center animate-pulse">Loading cart…</div>;
 
   if (!token) {
     return <div className="p-6 text-center">Please log in to view your cart 🔐</div>;

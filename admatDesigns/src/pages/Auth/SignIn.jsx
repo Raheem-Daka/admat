@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../../utils/authKeys";
-import { useAuth } from "../../utils/AuthContent";
+import { useAuth } from "../../utils/AuthContext";
+import { toast } from "sonner";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -48,7 +49,10 @@ const SignIn = () => {
         throw new Error(data.message || "Login failed, Please try again");
       }        
         login(data.access);
-        navigate("/", {replace : true });
+        toast.success("Signed in successfully")
+        setTimeout(() => {
+          navigate("/", {replace : true });
+        }, 0)
     } catch (err) {
       setError(err.message);
     } finally {

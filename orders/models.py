@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from item.models import Item
 
 
 class Order(models.Model):
@@ -14,10 +15,8 @@ class Order(models.Model):
         ("cod", "Cash on Delivery"),
         ("mobile", "Mobile Money"),
         ("visa", "VISA"),
-        ("visa", "VISA"),
         ("paypal", "PayPal"),
         ("stripe", "Stripe"),
-        
     ]
 
     user = models.ForeignKey(
@@ -55,7 +54,7 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order #{self.id} - {self.user}"
-        
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(
@@ -63,14 +62,15 @@ class OrderItem(models.Model):
         related_name="items",
         on_delete=models.CASCADE
     )
+
     item = models.ForeignKey(
-        "items.Item",  # adjust app name if needed
+        Item,                 
         on_delete=models.CASCADE
     )
+
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=12, decimal_places=2)
     subtotal = models.DecimalField(max_digits=12, decimal_places=2)
 
     def __str__(self):
         return f"{self.item} x{self.quantity}"
-

@@ -6,16 +6,15 @@ const DesignCard = ({ item, onClick }) => {
   if (!item) return null;
 
   // calculate discount percentage safely
-const discountPercent =
-  item.price &&
-  item.current_price &&
-  Number(item.price) !== Number(item.current_price) 
-    ? Math.round(
-        ((item.price - item.current_price) / item.price) * 100
-      )
-    : null;
+  const price = Number(item.price);
+  const currentPrice = Number(item.current_price);
 
-    // choose image with fallback
+  const discountPercent =
+    price > currentPrice
+      ? Math.round(((price - currentPrice) / price) * 100)
+      : null;
+
+      // choose image with fallback
   const imageSrc =
     item.imageUrl
       ? item.imageUrl.startsWith("http")
@@ -45,8 +44,8 @@ const discountPercent =
       {/* Image */}
       <div className="relative flex items-start justify-center h-32 mb-1">
         {discountPercent !== null && (
-          <span className="absolute top-2 left-2 text-white text-xs flex">
-            <span className="bg-white text-red-500 border px-1 rounded-l">
+          <span className="absolute top-2 text-white text-xs flex">
+            <span className="bg-white text-red-500 border px-1 rounded-l line-through">
               MWK {item.price}
             </span>
             <span className="bg-red-600 px-1 rounded-r">

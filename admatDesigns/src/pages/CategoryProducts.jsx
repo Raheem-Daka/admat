@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DesignCard from "../components/DesignCard";
 import CategoryList from "../components/CartegoryList";
+import SearchComponent from "../components/SearchComponent";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -18,7 +19,7 @@ const CategoryProducts = () => {
   useEffect(() => {
     setLoading(true);
 
-    fetch(`${API_BASE}/api/categories/${slug}/items/`)
+    fetch(`${API_BASE}/categories/${slug}/items/`)
       .then((res) => res.json())
       .then((data) => {
         setItems(data.items || []);
@@ -38,7 +39,13 @@ const CategoryProducts = () => {
       </h1>
 
       <div>
-        <CategoryList />
+        <div>
+          <SearchComponent />
+        </div>
+        <div>
+          <CategoryList />
+
+        </div>
       </div>
 
       {loading ? (

@@ -23,7 +23,7 @@ const Orders = () => {
 
   const fetchOrders = async (token) => {
     try {
-      const res = await axios.get(`${API_BASE}/api/orders/`, {
+      const res = await axios.get(`${API_BASE}/orders/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -31,11 +31,21 @@ const Orders = () => {
 
       setOrders(res.data || []);
     } catch (err) {
-      toast.error("Failed to load orders");
+      if (err.response?.status === 401) {
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        toast.error("Session expired. Please sign in again.");
+        navigate("/signin");
+      } else {
+        toast.error("Failed to load orders");
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const handleNavigation = (order) => {
+    navigate(`/order_details/${order.id}`);
+  }
 
   if (loading) return <p className="p-6">Loading orders…</p>;
 
@@ -46,54 +56,62 @@ const Orders = () => {
       {orders.length === 0 ? (
         <p className="text-gray-500 text-center">
           You haven’t placed any orders yet.
+          <br />
+          <button
+            onClick={() => navigate("/products")}
+            className="mt-4 text-indigo-600 rounded text-white bg-indigo-600 p-2"
+          >
+            Start shopping
+          </button>
         </p>
       ) : (
         <div className="space-y-4">
-          {orders.map((order) => (
-            <div
-              key={order.id}
-              className="border rounded-xl p-4 bg-white shadow-sm flex flex-col sm:flex-row justify-between gap-4"
-            >
-              {/* Order Info */}
-              <div>
-                <p className="font-semibold">Order #{order.id}</p>
-                <p className="text-sm text-gray-500">
-                  Date: {new Date(order.created_at).toLocaleDateString()}
-                </p>
-                <p className="text-sm">
-                  Status:{" "}
-                  <span
-                    className={`font-semibold ${
-                      order.status === "Delivered"
-                        ? "text-green-600"
-                        : order.status === "Processing"
-                        ? "text-yellow-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-                </p>
-              </div>
+          {orders.map((order) => {
+            const statusColor = {
+              Delivered: "text-green-600",
+              Processing: "text-yellow-600",
+              Pending: "text-blue-600",
+              Cancelled: "text-red-600",
+            }[order.status] || "text-gray-600";
 
-              {/* Order Total */}
-              <div className="flex flex-col items-start sm:items-end">
-                <p className="font-bold text-lg text-indigo-600">
-                  MWK {Number(order.total).toLocaleString()}
-                </p>
-                <button
-                  onClick={() => navigate(`/orders/${order.id}`)}
-                  className="mt-2 px-4 py-2 border rounded hover:bg-indigo-600 hover:text-white transition"
-                >
-                  View Order
-                </button>
+            return (
+              <div
+                key={order.id}
+                className="border rounded-xl p-4 bg-white shadow-sm flex flex-col sm:flex-row justify-between gap-4"
+              >
+                {/* Order Info */}
+                <div>
+                  <p className="font-semibold">Order #{order.id}</p>
+                  <p className="text-sm text-gray-500">
+                    Date:{" "}
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm">
+                    Status:{" "}
+                    <span className={`font-semibold ${statusColor}`}>
+                      {order.status}
+                    </span>
+                  </p>
+                </div>
+
+                {/* Order Total */}
+                <div className="flex flex-col items-start sm:items-end">
+                  <p className="font-bold text-lg text-indigo-600">
+                    MWK {Number(order.total).toLocaleString()}
+                  </p>
+                  <button
+                    onClick={() => handleNavigation(order)}
+                    className="mt-2 px-4 py-2 border rounded hover:bg-indigo-600 hover:text-white transition"
+                  >
+                    View Order
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
   );
-};
-
+}
 export default Orders;

@@ -13,7 +13,7 @@ const DiscountProducts = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/products/discounts/`)
+    fetch(`${API_BASE}/products/discounts/`)
       .then((response) => response.json())
       .then((data) => {
         console.log("Discount products API Response:", data);
@@ -28,11 +28,11 @@ const DiscountProducts = () => {
   }, []);
 
   const handleNavigate = (id, slug) => {
-    navigate(`/products/${id}/${slug}`);
+    navigate(`/product/${id}/${slug}`);
   };
 
   return (
-    <div className="">
+    <div className="px-10">
       <h1 className="lg:text-4xl sm:text-2xl font-bold py-10 text-center">
         Get quality products on discount
       </h1>
@@ -59,7 +59,7 @@ const DiscountProducts = () => {
       )}
 
       {!loading && items.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-7 gap-4 mt-5">
           {items.map((item) => (
             <DesignCard
               key={item.id}

@@ -3,16 +3,71 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ACCESS_TOKEN_KEY } from "../../utils/authKeys";
+import { useAuth } from "../../utils/AuthContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-const Checkout = () => {
-  const [cart, setCart] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const Checkout = () => {
+    const [cart, setCart] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const [placingOrder, setPlacingOrder] = useState(false);
+    const { user } = useAuth();
+
+    const [formData, setFormData] = useState({
+      full_name: "",
+      phone: "",
+      address: "",
+      city: "",
+      payment_method: "cod",
+    });
+
+  const placeOrder = async () => {
+    if (
+      !formData.full_name.trim() ||
+      !formData.phone.trim() ||
+      !formData.address.trim() ||
+      !formData.city.trim()
+    ) {
+      toast.error("Please fill in all shipping details");
+      return;
+    }
+
+    try {
+      setPlacingOrder(true);
+
+      const token = user?.token;
+
+      if (formData.payment_method === "cod") {
+        await axios.post(
+          `${API_BASE}/api/orders/`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        toast.success("Order placed successfully ✅");
+        navigate("/orders");
+
+      } else {
+
+        // Go to payment page for online
+        navigate("/payments");
+      }
+
+    } catch (error) {
+      toast.error("Failed to place order");
+    } finally {
+      setPlacingOrder(false);
+    }
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const token = user?.token;
+    
     if (!token) {
       toast.error("Session expired. Please sign in again.")
       navigate("/signin");
@@ -20,11 +75,11 @@ const Checkout = () => {
     }
 
     fetchCart(token);
-  }, [navigate]);
+  }, [user]);
 
   const fetchCart = async (token) => {
     try {
-      const res = await axios.get(`${API_BASE}/api/cart/`, {
+      const res = await axios.get(`${API_BASE}/cart/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -32,7 +87,9 @@ const Checkout = () => {
 
       if (!res.data?.items?.length) {
         toast.info("Your cart is empty 🛒");
-        navigate("/cart");
+        setTimeout(() => {
+          navigate("/cart");
+        }, 1000)
         return;
       }
 
@@ -45,7 +102,13 @@ const Checkout = () => {
     }
   };
 
-  if (loading) return <p className="p-6">Loading checkout…</p>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading checkout...
+      </div>
+    );
+  }  
   if (!cart) return null;
 
   const subtotal = cart.items.reduce(
@@ -54,11 +117,53 @@ const Checkout = () => {
     0
   );
 
-  const deliveryFee = cart.delivery_fee ?? 5000; // or backend-provided later
-  const total = cart.total ?? subtotal + deliveryFee;
+  const deliveryFee = cart.delivery_fee ?? 5000;
+  const total = Number(cart.total ?? subtotal + deliveryFee);
 
   return (
-    <div className="border rounded-xl mt-20 px-6 py-5 bg-white shadow xl:w-7xl mx-auto text-center  items-center">
+    <div className="rounded-xl mt-20 px-6 py-5 bg-white shadow xl:w-4xl mx-auto text-center  items-center">
+      <h1 className="font-bold text-2xl text-center py-5">Checkout</h1>
+      <div className="mb-6 space-y-3">
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={formData.full_name}
+          onChange={(e) =>
+            setFormData({ ...formData, full_name: e.target.value })
+          }
+          className="w-full border p-3 rounded"
+        />
+
+        <input
+          type="text"
+          placeholder="Phone"
+          value={formData.phone}
+          onChange={(e) =>
+            setFormData({ ...formData, phone: e.target.value })
+          }
+          className="w-full border p-3 rounded"
+        />
+
+        <input
+          type="text"
+          placeholder="Address"
+          value={formData.address}
+          onChange={(e) =>
+            setFormData({ ...formData, address: e.target.value })
+          }
+          className="w-full border p-3 rounded"
+        />
+
+        <input
+          type="text"
+          placeholder="City"
+          value={formData.city}
+          onChange={(e) =>
+            setFormData({ ...formData, city: e.target.value })
+          }
+          className="w-full border p-3 rounded"
+        />
+      </div>
       <h2 className="text-2xl font-semibold mb-4 pt-5">Order Summary</h2>
 
       {cart.items.map((ci) => (
@@ -95,6 +200,28 @@ const Checkout = () => {
         <span>Total</span>
         <span>MWK {total.toFixed(2)}</span>
       </div>
+
+      <div className="my-10">
+        <h1 className="font-bold text-2xl mb-5">Choose a Payment method</h1>
+        <select
+          value={formData.payment_method}
+          onChange={(e) =>
+            setFormData({ ...formData, payment_method: e.target.value })
+          }
+          className="w-full border py-3 px-5 rounded"
+        >
+          <option value="cod">Cash on Delivery</option>
+          <option value="online">Online Payment</option>
+        </select>
+      </div>
+
+      <button
+        onClick={placeOrder}
+        disabled={placingOrder}
+        className="mt-6 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
+      >
+        {placingOrder ? "Placing order..." : "Place order"}
+      </button>
     </div>
   );
 };

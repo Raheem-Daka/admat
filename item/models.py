@@ -1,8 +1,10 @@
 from django.db import models
+from django.db.models import F
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
+import os
 
 
 class Category(models.Model):
@@ -26,6 +28,7 @@ class Category(models.Model):
 
     name = models.CharField(max_length=100, choices=FURNITURE_CATEGORY_CHOICES)
     slug = models.SlugField(unique=True, blank=True)
+    image = models.ImageField(upload_to="category_images/"),
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -49,21 +52,28 @@ class Item(models.Model):
     image = models.ImageField(upload_to="design_images/", blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     slug = models.SlugField(unique=True, blank=True)
+
+    purchase_count = models.IntegerField(default=0)
+    views = models.IntegerField(default=0)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     @property
     def current_price(self):
-        discount = (
-            self.discounts
-            .filter(active=True)
-            .order_by("-start_date")
-            .first()
-        )
-        if discount and discount.is_valid():
-            return discount.apply_discount(self.price)
-        return self.price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        valid_discounts = [
+            d for d in self.discounts.all() if d.is_valid()
+        ]
 
+        if not valid_discounts:
+            return self.price.quantize(Decimal("0.01"))
+
+        # ✅ get lowest resulting price
+        best_price = min(
+            d.apply_discount(self.price) for d in valid_discounts
+        )
+
+        return best_price.quantize(Decimal("0.01"))
     def save(self, *args, **kwargs):
         if not self.slug:
             base = slugify(self.name)
@@ -75,9 +85,10 @@ class Item(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
-        if self.image and not os.path.exists(self.image.path):
-            self.image = None
-        super().save(update_fields=["image"])
+        if self.image and hasattr(self.image, "path"):
+            if not os.path.exists(self.image.path):
+                self.image = None        
+                super().save(update_fields=["image"])
 
     def __str__(self):
         return self.name
@@ -120,8 +131,8 @@ class Discount(models.Model):
         ordering = ["-start_date"]
         
     DISCOUNT_TYPE_CHOICES = [
-    ("percentage", "Percentage"),
-    ("fixed", "Fixed Amount"),
+        ("percentage", "Percentage"),
+        ("fixed", "Fixed Amount"),
     ]
 
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="discounts")
@@ -132,7 +143,6 @@ class Discount(models.Model):
     active = models.BooleanField(default=True)
 
     def is_valid(self):
-        """Check if discount is currently valid"""
         now = timezone.now()
         if not self.active:
             return False
@@ -146,10 +156,28 @@ class Discount(models.Model):
         price = Decimal(price)
 
         if self.discount_type == "percentage":
-            discounted = price - (price * self.discount_price / Decimal("100"))
+            percent = min(max(self.discount_price, Decimal("0")), Decimal("100"))
+            discounted = price - (price * percent / Decimal("100"))
+
         elif self.discount_type == "fixed":
             discounted = max(price - self.discount_price, Decimal("0"))
+
         else:
             discounted = price
 
-        return discounted.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        return max(discounted, Decimal("0")).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+
+    def clean(self):
+        if self.discount_type == "percentage":
+            if self.discount_price < 0 or self.discount_price > 100:
+                raise ValidationError("Percentage discount must be between 0 and 100")
+
+        elif self.discount_type == "fixed":
+            if self.discount_price < 0:
+                raise ValidationError("Fixed discount cannot be negative")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)

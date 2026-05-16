@@ -1,76 +1,100 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from item.models import Item
+
+from .models import Order
+from .serializers import OrderSerializer, CreateOrderSerializer
+from cart.models import Cart
 from django.db import transaction
 
+from django.conf import settings
+from django.db.models import F
+
 # Create your views here.
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_order(request):
-    user = request.user
+class OrdersViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
 
-    try:
-        cart = Cart.objects.get(user=user)
-        cart_items = cart.items.select_related("item")
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Order.objects.all()
+        return Order.objects.filter(user=self.request.user)
 
-        if not cart_items.exists():
-            return Response(
-                {"error": "Cart is empty"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateOrderSerializer
+        return OrderSerializer
 
-        with transaction.atomic():
-            # ✅ Create Order
-            order = Order.objects.create(
-                user=user,
-                full_name=request.data.get("full_name", ""),
-                phone=request.data.get("phone", ""),
-                address=request.data.get("address", ""),
-                city=request.data.get("city", ""),
-                payment_method=request.data.get("payment_method", "cod"),
-                status="Processing",
-                total=0
-            )
 
-            total_amount = 0
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-            # ✅ Create Order Items from Cart
-            for cart_item in cart_items:
-                price = cart_item.item.current_price
-                quantity = cart_item.quantity
-                subtotal = price * quantity
+        user = request.user
 
-                OrderItem.objects.create(
-                    order=order,
-                    item=cart_item.item,
-                    quantity=quantity,
-                    price=price,
-                    subtotal=subtotal
+        try:
+            with transaction.atomic():
+
+                cart = Cart.objects.select_for_update().get(user=user)
+
+                cart_items = (
+                    cart.items
+                    .select_related("item")
+                    .select_for_update()
                 )
 
-                total_amount += subtotal
+                if not cart_items.exists():
+                    return Response(
+                        {"error": "Cart is empty"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-            # ✅ Finalize order total
-            delivery_fee = 5000
-            order.total = total_amount + delivery_fee
-            order.save()
+                order = Order.objects.create(
+                    user=user,
+                    **serializer.validated_data,
+                )
 
-            # ✅ Clear cart
-            cart_items.delete()
+                subtotal = 0
 
-        return Response(
-            {
-                "message": "Order placed successfully",
-                "order_id": order.id,
-                "total": order.total,
-                "status": order.status,
-            },
-            status=status.HTTP_201_CREATED
-        )
+                for ci in cart_items:
+                    item = ci.item
 
-    except Cart.DoesNotExist:
-        return Response(
-            {"error": "Cart not found"},
-            status=status.HTTP_404_NOT_FOUND
-        )
+                    if ci.quantity > item.stock:
+                        return Response(
+                            {"error": f"{item.name} is out of stock"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    price = item.current_price
+                    quantity = ci.quantity
+                    line_total = price * quantity
+
+                    order.items.create(
+                        item=item,
+                        quantity=quantity,
+                        price=price,
+                        subtotal=line_total,
+                    )
+
+                    item.stock = F("stock") - quantity
+                    item.save(update_fields=["stock"])
+
+                    subtotal += line_total
+
+                order.subtotal = subtotal
+                order.delivery_fee = 0 if subtotal > 50000 else 5000
+                order.total = subtotal + order.delivery_fee
+                order.save()
+
+                cart_items.delete()
+
+            return Response(
+                OrderSerializer(order, context={"request": request}).data,
+                status=status.HTTP_201_CREATED,
+            )
+
+        except Cart.DoesNotExist:
+            return Response(
+                {"error": "Cart not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )

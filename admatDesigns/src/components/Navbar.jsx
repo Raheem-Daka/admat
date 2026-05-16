@@ -3,7 +3,7 @@ import { FaCartPlus, FaTimes, FaUser } from "react-icons/fa";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ProfileDropdown from "./ProfileDropdown";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../utils/authKeys";
-import { useAuth } from "../utils/AuthContent";
+import { useAuth } from "../utils/AuthContext";
 
 const Navbar = () => {
   
@@ -33,7 +33,7 @@ const Navbar = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <nav className="flex items-center w-full justify-between px-6 py-4 text-white bg-indigo-700">
+    <nav className="flex items-center w-full justify-between px-6 py-4 text-white bg-indigo-600">
       <Link to="/">
         <h1 className="text-2xl font-bold">admatFurniture</h1>
       </Link>

@@ -78,7 +78,9 @@ const Hero = () => {
         <button 
         className="rounded-full animate-bounce p-2 bg-indigo-700 text-white hover:bg-indigo-800 active:scale-95 transition"
         onClick={scrollToProducts}
-        ><FaArrowDown size={32}/></button>
+        >
+          <FaArrowDown size={32}/>
+        </button>
       </div>
     </section>
   );

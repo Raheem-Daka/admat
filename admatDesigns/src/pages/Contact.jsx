@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FaCheckCircle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -10,16 +14,24 @@ const Contact = () => {
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/contact/")
+    fetch(`${API_BASE}/contact/`)
       .then((response) => response.json())
-      .then((data) => {
-
-        setMessage(data.message);
-      })
+      .then((data) => setMessage(data.message))
       .catch((error) => console.error("Error fetching message:", error));
   }, []);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const token = user?.token;
+
+    if (!token) {
+      toast.error("Session expired. Please sign in again.");
+      navigate("/signin");
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,16 +50,29 @@ const Contact = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
       setErrors({});
-      setSubmitted(true);
-      console.log("Form submitted:", formData);
-      // TODO: integrate with backend API (POST request)
+      try {
+        const response = await fetch(`${API_BASE}/api/contact/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (response.ok) {
+          setSubmitted(true);
+          setFormData({ name: "", email: "", message: "" }); // reset form
+        } else {
+          toast.error("Failed to submit message.");
+        }
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        toast.error("Something went wrong.");
+      }
     }
   };
 
@@ -68,7 +93,7 @@ const Contact = () => {
               className="bg-white w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
             />
             {errors.name && (
-              <span className="text-red-500 text-sm">{errors.name}</span>
+              <span className="bg-red-600 rounded mt-2 text-white p-1 text-sm">{errors.name}</span>
             )}
           </div>
 
@@ -82,7 +107,7 @@ const Contact = () => {
               className="bg-white w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
             />
             {errors.email && (
-              <span className="text-red-500 text-sm">{errors.email}</span>
+              <span className="bg-red-600 rounded mt-2 text-white p-1 text-sm">{errors.email}</span>
             )}
           </div>
 
@@ -95,7 +120,7 @@ const Contact = () => {
               className="bg-white w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300 min-h-[100px]"
             />
             {errors.message && (
-              <span className="text-red-500 text-sm">{errors.message}</span>
+              <span className="bg-red-600 rounded mt-2 text-white p-1 text-sm">{errors.message}</span>
             )}
           </div>
 
@@ -108,20 +133,19 @@ const Contact = () => {
         </form>
       </div>
 
-      {/* Success Modal */}
       {submitted && (
         <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
-          <div className="w-full h-full rounded-lg flex flex-col items-center justify-center text-center max-w-md w-full p-6">
+          <div className="rounded-lg flex flex-col items-center justify-center text-center max-w-md w-full p-6">
             <FaCheckCircle className="text-green-500 text-5xl mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2 text-gray-800">
-              Thank You!
-            </h2>
+            <h2 className="text-xl font-bold mb-2 text-gray-800">Thank You!</h2>
             <p className="text-gray-600 mb-6">
-              Your message has been successfully submitted. We’ll get back to
-              you soon.
+              Your message has been successfully submitted. We’ll get back to you soon.
             </p>
             <button
-              onClick={() => setSubmitted(false)}
+              onClick={() => {
+                setSubmitted(false);
+                // navigate("/");
+              }}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
             >
               Close

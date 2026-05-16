@@ -74,6 +74,8 @@ class ItemSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    imageUrl = serializers.ImageField(source="image", read_only=True)
+
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'slug', 'imageUrl', 'created_at', 'updated_at']

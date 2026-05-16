@@ -33,7 +33,7 @@ const ProductDetails = () => {
         return;
       }
 
-      const res = await fetch(`${API_BASE}/api/cart/`, {
+      const res = await fetch(`${API_BASE}/cart/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,7 +77,7 @@ const ProductDetails = () => {
   useEffect(() => {
     setLoading(true);
 
-    fetch(`${API_BASE}/api/product/${id}/${slug}/`)
+    fetch(`${API_BASE}/product/${id}/${slug}/`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to load item");
         setLoading(true);

@@ -12,10 +12,10 @@ const Products = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/products/`)
+    fetch(`${API_BASE}/products/`)
       .then(res => res.json())
       .then(data => {
-        setItems(Array.isArray(data) ? data : []);
+        setItems(data.results || []);
         setLoading(false);
       })
       .catch(err => {
@@ -30,7 +30,7 @@ const Products = () => {
   };
 
   return (
-    <div className="px-6">
+    <div className="px-10">
       <h1 className="text-4xl font-bold text-center pt-10">
         All Products
       </h1>
@@ -54,9 +54,10 @@ const Products = () => {
             mt-10
             grid
             grid-cols-1
-            sm:grid-cols-2
+            sm:grid-cols-3
             md:grid-cols-4
-            lg:grid-cols-8
+            lg:grid-cols-6
+            xl:grid-cols-7
             gap-3
           "
         >
