@@ -4,6 +4,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const SignUp = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +23,7 @@ const SignUp = () => {
 
   const mutation = useMutation({
     mutationFn: async (formData) => {
-      const res = await fetch("http://127.0.0.1:8000/api/signup/", {
+      const res = await fetch(`${API_BASE}/signup/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

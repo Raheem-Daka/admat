@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from .models import Order, OrderItem
 
 
@@ -13,21 +14,56 @@ class OrderItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
 
+    actions = ["mark_as_processing", "mark_as_delivered", "mark_as_cancelled"]
+
+    # ✅ Actions
+    def mark_as_processing(self, request, queryset):
+        queryset.update(status="Processing")
+    mark_as_processing.short_description = "Mark selected orders as Processing"
+
+    def mark_as_delivered(self, request, queryset):
+        queryset.update(status="Delivered")
+    mark_as_delivered.short_description = "Mark selected orders as Delivered"
+
+    def mark_as_cancelled(self, request, queryset):
+        queryset.update(status="Cancelled")
+    mark_as_cancelled.short_description = "Mark selected orders as Cancelled"
+
+    # ✅ Colored status
+    def colored_status(self, obj):
+        colors = {
+            "Pending": "gray",
+            "Processing": "orange",
+            "Delivered": "green",
+            "Cancelled": "red",
+        }
+        return format_html(
+            '<b style="color:{};">{}</b>',
+            colors.get(obj.status, "black"),
+            obj.status,
+        )
+    colored_status.short_description = "Status"
+
+    # ✅ Display
     list_display = (
         "id",
         "user",
-        "status",
+        "full_name",
+        "phone",
+        "colored_status",
         "payment_method",
         "total",
         "created_at",
     )
 
+    # ✅ Filters
     list_filter = (
         "status",
         "payment_method",
         "created_at",
     )
 
+    # ✅ Search
     search_fields = (
         "id",
         "user__username",
@@ -37,7 +73,9 @@ class OrderAdmin(admin.ModelAdmin):
 
     ordering = ("-created_at",)
 
+    # ✅ Protect fields
     readonly_fields = (
+        "user",
         "subtotal",
         "delivery_fee",
         "total",

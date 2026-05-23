@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { apiFetch } from "../api/api";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -15,23 +16,20 @@ const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
-    fetch(`${API_BASE}/contact/`)
-      .then((response) => response.json())
-      .then((data) => setMessage(data.message))
-      .catch((error) => console.error("Error fetching message:", error));
+    const fetchMessage = async () => {
+      try {
+        const data = await apiFetch('/contact/');
+        setMessage(data.message);
+      } catch (error) {
+        console.error("Error fetching message:", error);
+      }
+    };
+
+    fetchMessage();
   }, []);
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const token = user?.token;
-
-    if (!token) {
-      toast.error("Session expired. Please sign in again.");
-      navigate("/signin");
-    }
-  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,28 +50,30 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-    } else {
+      return
+    } 
       setErrors({});
+      setSending(true);
+
       try {
-        const response = await fetch(`${API_BASE}/api/contact/`, {
+        await apiFetch("/contact/", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
-        if (response.ok) {
           setSubmitted(true);
           setFormData({ name: "", email: "", message: "" }); // reset form
-        } else {
-          toast.error("Failed to submit message.");
-        }
+          toast.success("Message sent");
+
       } catch (error) {
         console.error("Error submitting form:", error);
         toast.error("Something went wrong.");
+      }finally {
+        setSending(false)
       }
-    }
   };
 
   return (
@@ -125,10 +125,11 @@ const Contact = () => {
           </div>
 
           <button
+            disabled={sending}
             type="submit"
             className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
           >
-            Submit
+            {sending ? "Sending.." : "Submit"}
           </button>
         </form>
       </div>

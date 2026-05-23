@@ -28,7 +28,7 @@ class Category(models.Model):
 
     name = models.CharField(max_length=100, choices=FURNITURE_CATEGORY_CHOICES)
     slug = models.SlugField(unique=True, blank=True)
-    image = models.ImageField(upload_to="category_images/"),
+    image = models.ImageField(upload_to="category_images/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -52,7 +52,8 @@ class Item(models.Model):
     image = models.ImageField(upload_to="design_images/", blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     slug = models.SlugField(unique=True, blank=True)
-
+    stock = models.PositiveIntegerField(default=0)
+    is_available = models.BooleanField(default=True)
     purchase_count = models.IntegerField(default=0)
     views = models.IntegerField(default=0)
     

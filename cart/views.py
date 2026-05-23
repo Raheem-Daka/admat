@@ -21,7 +21,14 @@ class CartView(APIView):
 
     def post(self, request):
         item_id = request.data.get("item_id")
-        quantity = int(request.data.get("quantity", 1))
+
+        try:
+            quantity = int(request.data.get("quantity", 1))
+        except (TypeError, ValueError):
+            return Response(
+                {"error" : "Quantity must be a number"},
+                status-status.HTTP_400_BAD_REQURST
+            )
 
         if not item_id or quantity <= 0:
             return Response(
@@ -37,9 +44,11 @@ class CartView(APIView):
             item=item
         )
 
-        cart_item.quantity = (
-            cart_item.quantity + quantity if not created else quantity
-        )
+        if created:
+            cart_item.quantity = quantity
+        else:
+            cart_item.quantity += quantity
+
         cart_item.save()
 
         return Response(
@@ -74,7 +83,11 @@ class CartItemUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, item_id):
-        quantity = int(request.data.get("quantity", 1))
+        try:
+            quantity = int(request.data.get("quantity", 1))
+        except (TypeError, ValueError):
+            {"error": "Quantiry must be a number"},
+            status=status.HTTP_400_BAD_REQUEST
 
         if quantity <= 0:
             return Response(
@@ -83,6 +96,7 @@ class CartItemUpdateView(APIView):
             )
 
         cart = get_object_or_404(Cart, user=request.user)
+        
         cart_item = get_object_or_404(
             CartItem,
             cart=cart,

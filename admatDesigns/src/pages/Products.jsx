@@ -3,24 +3,35 @@ import DesignCard from "../components/DesignCard";
 import { useNavigate } from "react-router-dom";
 import CategoryList from "../components/CartegoryList";
 import SearchComponent from "../components/SearchComponent";
+import LoadingSkeleton from "../components/LoadingSkeleton";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Products = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const start = Date.now();
+
     fetch(`${API_BASE}/products/`)
       .then(res => res.json())
       .then(data => {
-        setItems(data.results || []);
-        setLoading(false);
+
+        const delay = Math.max(800 - (Date.now() - start), 0);
+
+        setTimeout(() => {
+          setItems(data.results || []);
+          setLoading(false);
+        }, delay);
       })
       .catch(err => {
         console.error(err);
-        setLoading(false);
+        setTimeout(() => {
+          setLoading(false);
+        }, 1000);
       });
   }, []);
 
@@ -46,8 +57,10 @@ const Products = () => {
         </div>
       </div>
 
-      {loading ? (
-        <p className="text-center text-gray-500 mt-10">Loading...</p>
+    {loading ? (
+      <LoadingSkeleton className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse" />
+      ) : error ? (
+        <p className="text-center text-red-500 mt-10">{error}</p>
       ) : (
         <div
           className="

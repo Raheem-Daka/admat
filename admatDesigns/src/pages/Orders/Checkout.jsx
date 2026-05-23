@@ -40,11 +40,12 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
       if (formData.payment_method === "cod") {
         await axios.post(
-          `${API_BASE}/api/orders/`,
+          `${API_BASE}/orders/`,
           formData,
           {
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
           }
         );
@@ -59,6 +60,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       }
 
     } catch (error) {
+      console.log("ERROR RESPONSE:", error.response?.data);
       toast.error("Failed to place order");
     } finally {
       setPlacingOrder(false);

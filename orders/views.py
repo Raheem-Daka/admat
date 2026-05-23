@@ -2,14 +2,18 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from item.models import Item
+from rest_framework.exceptions import ValidationError
 
 from .models import Order
 from .serializers import OrderSerializer, CreateOrderSerializer
 from cart.models import Cart
 from django.db import transaction
+from tracking.models import Track
 
 from django.conf import settings
 from django.db.models import F
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your views here.
 class OrdersViewSet(viewsets.ModelViewSet):
@@ -60,10 +64,7 @@ class OrdersViewSet(viewsets.ModelViewSet):
                     item = ci.item
 
                     if ci.quantity > item.stock:
-                        return Response(
-                            {"error": f"{item.name} is out of stock"},
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
+                        raise ValidationError(f"{item.name} is out of stock")
 
                     price = item.current_price
                     quantity = ci.quantity
@@ -76,15 +77,22 @@ class OrdersViewSet(viewsets.ModelViewSet):
                         subtotal=line_total,
                     )
 
-                    item.stock = F("stock") - quantity
-                    item.save(update_fields=["stock"])
-
+                    #item.stock = F("stock") - quantity
+                    #item.save(update_fields=["stock"])
+                    item.objects.filter(id=item.id).update(stock=F("stock") - quantity)
                     subtotal += line_total
 
                 order.subtotal = subtotal
                 order.delivery_fee = 0 if subtotal > 50000 else 5000
                 order.total = subtotal + order.delivery_fee
                 order.save()
+
+                # Auto create Track
+                track = Track.objects.create(
+                    order=order,
+                    status="pending",
+                    estimated_delivery=timezone.now().date() + timedelta(days=3)
+                )
 
                 cart_items.delete()
 

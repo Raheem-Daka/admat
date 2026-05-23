@@ -3,6 +3,8 @@ from .models import Item, Category, Discount, ItemImages
 
 
 class DiscountSerializer(serializers.ModelSerializer):
+    discounts = serializers.SerializerMethodField()
+    
     class Meta:
         model = Discount
         ordering = ["-start_date"]
@@ -33,7 +35,8 @@ class ItemImagesSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         request = self.context.get("request")
-        if rep.get("imageUrl") and request:
+
+        if instance.image and request:
             rep["imageUrl"] = request.build_absolute_uri(rep["imageUrl"])
         return rep
 
@@ -56,6 +59,7 @@ class ItemSerializer(serializers.ModelSerializer):
             'imageUrl',
             'images',
             'slug',
+            'stock',
             'created_at',
             'updated_at',
             'current_price',
@@ -67,15 +71,22 @@ class ItemSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         request = self.context.get("request")
-        if rep.get("imageUrl") and request:
+
+        if instance.image and request:
             rep["imageUrl"] = request.build_absolute_uri(rep["imageUrl"])
         return rep
 
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    imageUrl = serializers.ImageField(source="image", read_only=True)
+    imageUrl = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
         fields = ['id', 'name', 'slug', 'imageUrl', 'created_at', 'updated_at']
+
+    def get_imageUrl(self, obj):
+        request = self.context.get("request")
+        if obj.image and hasattr (obj.image, "url"):
+            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+        return None

@@ -10,7 +10,7 @@ class DiscountAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('category', 'name','image', 'price', 'slug',  'created_at', 'updated_at')
+    list_display = ('category', 'name', 'price',  'created_at', 'updated_at')
     search_fields = ('name', 'description', 'price')
     list_filter = ('created_at', 'updated_at')
     ordering = ('-created_at',)
@@ -18,7 +18,7 @@ class ItemAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('category','name','image', 'description', 'price')
+            'fields': ('category','name','image', 'description', 'price', 'stock')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -49,7 +49,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('name', 'slug')
+            'fields': ('name', 'slug', 'image')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),

@@ -23,6 +23,7 @@ const Payments = () => {
 
     if (!token) {
       toast.error("Not authenticated, Please Sign In to continue.");
+      navigate("/signin")
       return;
     }
 

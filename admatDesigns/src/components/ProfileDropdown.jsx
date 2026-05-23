@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../utils/AuthContext";
 import { toast } from "sonner";
+import { User2Icon, Key, Package } from "lucide-react";
 
 const ProfileDropdown = ({ close }) => {
   const ref = useRef(null);
@@ -9,9 +10,9 @@ const ProfileDropdown = ({ close }) => {
   const { logout, user } = useAuth(); // assuming AuthContext provides user
 
   const options = [
-    { label: "Account", path: "/account" },
-    { label: "Cart", path: "/cart" },
-    { label: "Orders", path: "/orders" },
+    { label: "Account", path: "/account", icon: Key },
+    { label: "Profile", path: "/profile", icon: User2Icon},
+    { label: "Orders", path: "/orders", icon: Package },
   ];
 
   useEffect(() => {
@@ -34,6 +35,7 @@ const ProfileDropdown = ({ close }) => {
     if (!user) {
       toast.error("You must be signed in to access this page.");
       close();
+      navigate("/signin")
       return;
     }
     close();

@@ -37,7 +37,7 @@ const DesignCard = ({ item, onClick }) => {
       className="
         border border-zinc-200 hover:border-zinc-300
         transition-colors rounded-xl p-2
-        sm:w-42 md:w-44 lg:w-48
+        sm:w-44 md:w-46 lg:w-48
         flex flex-col cursor-pointer bg-white
       "
     >
@@ -45,10 +45,10 @@ const DesignCard = ({ item, onClick }) => {
       <div className="relative flex items-start justify-center h-32 mb-1">
         {discountPercent !== null && (
           <span className="absolute top-2 text-white text-xs flex">
-            <span className="bg-white text-red-500 border px-1 rounded-l line-through">
+            <span className="flex items-center bg-white text-red-500 border px-1 rounded-l line-through">
               MWK {item.price}
             </span>
-            <span className="bg-red-600 px-1 rounded-r">
+            <span className="flex items-center bg-red-600 px-1 rounded-r py-1">
               {discountPercent}% OFF
             </span>
           </span>
@@ -59,7 +59,6 @@ const DesignCard = ({ item, onClick }) => {
           className="min-h-full max-w-full object-cover"
           onError={(e) => (e.currentTarget.src = "/placeholder.png")}
         />     
-      
       </div>
 
       {/* Name */}

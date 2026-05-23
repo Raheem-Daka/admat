@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ACCESS_TOKEN_KEY } from "../../utils/authKeys";
+import ProfileSidePanel from "../../components/ProfileSidePanel";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -28,8 +29,10 @@ const Orders = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+      
+      console.log(res.data?.results || res.data)
 
-      setOrders(res.data || []);
+      setOrders(res.data?.results || res.data || []);
     } catch (err) {
       if (err.response?.status === 401) {
         localStorage.removeItem(ACCESS_TOKEN_KEY);
@@ -44,73 +47,105 @@ const Orders = () => {
   };
 
   const handleNavigation = (order) => {
-    navigate(`/order_details/${order.id}`);
+    navigate(`/order-details/${order.id}`);
   }
 
-  if (loading) return <p className="p-6">Loading orders…</p>;
+  const handleTrackButton = (orderId) => {
+    navigate(`/orders-tracking?order=${orderId}`)
+  }
+
+  if (loading) return <p className="p-6 text-center animate-pulse text-gray-500">
+    Loading your orders...
+  </p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">My Orders</h1>
+    <div className="flex min-h-screen">
+      <ProfileSidePanel />
+      <div className="px-5 w-full">
+        <h1 className="text-3xl font-bold py-10">My Orders</h1>
 
-      {orders.length === 0 ? (
-        <p className="text-gray-500 text-center">
-          You haven’t placed any orders yet.
-          <br />
-          <button
-            onClick={() => navigate("/products")}
-            className="mt-4 text-indigo-600 rounded text-white bg-indigo-600 p-2"
-          >
-            Start shopping
-          </button>
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order) => {
-            const statusColor = {
-              Delivered: "text-green-600",
-              Processing: "text-yellow-600",
-              Pending: "text-blue-600",
-              Cancelled: "text-red-600",
-            }[order.status] || "text-gray-600";
+        {orders.length === 0 ? (
+          <p className="text-gray-500 text-center">
+            You haven’t placed any orders yet.
+            <br />
+            <button
+              onClick={() => navigate("/products")}
+              className="mt-4 text-indigo-600 rounded text-white bg-indigo-600 p-2"
+            >
+              Start shopping
+            </button>
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {orders.map((order) => {
+              const statusColor = {
+                Delivered: "text-green-600",
+                Processing: "text-yellow-600",
+                Pending: "text-blue-600",
+                Cancelled: "text-red-600",
+              }[order.status] || "text-gray-600";
 
-            return (
-              <div
-                key={order.id}
-                className="border rounded-xl p-4 bg-white shadow-sm flex flex-col sm:flex-row justify-between gap-4"
-              >
-                {/* Order Info */}
-                <div>
-                  <p className="font-semibold">Order #{order.id}</p>
-                  <p className="text-sm text-gray-500">
-                    Date:{" "}
-                    {new Date(order.created_at).toLocaleDateString()}
-                  </p>
-                  <p className="text-sm">
-                    Status:{" "}
-                    <span className={`font-semibold ${statusColor}`}>
-                      {order.status}
-                    </span>
-                  </p>
+              return (
+                <div
+                  key={order.id}
+                  className="flex items-center border rounded-xl p-4 bg-white shadow-sm flex flex-col sm:flex-row justify-between gap-4"
+                >
+                  {/* Order Info */}
+                  <div className="r">
+                    <p className="font-semibold">Order #{order.id}</p>
+                    <p className="text-sm text-gray-500">
+                      Date:{" "}
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm mt-2">
+                      Status:{" "}
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold bg-opacity-20 ${
+                        {
+                          Delivered: "bg-green-100 text-green-700",
+                          Processing: "bg-yellow-100 text-yellow-700",
+                          Pending: "bg-blue-100 text-blue-700",
+                          Cancelled: "bg-red-100 text-red-700",
+                        }[order.status] || "bg-gray-100 text-gray-700"
+                      }`}>
+                        {order.status}
+                      </span>
+                    </p>
+                  </div>
+
+                  {/* Shipping Address & name of customer */}
+                  <div className="text-sm text-gray-600">
+                    <p className="font-semibold">{order.full_name}</p>
+                    <p>{order.address}</p>
+                    <p className="font-light text-sm"> {order.city}</p>
+                  </div>
+
+                  {/* Order Total */}
+                  <div className="flex flex-col items-start sm:items-end">
+                    <p className="font-bold text-lg text-indigo-600">
+                      MWK {Number(order.total || 0).toLocaleString()}
+                    </p>
+                    <div className="flex gap-1 items-center">
+                      <button
+                        onClick={() => handleNavigation(order)}
+                        className="cursor-pointer mt-2 px-4 py-2 border rounded hover:bg-indigo-600 hover:text-white transition"
+                      >
+                        View Order
+                      </button>
+                      <button
+                      onClick={() => handleTrackButton(order.id)}
+                        className="cursor-pointer mt-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+                      >
+                        Track Order
+                      </button>
+
+                    </div>
+                  </div>
                 </div>
-
-                {/* Order Total */}
-                <div className="flex flex-col items-start sm:items-end">
-                  <p className="font-bold text-lg text-indigo-600">
-                    MWK {Number(order.total).toLocaleString()}
-                  </p>
-                  <button
-                    onClick={() => handleNavigation(order)}
-                    className="mt-2 px-4 py-2 border rounded hover:bg-indigo-600 hover:text-white transition"
-                  >
-                    View Order
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

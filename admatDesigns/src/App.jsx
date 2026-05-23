@@ -21,7 +21,7 @@ import Settings from "./pages/User/Settings";
 
 import Cart from "./pages/Orders/Cart";
 import Orders from "./pages/Orders/Orders";
-import OrderDetail from "./pages/Orders/OrderDetails";
+import OrderDetails from "./pages/Orders/OrderDetails";
 import Payments from "./pages/Orders/Payments";
 import Checkout from "./pages/Orders/Checkout";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -30,8 +30,11 @@ import { ACCESS_TOKEN_KEY } from "./utils/authKeys";
 import { useAuth } from "./utils/AuthContext";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import AccountPage from "./pages/AccountPage";
-import OurPopularProducts from "./components/OurPopularProductsComponent";
+import PopularProducts from "./pages/PopularProducts";
 import SearchPage from "./pages/SearchPage";
+import Cards from "./pages/User/Cards";
+import Tracking from "./pages/User/Tracking";
+import Addresses from "./pages/User/Addresses";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -92,21 +95,23 @@ function App() {
             <Route path="/discount_products" element={<DiscountProducts />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/our_popular_products" element={<OurPopularProducts />} />
+            <Route path="/popular-products" element={<PopularProducts />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="*" element={<NotFoundPage />} />
 
             {/* ✅ Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/cart" element={<Cart />} />
               <Route path="/account" element={<AccountPage />} />
               <Route path="/orders" element={<Orders />} />
-              <Route path="/order_details/:id" element={<OrderDetail />} />
+              <Route path="/order-details/:id" element={<OrderDetails />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/payments" element={<Payments />} />
-
+              <Route path="/card-details" element={<Cards />} />
+              <Route path="/orders-tracking" element={<Tracking />} />
+              <Route path="/addresses" element={<Addresses />} />
             </Route>
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
       </div>

@@ -13,3 +13,23 @@ const handleScrollDown = () => {
 const handleScrollDown = () => {
   window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
 };
+
+
+admin Styles
+pip install django-grappelli
+pip install django-suit
+pip install django-admin-interface
+
+pip install django-jazzmin
+INSTALLED_APPS = [
+    "jazzmin",   # must be BEFORE django.contrib.admin
+    "django.contrib.admin",
+]
+JAZZMIN_SETTINGS = {
+    "theme": "darkly",  # try also: flatly, minty, cosmo
+    "site_title": "My Shop Admin",
+    "site_header": "My Shop Dashboard",
+    "welcome_sign": "Welcome Admin",
+}
+
+daphne webapp.asgi:application

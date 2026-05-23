@@ -160,6 +160,7 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
 
         items = (
             self.get_queryset()
+            .filter(Q(purchase_count__gt=0) | Q(views__gt=10))
             .annotate(score=F("purchase_count") * 3 + F("views"))
             .order_by("-score")[:8]
         )

@@ -23,8 +23,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = (
+        fields = (            
             "id",
+            "full_name",       
+            "phone",            
+            "address",          
+            "city",             
             "status",
             "payment_method",
             "subtotal",
@@ -32,6 +36,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "total",
             "created_at",
             "items",
+
         )
 
 class CreateOrderSerializer(serializers.Serializer):

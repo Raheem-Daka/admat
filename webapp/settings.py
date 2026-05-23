@@ -43,8 +43,19 @@ INSTALLED_APPS = [
     'contact',
     'authentication',
     'cart',
-    'orders'
+    'orders',
+    'account',
+    'tracking',
+    'channels',
 ]
+
+ASGI_APPLICATION = 'webapp.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

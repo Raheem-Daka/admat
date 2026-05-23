@@ -33,7 +33,7 @@ const SignIn = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/api/signin/`, {
+      const res = await fetch(`${API_BASE}/signin/`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json" 
@@ -50,9 +50,16 @@ const SignIn = () => {
       }        
         login(data.access);
         toast.success("Signed in successfully")
-        setTimeout(() => {
-          navigate("/", {replace : true });
-        }, 0)
+
+        const lastPath = localStorage.getItem("lastPath");
+
+        if (lastPath) {
+          localStorage.removeItem("lastPath");
+            navigate(lastPath, { replace: true });
+        } else {
+            navigate("/", {replace : true });
+        }
+
     } catch (err) {
       setError(err.message);
     } finally {

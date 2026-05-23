@@ -28,8 +28,8 @@ const CategoryProducts = () => {
       .catch(() => setLoading(false));
   }, [slug]);
 
-  const handleNavigate = (item) => {
-    navigate(`/products/${item.id}/${item.slug}/`)
+  const handleNavigateToItem = (item) => {
+    navigate(`/product/${item.id}/${item.slug}`)
   }
 
   return (
@@ -55,12 +55,12 @@ const CategoryProducts = () => {
           No products found in this category...
         </p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 xl:grid-cols-8 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4 py-10 px-10">
           {items.map((item) => (
             <DesignCard 
             key={item.id} 
             item={item} 
-            onClick={() => handleNavigate(item)}/>
+            onClick={() => handleNavigateToItem(item)}/>
           ))}
         </div>
       )}
