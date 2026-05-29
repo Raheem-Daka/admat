@@ -30,7 +30,7 @@ const About = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex-grow px-6 py-12">
+      <main className="flex-grow px-6">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-gray-800 mb-6">
             About AdmatFurniture
@@ -78,7 +78,7 @@ const About = () => {
            <h1 className="text-4xl font-bold text-gray-800 mb-6">
             Where to find us
           </h1>
-          <div className="w-full min-h-[50px] flex items-center justify-center rounded-lg overflow-hidden">
+          <div className="w-full min-h-[50px] flex items-center justify-center rounded-lg overflow-hidden px-5">
             <iframe
               title="AdmatFurniture Location"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509374!2d144.953736315316!3d-37.81627977975195!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad642af0f11fd81%3A0xf577d9a651e5e0!2sFederation%20Square%2C%20Melbourne%20VIC%203000%2C%20Australia!5e0!3m2!1sen!2sus!4v1618317045678!5m2!1sen!2sus"
@@ -99,7 +99,7 @@ const About = () => {
             <p className="text-gray-700 mb-6">{modalContent}</p>
             <button
               onClick={() => setModalOpen(false)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+              className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-500 transition"
             >
               Close
             </button>

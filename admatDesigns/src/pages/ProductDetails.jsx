@@ -4,6 +4,7 @@ import DesignCard from "../components/DesignCard";
 import placeHolder from "../assets/placeHolder.png";
 import {toast} from "sonner"
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../utils/authKeys";
+import { apiFetch } from "../api/api";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -77,7 +78,7 @@ const ProductDetails = () => {
   useEffect(() => {
     setLoading(true);
 
-    fetch(`${API_BASE}/product/${id}/${slug}/`)
+    apiFetch(`/product/${id}/${slug}/`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to load item");
         setLoading(true);
@@ -103,7 +104,11 @@ const ProductDetails = () => {
       })
       .catch(err => {
         console.error(err);
-        setLoading(false);
+        setTimeout(() => {
+          navigate("/discounts");
+          setLoading(false);
+        }, 1500);
+       toast.error("Failed to load item details. Redirecting to discounts.");
       });
   }, [id, slug]);
 
@@ -140,7 +145,7 @@ const ProductDetails = () => {
           <img
             src={mainImage}
             alt={item.name}
-            className="w-full h-[420px] rounded-xl shadow-lg object-cover"
+            className="w-full xl:h-[420px] lg:h-[400px] md:h-[300px] sm:h-[250px] rounded-xl shadow-lg object-cover"
             onError={(e) => {
               e.currentTarget.src = placeHolder;
             }}
@@ -155,11 +160,11 @@ const ProductDetails = () => {
               ? img.imageUrl
               : `${API_BASE}${img.imageUrl}`;
 
-              return (
+              return ( 
                 <div
                   key={img.id || idx}
                   onClick={() => setMainImage(imgUrl)}
-                  className={`rounded-xl overflow-hidden cursor-pointer border-2 ${
+                  className={`rounded-xl xl:h-50 lg:h-48 md:h-44 sm:h-40 overflow-hidden cursor-pointer border-2 ${
                     mainImage === imgUrl
                       ? "border-indigo-500"
                       : "border-transparent"
@@ -168,7 +173,7 @@ const ProductDetails = () => {
                   <img
                     src={imgUrl}
                     alt={`${item.name} ${idx + 1}`}
-                    className="h-48 w-full object-cover rounded-lg transition"
+                    className="h-full w-full object-cover object-center rounded-lg transition"
                   />
                 </div>
               );

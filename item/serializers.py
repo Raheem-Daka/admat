@@ -3,7 +3,6 @@ from .models import Item, Category, Discount, ItemImages
 
 
 class DiscountSerializer(serializers.ModelSerializer):
-    discounts = serializers.SerializerMethodField()
     
     class Meta:
         model = Discount

@@ -94,7 +94,7 @@ const Hero = () => {
 
         {/* ✅ RIGHT SLIDER */}
         <div
-          className="hidden lg:flex overflow-hidden w-full max-w-lg relative"
+          className="hidden lg:flex overflow-hidden w-[full] max-w-3xl relative"
           onMouseEnter={() => setStopScroll(true)}
           onMouseLeave={() => setStopScroll(false)}
         >
@@ -117,7 +117,7 @@ const Hero = () => {
                 <div
                   key={index}
                   onClick={() => handleHeroImage(item)}
-                  className="lg:w-60 lg:h-[400px] mx-3 rounded-xl overflow-hidden shadow-lg relative group cursor-pointer hover:scale-105 transition"
+                  className="xl:w-72 xl:h-[500px] mx-3 rounded-xl overflow-hidden shadow-lg relative group cursor-pointer hover:scale-105 transition"
                 >
                   <img
                     src={item.imageUrl}

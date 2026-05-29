@@ -1,7 +1,22 @@
 from rest_framework import viewsets, permissions
-from .models import Address, Card
-from .serializers import AddressSerializer, CardSerializer
+from .models import Address, Billing, UserProfile, Account
+from .serializers import AddressSerializer, BillingSerializer, UserProfileSerializer, AccountSerializer 
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.contrib.auth.models import User
+import traceback
 
+def get_image_url(request, profile):
+    if profile.image:
+        try:
+            return request.build_absolute_uri(profile.image.url)
+        except:
+            return None
+    return None
 
 class AddressViewSet(viewsets.ModelViewSet):
     serializer_class = AddressSerializer
@@ -9,29 +24,110 @@ class AddressViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Address.objects.filter(
-            user=self.request.user
+            account__user=self.request.user
         ).order_by('-created_at')
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        account, _ = Account.objects.get_or_create(user=self.request.user)
+        serializer.save(account=account)
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
 
 
-class CardViewSet(viewsets.ModelViewSet):
-    serializer_class = CardSerializer
+class BillingViewSet(viewsets.ModelViewSet):
+    serializer_class = BillingSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Card.objects.filter(
-            user=self.request.user
+        return Billing.objects.filter(
+            account__user=self.request.user
         ).order_by('-created_at')
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        account, _ = Account.objects.get_or_create(user=self.request.user)
+        serializer.save(account=account)
 
     def perform_update(self, serializer):
-        serializer.save(user=self.request.user)
+        user = self.request.user
+        account, _ = Account.objects.get_or_create(user=user)
+        serializer.save(user=user, account=account)
+
+class AccountViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['get'])
+    def profile(self, request):
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        image_url = get_image_url(request, profile)
+
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "date_joined": user.date_joined,
+            "imageUrl": image_url,
+        })
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self, request):
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        image_url = get_image_url(request, profile)
+
+        return Response({
+            "username": user.username,
+            "email": user.email,
+            "imageUrl": image_url,
+        })
 
 
+    def patch(self, request):
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        print("FILES:", request.FILES)
+        print("DATA:", request.data)
+
+        try:
+            username = request.data.get("username")
+            email = request.data.get("email")
+
+            # ✅ FIX: check username availability
+            if username and username != user.username:
+                if User.objects.filter(username=username).exists():
+                    return Response(
+                        {"error": "Username already taken"},
+                        status=400
+                    )
+                user.username = username
+
+            if email:
+                user.email = email
+
+            user.save()
+
+            image = request.FILES.get("image")
+            if image:
+                profile.image = image
+                profile.save()
+                print("✅ IMAGE SAVED:", profile.image)
+
+            image_url = get_image_url(request, profile)
+
+            return Response({
+                "username": user.username,
+                "email": user.email,
+                "imageUrl": image_url,
+            }, status=200)
+
+        except Exception as e:
+            print("❌ PATCH ERROR:", e)
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=500)

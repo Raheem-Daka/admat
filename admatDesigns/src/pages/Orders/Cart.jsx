@@ -1,91 +1,78 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { apiFetch } from "../../api/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useCart } from "../../context/CartContext";
+import placeHolder from "../../assets/placeholder.png";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const resolveImageUrl = (url) => {
   if (!url) return "/placeholder.png";
-  return url.startsWith("http") ? url : `${API_BASE}${url}`;
+
+  const base = import.meta.env.VITE_API_BASE_URL.replace("/api", "");
+
+  return url.startsWith("http")
+    ? url
+    : `${base}${url}`;
 };
 
 const Cart = () => {
-  const [cart, setCart] = useState(null);
+  const { cart, fetchCart } = useCart();
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate()
-
-  const token = localStorage.getItem("access_token");
+  const navigate = useNavigate();
+  const [updating, setUpdating] = useState(null);
 
   useEffect(() => {
-    if (!token) {
-      setCart(null);
-      setLoading(false);
-      toast.info("Please sign in to view your cart.")
-      navigate("/signin")
-      return;
-    }
+    fetchCart().finally(() => 
+      setTimeout(() =>
+      setLoading(false)
+      , 1000)
+    );
+  }, []);
 
-    fetchCart(token);
-  }, [token]);
-
-  const fetchCart = async (authToken) => {
-    try {
-      const res = await axios.get(`${API_BASE}/cart/`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-      setCart(res.data);
-    } catch (err) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        setCart(null);
-      } else {
-        console.error("Failed to load cart", err.response?.data || err);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // ✅ PRODUCT ID (item.id)
   const updateQuantity = async (itemId, quantity) => {
     if (quantity < 1) return;
 
-    await axios.patch(
-      `${API_BASE}/cart/items/${itemId}/`,
-      { quantity },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    setUpdating(itemId);
 
-    fetchCart(token);
+    try {
+      await apiFetch(`/cart/items/${itemId}/`, {
+      method: "PATCH",
+      body: JSON.stringify({ quantity }),
+    });
+    fetchCart();
+    } finally {
+      setUpdating(null);
+    }
   };
 
+  // ✅ PRODUCT ID (item.id)
   const removeItem = async (itemId) => {
-    await axios.delete(
-      `${API_BASE}/cart/items/${itemId}/delete/`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
 
-    fetchCart(token);
+    setUpdating(itemId);
+
+    try {
+      await apiFetch(`/cart/items/${itemId}/delete/`, {
+        method: "DELETE",
+      });
+      fetchCart();
+    } finally {
+      setUpdating(null);
+    }
   };
 
-  if (loading) return <div className="p-6 text-center animate-pulse">Loading cart…</div>;
-
-  if (!token) {
-    return <div className="p-6 text-center">Please log in to view your cart 🔐</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center py-10">
+        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-3 text-gray-500">Loading cart items...</p>
+      </div>
+    );
   }
 
-  if (!cart || !Array(cart.items) || cart.items.length === 0) {
+  if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
     return <div className="p-6 text-center">Your cart is empty 🛒</div>;
   }
 
@@ -94,28 +81,32 @@ const Cart = () => {
     0
   );
 
-  const handleNavigate = () => {
-    navigate("/checkout")
-  }
-
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
 
       <div className="space-y-4">
         {cart.items.map((ci) => (
-          <div key={ci.id} className="flex gap-4 items-center border rounded-lg p-4">
+          <div
+            key={ci.id}
+            className="flex gap-4 items-center border rounded-lg p-4"
+          >
+            {/* ✅ Image */}
             <img
               src={resolveImageUrl(
                 ci.item.imageUrl ||
-                  (ci.item.images?.length ? ci.item.images[0].imageUrl : null)
+                  (ci.item.images?.length
+                    ? ci.item.images[0].imageUrl
+                    : placeHolder)
               )}
               alt={ci.item.name}
               className="w-24 h-24 object-cover rounded"
-              onError={(e) => (e.currentTarget.src = "/placeholder.png")}
             />
+
+            {/* ✅ Info */}
             <div className="flex-1">
               <h2 className="font-semibold">{ci.item.name}</h2>
+
               {Number(ci.item.current_price) !== Number(ci.item.price) ? (
                 <div className="text-sm">
                   <p className="text-red-500 line-through">
@@ -132,25 +123,32 @@ const Cart = () => {
               )}
             </div>
 
+            {/* ✅ Quantity */}
             <div className="flex items-center gap-2">
               <button
+              disabled={updating === ci.item.id}
                 onClick={() => updateQuantity(ci.item.id, ci.quantity - 1)}
-                className="px-3 py-1 border rounded"
+                className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 −
               </button>
+
               <span>{ci.quantity}</span>
+
               <button
+              disabled={updating === ci.item.id}
                 onClick={() => updateQuantity(ci.item.id, ci.quantity + 1)}
-                className="px-3 py-1 border rounded"
+                className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 +
               </button>
             </div>
 
+            {/* ✅ Remove */}
             <button
+              disabled={updating === ci.item.id}
               onClick={() => removeItem(ci.item.id)}
-              className="text-red-500 hover:underline ml-4 border px-2 py-1 rounded bg-red-600 text-white"
+              className="ml-4 px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Remove
             </button>
@@ -158,11 +156,16 @@ const Cart = () => {
         ))}
       </div>
 
+      {/* ✅ Total */}
       <div className="mt-8 flex justify-between items-center border-t pt-6">
-        <h2 className="text-xl font-semibold">Total: MWK {total.toFixed(2)}</h2>
-        <button 
-        className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700"
-        onClick={handleNavigate}>
+        <h2 className="text-xl font-semibold">
+          Total: MWK {total.toFixed(2)}
+        </h2>
+
+        <button
+          onClick={() => navigate("/checkout")}
+          className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700"
+        >
           Checkout
         </button>
       </div>

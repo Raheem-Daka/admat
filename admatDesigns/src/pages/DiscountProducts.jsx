@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import DesignCard from "../components/DesignCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import CategoryList from "../components/CartegoryList";
 import SearchComponent from "../components/SearchComponent";
+import { apiFetch } from "../api/api";
 
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -11,23 +12,34 @@ const DiscountProducts = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const category = searchParams.get("category")
 
   useEffect(() => {
-    fetch(`${API_BASE}/products/discounts/`)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Discount products API Response:", data);
-        setItems(data.items || []);
-      })
-      .catch((error) => {
-        console.error("Error fetching discount products:", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+    setLoading(true);
 
-  const handleNavigate = (id, slug) => {
+    const fetchData = async () => {
+      try {
+        let url = "/products/?has_discount=true";
+
+        if (category) {
+          url += `&category=${category}`;
+        }
+
+        const data = await apiFetch(url);
+
+        setItems(data.results || []);
+      } catch (err) {
+        console.error("Error fetching discount products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [category]);  
+  
+const handleNavigate = (id, slug) => {
     navigate(`/product/${id}/${slug}`);
   };
 

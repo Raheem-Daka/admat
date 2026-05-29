@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const login = (accessToken, refreshToken = null) => {
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
@@ -21,8 +22,11 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+
     setUser(null);
     setIsAuthenticated(false);
+
+    window.location.href = "/signin";
   };
 
   useEffect(() => {
@@ -34,10 +38,11 @@ export const AuthProvider = ({ children }) => {
     } else {
       setIsAuthenticated(false);
     }
+    setLoading(false);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

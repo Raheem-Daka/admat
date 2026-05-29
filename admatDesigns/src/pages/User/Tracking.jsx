@@ -199,13 +199,30 @@ const Tracking = () => {
             <FaArrowLeft />
             Back
           </button>
-          <p className={`text-xs mb-2 flex items-center gap-2 ${connected ? "text-green-600" : "text-red-500"}`}>
+
+          <div className={`flex items-center gap-2 text-xs mb-2 ${connected ? "text-green-600" : "text-red-500"}`}>
+
+            {/* CONNECTING (spinner) */}
             {!connected && (
-              <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+              <>
+                <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                <span>Connecting...</span>
+              </>
             )}
 
-            {connected ? "Live tracking connected ✅" : "Connecting..."}
-          </p>        
+            {/* CONNECTED (ping + dot + text) */}
+            {connected && (
+              <>
+                <span className="relative flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500"></span>
+                </span>
+
+                <span>Live tracking connected</span>
+              </>
+            )}
+
+          </div>
         </div>
 
         {/* LOADING */}
@@ -263,16 +280,20 @@ const Tracking = () => {
 
                           {/* PROGRESS WITH ICONS */}
                           <div className="flex items-center justify-between gap-2 mb-2">
-                            {statusSteps.map((step, index) => {
-                              const status = item.status?.toLowerCase() || "pending";
-                              const currentIndex = statusSteps.indexOf(status);
+                          {statusSteps.map((step, index) => {
+                            const status = item.status?.toLowerCase() || "pending";
+                            const currentIndex = statusSteps.indexOf(status);
 
-                              return (
-                                <div key={step} className="flex items-center">
+                            const isActive = index === currentIndex;
 
+                            return (
+                              <div key={step} className="flex flex-col items-center">
+
+                                {/* ICON + LINE */}
+                                <div className="flex items-center">
                                   <div
                                     className={`flex items-center justify-center w-6 h-6 rounded-full text-xs transition ${
-                                      index === currentIndex
+                                      isActive
                                         ? "bg-indigo-700 text-white scale-110"
                                         : index < currentIndex
                                         ? "bg-indigo-600 text-white"
@@ -292,26 +313,20 @@ const Tracking = () => {
                                     />
                                   )}
                                 </div>
-                              );
-                            })}
+
+                                {/* ✅ LABEL UNDER ICON */}
+                                {isActive && (
+                                  <div className="flex flex-col items-center gap-2 mt-1">
+                                    <span className="mt-1 text-[10px] text-indigo-700 font-semibold">
+                                      {step.replace("_", " ")}
+                                    </span>
+
+                                  </div>                            
+                                )}
+                              </div>
+                            );
+                          })}
                           </div>
-
-                          {/* LABELS */}
-                          <div className="flex justify-between text-[10px] text-gray-400 mb-2">
-                            {statusSteps.map(step => (
-                              <span key={step}>
-                                {step.replace("_"," ")}
-                              </span>
-                            ))}
-                          </div>
-
-                          {/* BADGE */}
-                          <span className={`px-2 py-1 rounded text-sm ${
-                            statusStyles[item.status?.toLowerCase()] || "bg-gray-100 text-gray-700"
-                          }`}>
-                            {item.status_display || item.status}
-                          </span>
-
                         </td>
 
                         <td className="p-3 border">
@@ -331,11 +346,14 @@ const Tracking = () => {
                                 item.events.map(event => (
                                   <div key={event.id} className="relative">
 
-                                    <div className="absolute -left-[9px] top-1 w-4 h-4 bg-indigo-500 rounded-full"></div>
+                                    <div className="flex items-center gap-2 mb-1 gap-2">
 
-                                    <p className="font-semibold capitalize text-sm">
-                                      {event.status.replace("_"," ")}
-                                    </p>
+                                      <div className="w-4 h-4 bg-indigo-500 rounded-full"></div>
+
+                                      <p className="font-semibold capitalize text-sm">
+                                        {event.status.replace("_"," ")}
+                                      </p>
+                                    </div>
 
                                     {event.description && (
                                       <p className="text-sm text-gray-500">

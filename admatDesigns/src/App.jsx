@@ -5,7 +5,6 @@ import { Toaster, toast } from "sonner";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
-// pages
 import Home from "./pages/Home";
 import Products from "./pages/Products";
 import Contact from "./pages/Contact";
@@ -16,7 +15,7 @@ import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
 import CategoryProducts from "./pages/CategoryProducts";
 
-import Account from "./pages/User/Account";
+import DashboardPage from "./pages/User/DashboardPage";
 import Settings from "./pages/User/Settings";
 
 import Cart from "./pages/Orders/Cart";
@@ -29,10 +28,11 @@ import NotFoundPage from "./pages/NotFoundPage";
 import { ACCESS_TOKEN_KEY } from "./utils/authKeys";
 import { useAuth } from "./utils/AuthContext";
 import ProtectedRoute from "./utils/ProtectedRoute";
-import AccountPage from "./pages/AccountPage";
+import Profile from "./pages/User/Profile";
+import AccountPage from "./pages/User/DashboardPage";
 import PopularProducts from "./pages/PopularProducts";
 import SearchPage from "./pages/SearchPage";
-import Cards from "./pages/User/Cards";
+import Billing from "./pages/User/Billing";
 import Tracking from "./pages/User/Tracking";
 import Addresses from "./pages/User/Addresses";
 
@@ -42,6 +42,7 @@ function App() {
   return (
     <>
       {/* auth state */}
+
       <Navbar isAuthenticated={isAuthenticated} />
 
       <Toaster
@@ -58,8 +59,8 @@ function App() {
         }}
       />
 
-      <div className="flex flex-col min-h-screen">
-        <main className="flex-grow">
+      <div className="flex flex-col min-h-screen z-0">
+        <main className="flex-grow pt-24">
           <Routes>
             {/* ✅ Auth routes */}
             <Route
@@ -101,15 +102,16 @@ function App() {
             {/* ✅ Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/cart" element={<Cart />} />
-              <Route path="/account" element={<AccountPage />} />
+              <Route path="/account/dashboard" element={<DashboardPage />} />
+              <Route path="/account/profile" element={<Profile />} />
+              <Route path="/account/settings" element={<Settings />} />
+              <Route path="/account/billing" element={<Billing />} />
+              <Route path="/account/addresses" element={<Addresses />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/order-details/:id" element={<OrderDetails />} />
-              <Route path="/settings" element={<Settings />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/payments" element={<Payments />} />
-              <Route path="/card-details" element={<Cards />} />
               <Route path="/orders-tracking" element={<Tracking />} />
-              <Route path="/addresses" element={<Addresses />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

@@ -42,23 +42,32 @@ const DesignCard = ({ item, onClick }) => {
       "
     >
       {/* Image */}
-      <div className="relative flex items-start justify-center h-32 mb-1">
+      <div className="relative flex items-start justify-center h-32 mb-1 rounded-lg">
+
+        {/* ✅ Discount Badge */}
         {discountPercent !== null && (
-          <span className="absolute top-2 text-white text-xs flex">
-            <span className="flex items-center bg-white text-red-500 border px-1 rounded-l line-through">
+          <div className="absolute top-2 flex items-center text-xs shadow-md z-10">
+
+            <span className="bg-white text-gray-500 px-1 py-1 font-semibold rounded-l line-through border-r">
               MWK {item.price}
             </span>
-            <span className="flex items-center bg-red-600 px-1 rounded-r py-1">
+
+            <span className="bg-red-600 text-white font-semibold px-1 py-1 rounded-r">
               {discountPercent}% OFF
             </span>
-          </span>
+
+          </div>
         )}
+
+        {/* ✅ Image */}
         <img
           src={imageSrc}
           alt={item.name}
-          className="min-h-full max-w-full object-cover"
+          loading="lazy"
+          className="w-full h-full object-center object-cover rounded-lg transition-transform duration-300 hover:scale-105"
           onError={(e) => (e.currentTarget.src = "/placeholder.png")}
-        />     
+        />
+        
       </div>
 
       {/* Name */}

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ACCESS_TOKEN_KEY } from "../../utils/authKeys";
 import { useAuth } from "../../utils/AuthContext";
+import { apiFetch } from "../../api/api";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -39,14 +40,10 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       const token = user?.token;
 
       if (formData.payment_method === "cod") {
-        await axios.post(
-          `${API_BASE}/orders/`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+        await apiFetch(
+          `${API_BASE}/orders/`,{
+            method: "POST",
+            formData,
           }
         );
 
@@ -77,14 +74,11 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
     }
 
     fetchCart(token);
-  }, [user]);
+  }, [user?.token]);
 
-  const fetchCart = async (token) => {
+  const fetchCart = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/cart/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await apiFetch(`${API_BASE}/cart/`, {
       });
 
       if (!res.data?.items?.length) {
@@ -97,18 +91,31 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
       setCart(res.data);
     } catch (err) {
+      console.error("Cart fetch error:", err);
+
+    if (error.response) {
+        console.log("SERVER ERROR:", error.response.data);
+      } else if (error.request) {
+        console.log("NO RESPONSE FROM SERVER");
+      } else {
+        console.log("REQUEST SETUP ERROR:", error.message);
+      }
+      
       toast.error("Failed to load checkout items");
       navigate("/cart");
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 800)
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        Loading checkout...
-      </div>
+          <div className="flex flex-col items-center justify-center py-10">
+            <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-3 text-gray-500">Loading checkout items...</p>
+          </div>
     );
   }  
   if (!cart) return null;
@@ -123,8 +130,13 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const total = Number(cart.total ?? subtotal + deliveryFee);
 
   return (
-    <div className="rounded-xl mt-20 px-6 py-5 bg-white shadow xl:w-4xl mx-auto text-center  items-center">
-      <h1 className="font-bold text-2xl text-center py-5">Checkout</h1>
+<form
+  onSubmit={(e) => {
+    e.preventDefault(); // ✅ prevent page reload
+    placeOrder();
+  }}
+  className="rounded-xl mt-20 px-6 py-5 bg-white shadow xl:w-4xl mx-auto text-center items-center"
+>      <h1 className="font-bold text-2xl text-center py-5">Checkout</h1>
       <div className="mb-6 space-y-3">
         <input
           type="text"
@@ -173,7 +185,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
           key={ci.id}
           className="flex justify-between mb-3 text-sm"
         >
-          <div>
+          <div className="flex flex-col items-start gap-3">
             <p className="font-medium">{ci.item.name}</p>
             <p className="text-gray-500">Qty: {ci.quantity}</p>
           </div>
@@ -218,13 +230,14 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       </div>
 
       <button
+      type="submit"
         onClick={placeOrder}
         disabled={placingOrder}
         className="mt-6 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
       >
         {placingOrder ? "Placing order..." : "Place order"}
       </button>
-    </div>
+    </form>
   );
 };
 

@@ -79,7 +79,7 @@ class OrdersViewSet(viewsets.ModelViewSet):
 
                     #item.stock = F("stock") - quantity
                     #item.save(update_fields=["stock"])
-                    item.objects.filter(id=item.id).update(stock=F("stock") - quantity)
+                    Item.objects.filter(id=item.id).update(stock=F("stock") - quantity)
                     subtotal += line_total
 
                 order.subtotal = subtotal
@@ -90,6 +90,7 @@ class OrdersViewSet(viewsets.ModelViewSet):
                 # Auto create Track
                 track = Track.objects.create(
                     order=order,
+                    user=user,
                     status="pending",
                     estimated_delivery=timezone.now().date() + timedelta(days=3)
                 )

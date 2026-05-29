@@ -11,6 +11,7 @@ import CategoryLayout from "../components/CategoryLayout";
 import OurPopularProducts from "../components/OurPopularProductsComponent";
 import NewsLetterComponent from "../components/NewsLetterComponent";
 import LoadingSkeleton from "../components/LoadingSkeleton";
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Home = () => {
@@ -59,11 +60,13 @@ const Home = () => {
 
       {/* ✅ Products section */}
       <section className="border-t border-slate-100 pb-5">
-        <h1 id="products" className="text-4xl font-bold text-center pt-5">
+        <h1 
+        id="products" 
+        className="text-4xl font-bold text-center pt-5">
           All Our Featured Products
         </h1>
 
-        <div className="text-center sticky bg-white top-0 z-10 py-1 w-full">
+        <div className="text-center sticky bg-white top-0 py-1 w-full">
           <SearchComponent />
         </div>
 

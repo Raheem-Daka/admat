@@ -4,6 +4,7 @@ import { useParams, useNavigate  } from "react-router-dom";
 import { toast } from "sonner";
 import { ACCESS_TOKEN_KEY } from "../../utils/authKeys";
 import { FaArrowLeft } from "react-icons/fa";
+import placeHolder from "../../assets/placeHolder.png";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -217,9 +218,9 @@ const OrderDetails = () => {
           >
             <div>
                 <img 
-                src={item.item_image} 
+                src={item.item_image || placeholder } 
                 alt=""
-                className="w-14 object-cover rounded" />
+                className="w-14 h-14 object-cover rounded object-center object-cover" />
                 <p className="font-medium">{item.item_name}</p>
                 <p className="text-sm text-gray-500">
                     Quantity: {item.quantity}

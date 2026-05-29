@@ -33,3 +33,6 @@ JAZZMIN_SETTINGS = {
 }
 
 daphne webapp.asgi:application
+#reload
+watchmedo auto-restart --patterns="*.py" --recursive -- daphne webapp.asgi:application
+watchmedo auto-restart --patterns="*.py" --recursive -- daphne -b 127.0.0.1 -p 8000 webapp.asgi:application

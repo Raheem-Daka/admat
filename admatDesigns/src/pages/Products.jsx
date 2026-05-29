@@ -3,9 +3,9 @@ import DesignCard from "../components/DesignCard";
 import { useNavigate } from "react-router-dom";
 import CategoryList from "../components/CartegoryList";
 import SearchComponent from "../components/SearchComponent";
+import FilterBarComponent from "../components/FilterBarComponent";
 import LoadingSkeleton from "../components/LoadingSkeleton";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+import { apiFetch } from "../api/api";
 
 const Products = () => {
   const [items, setItems] = useState([]);
@@ -16,51 +16,56 @@ const Products = () => {
   useEffect(() => {
     const start = Date.now();
 
-    fetch(`${API_BASE}/products/`)
-      .then(res => res.json())
-      .then(data => {
+    const fetchProducts = async () => {
+      try {
+        const data = await apiFetch("/products/");
 
-        const delay = Math.max(800 - (Date.now() - start), 0);
+        const delay = Math.max(500 - (Date.now() - start), 0); // ✅ shorter
 
         setTimeout(() => {
           setItems(data.results || []);
           setLoading(false);
         }, delay);
-      })
-      .catch(err => {
-        console.error(err);
+
+      } catch (err) {
+        console.error("Product fetch error:", err);
+
+        setError("Failed to load products");
+
         setTimeout(() => {
           setLoading(false);
-        }, 1000);
-      });
+        }, 500);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
   const handleNavigate = (id, slug) => {
-    console.log(id, slug);
     navigate(`/product/${id}/${slug}`);
   };
 
   return (
-    <div className="px-10">
-      <h1 className="text-4xl font-bold text-center pt-10">
+    <div className="px-10 ">
+      
+      <h1 className="text-4xl font-bold text-center">
         All Products
       </h1>
-      <div className="sticky top-0 z-10 bg-white py-2 w-full">
 
-        {/*Search Panel */}
-        <div className="">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-20 bg-white py-2 w-full">
           <SearchComponent />
-        </div>
-
-        <div>
-          <CategoryList />
-        </div>
+          <FilterBarComponent />
+        <CategoryList />
       </div>
 
-    {loading ? (
-      <LoadingSkeleton className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse" />
+      {/* Content */}
+      {loading ? (
+        <LoadingSkeleton />
       ) : error ? (
-        <p className="text-center text-red-500 mt-10">{error}</p>
+        <p className="text-center text-red-500 mt-10">
+          {error}
+        </p>
       ) : (
         <div
           className="

@@ -10,8 +10,8 @@ const ProfileDropdown = ({ close }) => {
   const { logout, user } = useAuth(); // assuming AuthContext provides user
 
   const options = [
-    { label: "Account", path: "/account", icon: Key },
-    { label: "Profile", path: "/profile", icon: User2Icon},
+    { label: "Account", path: "/account/dashboard", icon: Key },
+    { label: "Profile", path: "/account/profile", icon: User2Icon},
     { label: "Orders", path: "/orders", icon: Package },
   ];
 

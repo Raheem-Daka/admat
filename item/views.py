@@ -9,8 +9,7 @@ from .models import Item, Category, Discount
 from .serializers import ItemSerializer, CategorySerializer, DiscountSerializer
 from django.views.decorators.cache import cache_page
 from django.db.models import Case, When, IntegerField, Value
-
-
+from django.utils import timezone
 
 # Product detail (pk + slug)
 @api_view(['GET'])
@@ -39,7 +38,12 @@ def product_detail_view(request, pk, slug):
         .select_related("category")
         .prefetch_related(
             "images",
-            Prefetch("discounts", queryset=Discount.objects.filter(active=True))
+            Prefetch(
+                "discounts", 
+                queryset=Discount.objects.filter(
+                    active=True
+                    )
+                )
         ).order_by("-views")[:5]
     )
 
@@ -66,7 +70,15 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
         .select_related("category")
         .prefetch_related(
             "images",
-            Prefetch("discounts", queryset=Discount.objects.filter(active=True))
+            Prefetch(
+                "discounts", 
+                queryset=Discount.objects.filter(
+                    active=True,
+                    start_date__lte=timezone.now()
+                ).filter(
+                    Q(end_date__isnull=True) | Q(end_date__gte=timezone.now())
+                )
+            )
         )
     )
 
@@ -138,21 +150,14 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
     def discount_products(self, request):
         now = timezone.now()
 
-        items = (
-            self.get_queryset()
-            .filter(
-                discounts__active=True,
-                discounts__start_date__lte=now
-            )
-            .filter(
-                Q(discounts__end_date__isnull=True) |
-                Q(discounts__end_date__gte=now)
-            )
-            .distinct()
-        )
+        items = self.get_queryset()
 
         return Response({
-            "items": ItemSerializer(items, many=True, context={"request": request}).data,
+            "items": ItemSerializer(
+                items, 
+                many=True, 
+                context={"request": request}
+                ).data,
         })
 
     @action(detail=False, methods=['get'], url_path='popular_products', permission_classes=[AllowAny])

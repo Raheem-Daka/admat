@@ -1,4 +1,3 @@
-// src/api/axiosClient.js
 import axios from "axios";
 import {
   getAccessToken,
@@ -15,3 +14,18 @@ const axiosClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+axiosClient.interceptors.request.use(
+  (config) => {
+    const token = getAccessToken();
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+export default axiosClient;

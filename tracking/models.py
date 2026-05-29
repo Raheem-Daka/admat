@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
-from account.models import Card, Address
+from account.models import Billing, Address
 from item.models import Item
 from orders.models import Order
 from asgiref.sync import async_to_sync
@@ -34,7 +34,7 @@ class Track(models.Model):
     )
 
     payment_card = models.ForeignKey(
-        Card,
+        Billing,
         on_delete=models.SET_NULL,
         null=True,
         blank=True
@@ -55,30 +55,39 @@ class Track(models.Model):
         if not self.tracking_number:
             self.tracking_number = f"TRK-{uuid.uuid4().hex[:10].upper()}"
 
+        
+        # ✅ Get old status BEFORE saving
+        old_status = None
+        if not is_new:
+            old_status = Track.objects.get(pk=self.pk).status
+
+
         super().save(*args, **kwargs)
 
+        #Websocket notification
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f"user_{self.user.id}",
-            {
-                "type": "send_tracking_update",
-                "data": {
-                    "id": self.id,
-                    "order_id": self.order.id,
-                    "tracking_number": self.tracking_number,
-                    "status": self.status,
-                    "estimated_delivery": self.estimated_delivery.isoformat() if self.estimated_delivery else None,
+
+        if channel_layer and self.user:
+            async_to_sync(channel_layer.group_send)(
+                f"user_{self.user.id}",
+                {
+                    "type": "send_tracking_update",
+                    "data": {
+                        "id": self.id,
+                        "order_id": self.order.id,
+                        "tracking_number": self.tracking_number,
+                        "status": self.status,
+                        "estimated_delivery": self.estimated_delivery.isoformat() if self.estimated_delivery else None,
+                    }
                 }
-            }
-        )
+            )
         
-        # Sync order status
-        if self.status != self.status:
+        #Sync order status if changed
+        if old_status != self.status:
             self.order.status = self.status
             self.order.save(update_fields=["status"])
 
-        # Create tracking event ONLY if new or changed
-        
+        # Create tracking event
         if is_new or not self.events.filter(status=self.status).exists():
             TrackingEvent.objects.create(
                 track=self,
@@ -86,8 +95,8 @@ class Track(models.Model):
                 description=f"Status updated to {self.get_status_display()}"
             )
 
-        def __str__(self):
-            return f"{self.tracking_number} - {self.status}"
+    def __str__(self):
+        return f"{self.tracking_number} - {self.status}"
 
 class TrackingEvent(models.Model):
     track = models.ForeignKey(Track, related_name="events", on_delete=models.CASCADE)

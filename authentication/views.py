@@ -5,11 +5,11 @@ from django.contrib.auth.models import User
 from .serializers import SignUpSerializer, SignInSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 # ✅ SignUp
-@permission_classes([AllowAny])
 class SignUpViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]
     def signup(self, request):
         serializer = SignUpSerializer(data=request.data)
 
@@ -39,8 +39,8 @@ class SignUpViewSet(viewsets.ViewSet):
 
 
 # ✅ SignIn
-@permission_classes([AllowAny])
 class SignInViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny] 
     def signin(self, request):
         serializer = SignInSerializer(data=request.data)
 
@@ -52,18 +52,19 @@ class SignInViewSet(viewsets.ViewSet):
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 return Response(
-                    {"message": "Invalid credentials"},
+                    {"message": "Invalid credentials, Please try again"},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
 
             user = authenticate(
+                request,
                 username=user.username,
                 password=password
             )
 
             if not user:
                 return Response(
-                    {"message": "Invalid credentials"},
+                    {"message": "Invalid credentials, Please try again"},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
 
@@ -98,6 +99,7 @@ class SignOutViewSet(viewsets.ViewSet):
 
 #auth check
 class AuthCheckViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
     def check_auth(self, request):
         if request.user.is_authenticated:
             return Response(

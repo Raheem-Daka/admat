@@ -24,12 +24,12 @@ const ProfileSidePanel = () => {
   };
 
   const profileLinks = [
-    { label: "Dashboard", path: "/account", icon: LayoutDashboard },
+    { label: "Dashboard", path: "/account/dashboard", icon: LayoutDashboard },
     { label: "My Orders", path: "/orders", icon: ShoppingBag },
     { label: "Track Orders", path: "/orders-tracking", icon: Truck },
-    { label: "Addresses", path: "/addresses", icon: MapPin },
-    { label: "Cards", path: "/card-details", icon: CreditCard },
-    { label: "Settings", path: "/settings", icon: Settings },
+    { label: "Addresses", path: "/account/addresses", icon: MapPin },
+    { label: "Billing", path: "/account/billing/", icon: CreditCard },
+    { label: "Settings", path: "/account/settings", icon: Settings },
   ];
 
   return (
@@ -53,7 +53,7 @@ const ProfileSidePanel = () => {
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-indigo-100 p-4 z-50 transform transition-transform duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0 lg:static lg:flex flex-col`}
+        lg:translate-x-0 lg:static lg:flex flex-col relative`}
       >
         {/* CLOSE BUTTON (mobile only) */}
         <div className="lg:hidden flex justify-end mb-4">
@@ -64,8 +64,8 @@ const ProfileSidePanel = () => {
 
         {/* USER INFO */}
         <div className="mb-6 p-4 bg-white rounded-xl shadow">
-          <p className="font-bold text-lg">{user?.username || "User"}</p>
-          <p className="text-sm text-gray-500">{user?.email}</p>
+          <p className="font-semibold text-lg">{user?.username || "---"}</p>
+          <p className="text-sm text-gray-500">{user?.email || "---"}</p>
         </div>
 
         {/* NAV LINKS */}
@@ -81,7 +81,7 @@ const ProfileSidePanel = () => {
                 className={({ isActive }) =>
                   `flex items-center px-4 py-3 rounded-xl transition ${
                     isActive
-                      ? "bg-white text-indigo-700 font-semibold shadow"
+                      ? "bg-white text-indigo-700 font-semibold shadow border border-indigo-300"
                       : "text-gray-700 hover:bg-indigo-200"
                   }`
                 }

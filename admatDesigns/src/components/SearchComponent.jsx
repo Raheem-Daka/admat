@@ -94,13 +94,13 @@ const SearchComponent = () => {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && query.trim()) {
-      navigate(`/search?query=${encodeURIComponent(query)}`);
+      navigate(`/?search=${encodeURIComponent(query)}`);
       setSearchOpen(false);
     }
   };
 
   return (
-    <div className="search-container flex flex-col items-center">
+    <div className="search-container flex flex-col items-center z-40">
 
       {/* MOBILE BUTTON */}
       <button
