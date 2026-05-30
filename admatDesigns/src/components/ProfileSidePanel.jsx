@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   X,
+  User
 } from "lucide-react";
 
 const ProfileSidePanel = () => {
@@ -29,6 +30,7 @@ const ProfileSidePanel = () => {
     { label: "Track Orders", path: "/orders-tracking", icon: Truck },
     { label: "Addresses", path: "/account/addresses", icon: MapPin },
     { label: "Billing", path: "/account/billing/", icon: CreditCard },
+    { label: "Profile", path: "/account/profile", icon: User },
     { label: "Settings", path: "/account/settings", icon: Settings },
   ];
 

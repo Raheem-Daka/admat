@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef} from "react";
-import axios from "axios";
 import { useParams, useNavigate  } from "react-router-dom";
 import { toast } from "sonner";
 import { ACCESS_TOKEN_KEY } from "../../utils/authKeys";
 import { FaArrowLeft } from "react-icons/fa";
 import placeHolder from "../../assets/placeHolder.png";
+import { apiFetch } from "../../api/api";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -15,6 +15,10 @@ const OrderDetails = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState(null);
+  
+  const [showModal, setShowModal] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   const timeoutRef = useRef(null);
 
@@ -51,18 +55,13 @@ const OrderDetails = () => {
 
   const fetchOrder = async (token) => {
     try {
-      const res = await axios.get(`${API_BASE}/orders/${id}/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setOrder(res.data);
+      const data = await apiFetch(`/orders/${id}/`);
+      setOrder(data);
     } catch (err) {
-      if (err.response?.status === 404 ) {
+      if (err?.status === 404 ) {
         toast.error("Order not found");
         navigate("/orders");
-      } else if (err.response?.status === 401) {
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
+      } else if (err?.status === 401) {
         toast.error("Session expired. Please sign in again.");
         navigate("/signin");
       } else {
@@ -72,26 +71,17 @@ const OrderDetails = () => {
     } finally {
         timeoutRef.current = setTimeout(() => {
           setLoading(false);
-        }, 800);
+        }, 1000);
     }
   };
 
   const cancelOrder = async () => {
-    const confirmed = window.confirm("Are you sure you want to cancel this order?");
-    if (!confirmed) return;
-
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-
     try {
-      await axios.patch(
-        `${API_BASE}/orders/${order.id}/`,
-        { status: "cancelled" },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      await apiFetch(`/orders/${order.id}/`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "Cancelled" }),
+      }
+    );
 
       toast.success("Order cancelled");
 
@@ -102,8 +92,14 @@ const OrderDetails = () => {
 
     } catch {
       toast.error("Failed to cancel order");
+    } finally {
+      setCancelling(false);
     }
   };
+
+  const openModal = () => {
+    setIsOpen(true);
+  }
 
   useEffect(() => {
     return () => {
@@ -168,7 +164,9 @@ const OrderDetails = () => {
           </button>
           {normalizedStatus !== "delivered" && normalizedStatus !== "cancelled" && (
             <button
-              onClick={cancelOrder}
+              onClick={() => {
+                setShowModal(true);
+              }}
               className="ml-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
             >
               Cancel Order
@@ -176,6 +174,66 @@ const OrderDetails = () => {
           )}
         </div>
       </div>
+
+              {/* DELETE CONFIRMATION MODAL */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black/50 flex justify-center items-center backdrop-blur-sm z-50">
+          <div className="bg-white shadow-md rounded-xl py-6 px-5 md:w-[460px] w-[370px]">
+               {/* Icon */}
+               <div className="flex items-center justify-center p-4 bg-red-100 rounded-full w-16 h-16 mx-auto">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.875 5.75h1.917m0 0h15.333m-15.333 0v13.417a1.917 1.917 0 0 0 1.916 1.916h9.584a1.917 1.917 0 0 0 1.916-1.916V5.75m-10.541 0V3.833a1.917 1.917 0 0 1 1.916-1.916h3.834a1.917 1.917 0 0 1 1.916 1.916V5.75m-5.75 4.792v5.75m3.834-5.75v5.75" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-gray-900 text-center font-semibold mt-4 text-xl">Are you sure?
+              </h2>
+
+              {/* Description */}
+              <p className="text-sm text-gray-600 mt-2 text-center">
+                Do you really want to cancel order  
+                <span className="text-red-500 font-bold"> # {order?.id} </span>with items: <span className="font-semibold text-red-500">
+                  <ul>
+                    {order.items.length <= 3 ? (
+                      order.items.map(item => (
+                        <li key={item.id}>{item.item_name}</li>
+                      ))
+                    ) : (
+                      <li>{order.items[0].item_name} and {order.items.length - 1} more...</li>
+                    )}
+                  </ul>
+                  </span>
+                  <br/> 
+                  <span>This action cannot be undone.</span>
+              </p>
+
+              {/* Buttons */}
+              <div className="flex items-center justify-center gap-4 mt-5 w-full">
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                  }}
+                  className="w-full md:w-36 h-10 rounded-md border border-gray-300 bg-white text-gray-600 font-medium text-sm hover:bg-gray-100 active:scale-95 transition"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={() => {
+                    cancelOrder();
+                    setShowModal(false);
+                  }}
+                  disabled={cancelling}
+                  className="w-full md:w-36 h-10 rounded-md text-white bg-red-600 font-medium text-sm hover:bg-red-700 active:scale-95 transition"
+                >
+                  Yes, Remove
+                </button>
+              </div>
+          </div>
+        </div>
+        )}
+
 
       {/* MINI PROGRESS BAR */}
       <div className="flex items-center gap-2 mt-2 mb-2">
@@ -218,7 +276,7 @@ const OrderDetails = () => {
           >
             <div>
                 <img 
-                src={item.item_image || placeholder } 
+                src={item.item_image || placeHolder } 
                 alt=""
                 className="w-14 h-14 object-cover rounded object-center object-cover" />
                 <p className="font-medium">{item.item_name}</p>

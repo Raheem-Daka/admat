@@ -9,7 +9,7 @@ import { useCart } from "../context/CartContext";
 
 const Navbar = () => {
   
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user, setUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
@@ -130,27 +130,42 @@ const Navbar = () => {
             <div className="relative flex profile-dropdown">
               <button
                 onClick={() => setProfileOpen(prev => !prev)}
-                className=" px-3 py-1 rounded hover:bg-white hover:text-black transition hover:cursor-pointer"
+                className="px-2 py-1 rounded hover:bg-white hover:text-black transition hover:cursor-pointer"
                 aria-label="Toggle profile menu"
                 aria-expanded={profileOpen}
               >
-                <FaUser size={26}/>
+                <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center border hover:ring-2 hover:ring-indigo-400 transition">
+                  {user?.imageUrl ? (
+                    <img
+                      src={user.imageUrl}
+                      alt="profile"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = placeHolder;
+                      }}
+                    />
+                  
+                  ) : (
+                    <FaUser size={18} />
+                  )}
+                </div>
               </button>
 
               {profileOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg z-50">
                   <ProfileDropdown
                     links={profileLinks}
-                    close={() => setProfileOpen(false)} 
+                    close={() => setProfileOpen(false)}
                     onLogout={() => {
                       logout();
                       setProfileOpen(false);
-                      navigate("/")
-                    }}            
+                      navigate("/");
+                    }}
                   />
                 </div>
               )}
-            </div>            
+            </div>          
           </div>
         ) : (
           <Link

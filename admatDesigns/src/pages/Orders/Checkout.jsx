@@ -40,10 +40,9 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       const token = user?.token;
 
       if (formData.payment_method === "cod") {
-        await apiFetch(
-          `${API_BASE}/orders/`,{
+        await apiFetch(`/orders/`,{
             method: "POST",
-            formData,
+            body: JSON.stringify(formData),
           }
         );
 
@@ -78,10 +77,10 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   const fetchCart = async () => {
     try {
-      const res = await apiFetch(`${API_BASE}/cart/`, {
+      const data = await apiFetch(`/cart/`, {
       });
 
-      if (!res.data?.items?.length) {
+      if (!data?.items?.length) {
         toast.info("Your cart is empty 🛒");
         setTimeout(() => {
           navigate("/cart");
@@ -89,7 +88,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
         return;
       }
 
-      setCart(res.data);
+      setCart(data);
     } catch (err) {
       console.error("Cart fetch error:", err);
 
@@ -131,10 +130,6 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   return (
 <form
-  onSubmit={(e) => {
-    e.preventDefault(); // ✅ prevent page reload
-    placeOrder();
-  }}
   className="rounded-xl mt-20 px-6 py-5 bg-white shadow xl:w-4xl mx-auto text-center items-center"
 >      <h1 className="font-bold text-2xl text-center py-5">Checkout</h1>
       <div className="mb-6 space-y-3">
@@ -160,6 +155,11 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
         <input
           type="text"
+          onSubmit={(e) => {
+            e.preventDefault(); // ✅ prevent page reload
+            placeOrder();
+          }}
+
           placeholder="Address"
           value={formData.address}
           onChange={(e) =>

@@ -8,4 +8,4 @@ def manage_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
     else:
-        instance.userprofile.save()
+        instance.profile.save()

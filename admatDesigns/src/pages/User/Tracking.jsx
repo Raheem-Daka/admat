@@ -3,7 +3,15 @@ import ProfileSidePanel from '../../components/ProfileSidePanel';
 import { ACCESS_TOKEN_KEY } from '../../utils/authKeys';
 import { apiFetch } from '../../api/api';
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { FaArrowLeft, FaBox, FaCog, FaTruck, FaShippingFast, FaCheckCircle } from 'react-icons/fa';
+import { 
+  FaArrowLeft,
+  FaBox,
+  FaCog,
+  FaTimesCircle,
+  FaTruck, 
+  FaShippingFast, 
+  FaCheckCircle } 
+from 'react-icons/fa';
 import { toast } from "sonner"
 
 
@@ -64,12 +72,21 @@ const Tracking = () => {
           : (response?.results || []);
           console.log(response?.results)
 
-          data.forEach(item => {
-            const prevStatus = prevStatuses[item.id];
+          setTrackedItems(prev => {
+            const newStatuses = {};
 
-            if (prevStatus && prevStatus !== item.status) {
-              toast.success(`order # ${item.order_id} is now ${item.status}`)
-            }
+            data.forEach(item => {
+              const prevStatus = prevStatuses[item.id];
+
+              if (prevStatus && prevStatus !== item.status) {
+                toast.success(`Order #${item.order_id} is now ${item.status}`);
+              }
+
+              newStatuses[item.id] = item.status;
+            });
+
+            setPrevStatuses(newStatuses);
+            return data;
           });
 
           const newStatuses = {};
@@ -102,6 +119,7 @@ const Tracking = () => {
 
   useEffect(() => {
     let socket;
+    let isMounted = true;
 
     const isTokenExpired = (token) => {
       try {
@@ -113,6 +131,8 @@ const Tracking = () => {
     };
 
     const connect = () => {
+      if(!isMounted) return;
+
       const token = localStorage.getItem(ACCESS_TOKEN_KEY);
 
       // No token → stop the server connection (or redirect to login)
@@ -120,18 +140,6 @@ const Tracking = () => {
         console.warn("❌ No token, skipping WebSocket");
         toast.error("session expired, Please sign in to enable live tracking");
         navigate("/signin");
-        return;
-      }
-
-      // Decode expiry safely
-      let payload;
-      try {
-        payload = JSON.parse(atob(token.split(".")[1]));
-        const expDate = new Date(payload.exp * 1000);
-
-        console.log("Token expires at:", expDate.toLocaleString());
-      } catch (e) {
-        console.error("Invalid token format ❌");
         return;
       }
 
@@ -148,8 +156,10 @@ const Tracking = () => {
       );
 
       socket.onopen = () => {
-        setConnected(true);
-        console.log("✅ WebSocket connected");
+        if (isMounted) {
+          setConnected(true);
+          console.log("✅ WebSocket connected");
+        }
       };
 
       socket.onmessage = (event) => {
@@ -161,15 +171,23 @@ const Tracking = () => {
           )
         );
 
-        toast.success(`Order #${data.order_id} → ${data.status}`);
+        setPrevStatuses(prev => {
+          if (prev[data.id] !== data.status) {
+            toast.success(`Order #${data.order_id} → ${data.status}`);
+          }
+
+          return { ...prev, [data.id]: data.status };
+        });     
       };
 
       socket.onerror = (err) => {
         console.error("❌ WebSocket error", err);
-        socket.close(); // triggers reconnect
+        socket.close(); 
       };
 
       socket.onclose = () => {
+        if (!isMounted) return;
+
         setConnected(false);
         console.log("⚠️ Socket closed, reconnecting in 3s...");
 
@@ -180,6 +198,7 @@ const Tracking = () => {
     connect();
 
     return () => {
+      isMounted = false;
       socket?.close();
     };
   }, []);
@@ -261,15 +280,23 @@ const Tracking = () => {
                     </td>
                   </tr>
                 ) : (
-                  trackedItems.map(item => (
+                  trackedItems.map(item => {
+                    
+                    const isCancelled = item.status?.toLowerCase() === "cancelled";
+
+                    return (
                     <React.Fragment key={item.id}>
 
                       {/* MAIN ROW */}
                       <tr
                         onClick={() =>
                           setExpandedRow(expandedRow === item.id ? null : item.id)
-                        }
-                        className="cursor-pointer hover:bg-indigo-50 transition"
+                        }                        
+                        className={`cursor-pointer transition ${
+                            item.status?.toLowerCase() === "cancelled"
+                              ? "bg-red-50 hover:bg-red-100"
+                              : "hover:bg-indigo-50"
+                          }`}
                       >
                         <td className="p-3 border">{item.tracking_number}</td>
                         <td className="p-3 border">#{item.order_id}</td>
@@ -280,52 +307,55 @@ const Tracking = () => {
 
                           {/* PROGRESS WITH ICONS */}
                           <div className="flex items-center justify-between gap-2 mb-2">
-                          {statusSteps.map((step, index) => {
-                            const status = item.status?.toLowerCase() || "pending";
-                            const currentIndex = statusSteps.indexOf(status);
+                          {isCancelled ? (
+                            <div className="flex items-center justify-center w-full">
+                              <span className="px-3 py-1 text-xs font-semibold bg-red-100 text-red-600 rounded-full">
+                                <FaTimesCircle className="inline mr-1" />
+                                Cancelled
+                              </span>
+                            </div>
+                          ) : (
+                            statusSteps.map((step, index) => {
+                              const status = item.status?.toLowerCase() || "pending";
+                              const currentIndex = statusSteps.indexOf(status);
+                              const isActive = index === currentIndex;
 
-                            const isActive = index === currentIndex;
+                              return (
+                                <div key={step} className="flex flex-col items-center">
 
-                            return (
-                              <div key={step} className="flex flex-col items-center">
+                                  <div className="flex items-center">
+                                    <div
+                                      className={`flex items-center justify-center w-6 h-6 rounded-full text-xs transition ${
+                                        isActive
+                                          ? "bg-indigo-700 text-white"
+                                          : index < currentIndex
+                                          ? "bg-indigo-600 text-white"
+                                          : "bg-gray-300 text-gray-500"
+                                      }`}
+                                    >
+                                      {statusIcons[step]}
+                                    </div>
 
-                                {/* ICON + LINE */}
-                                <div className="flex items-center">
-                                  <div
-                                    className={`flex items-center justify-center w-6 h-6 rounded-full text-xs transition ${
-                                      isActive
-                                        ? "bg-indigo-700 text-white scale-110"
-                                        : index < currentIndex
-                                        ? "bg-indigo-600 text-white"
-                                        : "bg-gray-300 text-gray-500"
-                                    }`}
-                                  >
-                                    {statusIcons[step]}
+                                    {index < statusSteps.length - 1 && (
+                                      <div
+                                        className={`w-8 h-1 ${
+                                          index < currentIndex
+                                            ? "bg-indigo-600"
+                                            : "bg-gray-300"
+                                        }`}
+                                      />
+                                    )}
                                   </div>
 
-                                  {index < statusSteps.length - 1 && (
-                                    <div
-                                      className={`w-8 h-1 ${
-                                        index < currentIndex
-                                          ? "bg-indigo-600"
-                                          : "bg-gray-300"
-                                      }`}
-                                    />
-                                  )}
-                                </div>
-
-                                {/* ✅ LABEL UNDER ICON */}
-                                {isActive && (
-                                  <div className="flex flex-col items-center gap-2 mt-1">
+                                  {isActive && (
                                     <span className="mt-1 text-[10px] text-indigo-700 font-semibold">
                                       {step.replace("_", " ")}
                                     </span>
-
-                                  </div>                            
-                                )}
-                              </div>
-                            );
-                          })}
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}                          
                           </div>
                         </td>
 
@@ -377,7 +407,8 @@ const Tracking = () => {
                       )}
 
                     </React.Fragment>
-                  ))
+                    )
+                  })
                 )}
               </tbody>
 
