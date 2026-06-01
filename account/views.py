@@ -32,7 +32,7 @@ class AddressViewSet(viewsets.ModelViewSet):
         serializer.save(account=account)
 
     def perform_update(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save()
 
 
 class BillingViewSet(viewsets.ModelViewSet):

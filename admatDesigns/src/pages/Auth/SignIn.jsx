@@ -133,7 +133,7 @@ const SignIn = () => {
 
             {/* Email Input */}
             <div className="flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-gray-200 bg-transparent pl-5 focus-within:border-gray-300 focus-within:ring-1 focus-within:ring-gray-300">
-              <FaEnvelope size={24} className=""/>
+              <FaEnvelope className="text-gray-400 mr-2"/>
               <input
                 type="email"
                 name="email"
@@ -147,7 +147,7 @@ const SignIn = () => {
 
             {/* Password Input */}
              <div className="relative mt-4 flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-gray-200 bg-transparent pl-5 focus-within:border-gray-300 focus-within:ring-1 focus-within:ring-gray-300">
-                <FaLock size={24} className=""/>
+                <FaLock className="text-gray-400 mr-2"/>
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"

@@ -1,37 +1,40 @@
-import React, { useState } from 'react';
-import ProfileSidePanel from '../../components/ProfileSidePanel';
-import { ACCESS_TOKEN_KEY } from '../../utils/authKeys';
-
-const API_BASE = import.meta.env.VITE_URL_BASE_API;
+import React, { useState, useEffect } from "react";
+import ProfileSidePanel from "../../components/ProfileSidePanel";
+import { apiFetch } from "../../api/api";
+import { FaMapMarkerAlt } from "react-icons/fa";
 
 const Addresses = () => {
   const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     id: null,
-    fullName: '',
-    phone: '',
-    city: '',
-    street: '',
+    fullName: "",
+    phone: "",
+    city: "",
+    street: "",
   });
+
   const [isEditing, setIsEditing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-
-    //Get Address
-    const apiFetch = (url, options = {}) => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-
-    return fetch(`${API_BASE}${url}`, {
-        ...options,
-        headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
-        },
-    });
+  // ✅ FETCH ADDRESSES
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const data = await apiFetch("/addresses/");
+        setAddresses(data.results || data || []);
+      } catch (err) {
+        console.error("Failed to fetch addresses", err);
+      } finally {
+        setTimeout(() => setLoading(false), 500);
+      }
     };
 
-  // Handle input change
+    fetchAddresses();
+  }, []);
+
+  // ✅ HANDLE INPUT
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -39,52 +42,82 @@ const Addresses = () => {
     });
   };
 
-  // Submit
-  const handleSubmit = (e) => {
+  // ✅ SUBMIT (CREATE + UPDATE)
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isEditing) {
-      setAddresses((prev) =>
-        prev.map((addr) =>
-          addr.id === formData.id ? formData : addr
-        )
-      );
+    try {
+      const payload = {
+        full_name: formData.fullName,
+        phone: formData.phone,
+        city: formData.city,
+        street: formData.street,
+      };
+
+      if (isEditing) {
+        await apiFetch(`/addresses/${formData.id}/`, {
+          method: "PUT",
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await apiFetch("/addresses/", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+      }
+
+      // ✅ REFRESH
+      const data = await apiFetch("/addresses/");
+      setAddresses(data.results || data || []);
+
+      resetForm();
+      setIsOpen(false);
       setIsEditing(false);
-    } else {
-      setAddresses([
-        ...addresses,
-        { ...formData, id: Date.now() },
-      ]);
+
+    } catch (err) {
+      console.error("Save failed", err);
+      alert("Failed to save address");
     }
-
-    resetForm();
-    setIsOpen(false); // ✅ close modal
   };
 
-  // Edit
-  const handleEdit = (address) => {
-    setFormData(address);
+  // ✅ EDIT
+  const handleEdit = (addr) => {
+    setFormData({
+      id: addr.id,
+      fullName: addr.full_name,
+      phone: addr.phone,
+      city: addr.city,
+      street: addr.street,
+    });
+
     setIsEditing(true);
-    setIsOpen(true); // ✅ open modal
+    setIsOpen(true);
   };
 
-  // Delete
-  const handleDelete = (id) => {
-    setAddresses(addresses.filter((addr) => addr.id !== id));
+  // ✅ DELETE
+  const handleDelete = async (id) => {
+    try {
+      await apiFetch(`/addresses/${id}/`, {
+        method: "DELETE",
+      });
+
+      setAddresses(addresses.filter((a) => a.id !== id));
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
   };
 
-  // Reset form
+  // ✅ RESET FORM
   const resetForm = () => {
     setFormData({
       id: null,
-      fullName: '',
-      phone: '',
-      city: '',
-      street: '',
+      fullName: "",
+      phone: "",
+      city: "",
+      street: "",
     });
   };
 
-  // Open modal
   const openModal = () => {
     resetForm();
     setIsEditing(false);
@@ -96,64 +129,81 @@ const Addresses = () => {
       <ProfileSidePanel />
 
       <div className="p-6 w-full">
+        {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Addresses</h1>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <FaMapMarkerAlt className="text-indigo-600" />
+            Addresses
+          </h1>
 
           <button
             onClick={openModal}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:shadow-md transition"
           >
             + Add Address
           </button>
         </div>
 
-        {/* LIST */}
-        <div className="grid gap-4">
-          {addresses.length === 0 ? (
-            <p className="text-gray-500">No addresses added yet.</p>
-          ) : (
-            addresses.map((addr) => (
+        {/* LOADING */}
+        {loading ? (
+          <div className="flex flex-col items-center py-10">
+            <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-2 text-gray-500">Loading...</p>
+          </div>
+        ) : addresses.length === 0 ? (
+          // ✅ EMPTY STATE
+          <div className="text-center text-gray-500 py-10 flex flex-col items-center gap-2">
+            <FaMapMarkerAlt className="text-3xl text-indigo-500" />
+            <p>No addresses yet</p>
+          </div>
+        ) : (
+          // ✅ LIST
+          <div className="grid gap-4">
+            {addresses.map((addr) => (
               <div
                 key={addr.id}
-                className="border rounded p-4 shadow-sm flex justify-between items-center"
+                className="relative p-6 rounded-2xl text-white shadow-lg bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-hidden"
               >
-                <div>
-                  <p className="font-semibold">{addr.fullName}</p>
-                  <p>{addr.phone}</p>
-                  <p>{addr.street}, {addr.city}</p>
+                <div className="flex flex-col gap-1">
+                  <span className="uppercase tracking-wide">
+                    {addr.full_name}
+                  </span>
+                  <span className="text-white text-sm text-gray-600">{addr.phone}</span>
+                  <span className="text-white text-sm text-gray-500">
+                    {addr.street}, {addr.city}
+                  </span>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-6">
                   <button
                     onClick={() => handleEdit(addr)}
-                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                    className="px-3 py-1 rounded bg-white/20 hover:bg-white/30"
                   >
                     Edit
                   </button>
 
                   <button
                     onClick={() => handleDelete(addr.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
+                    className="px-3 py-1 rounded bg-red-500/80 hover:bg-red-600"
                   >
                     Delete
                   </button>
                 </div>
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* ✅ MODAL */}
         {isOpen && (
-          <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white w-full max-w-lg p-6 rounded shadow-lg">
+          <div className="fixed inset-0 bg-black/50 flex justify-center items-center backdrop-blur-sm z-50 p-4">
+            <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow-lg">
               <h2 className="text-xl font-semibold mb-4">
-                {isEditing ? 'Edit Address' : 'Add Address'}
+                {isEditing ? "Edit Address" : "Add Address"}
               </h2>
 
               <form onSubmit={handleSubmit} className="grid gap-3">
                 <input
-                  type="text"
                   name="fullName"
                   placeholder="Full Name"
                   value={formData.fullName}
@@ -163,7 +213,6 @@ const Addresses = () => {
                 />
 
                 <input
-                  type="text"
                   name="phone"
                   placeholder="Phone"
                   value={formData.phone}
@@ -173,7 +222,6 @@ const Addresses = () => {
                 />
 
                 <input
-                  type="text"
                   name="city"
                   placeholder="City"
                   value={formData.city}
@@ -183,9 +231,8 @@ const Addresses = () => {
                 />
 
                 <input
-                  type="text"
                   name="street"
-                  placeholder="Street Address"
+                  placeholder="Street"
                   value={formData.street}
                   onChange={handleChange}
                   className="border p-2 rounded"
@@ -203,9 +250,9 @@ const Addresses = () => {
 
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded"
                   >
-                    {isEditing ? 'Update' : 'Save'}
+                    {isEditing ? "Update" : "Save"}
                   </button>
                 </div>
               </form>
