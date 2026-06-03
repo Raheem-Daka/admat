@@ -34,6 +34,17 @@ class AddressViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save()
 
+    @action(detail=True, methods=["patch"], url_path="set-default")
+    def set_default(self, request, pk=None):
+        address = self.get_object()
+
+        Address.objects.filter(account=address.account).update(is_default=False)
+
+        address.is_default = True
+        address.save()
+
+        return Response({"message": "Default address set"}, status=status.HTTP_200_OK)
+
 
 class BillingViewSet(viewsets.ModelViewSet):
     serializer_class = BillingSerializer

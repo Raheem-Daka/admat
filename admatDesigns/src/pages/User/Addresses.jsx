@@ -290,9 +290,21 @@ const Addresses = () => {
               <div
                 key={addr.id}
                 onClick={() => handleSelectAddress(addr)}
-                className={`relative p-6 rounded text-white shadow-lg ${addr.is_default ? "bg-gradient-to-br from-orange-500 via-orange-200 to-orange-300" : "bg-gradient-to-br from-orange-300 via-orange-200 to-orange-100"} ${selectedAddress?.id === addr.id ? "ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-orange-300 cursor-pointer"}`}
+                className={`relative p-6 rounded text-white shadow-lg ${addr.is_default ? "bg-gradient-to-br from-orange-500 via-orange-200 to-orange-300" : "bg-gradient-to-br from-orange-300 via-orange-200 to-orange-100"} ${selectedAddress?.id === addr.id ? "ring-2 ring-orange-500" : "hover:ring-2 hover:ring-orange-300 cursor-pointer"}`}
               >
                 <div className="flex flex-col gap-1 text-gray-600 font-medium">
+                  {/*Default & Label */}
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs px-2 py-1 rounded bg-gray-200 text-orange-700 uppercase">
+                      {addr.label} address
+                    </span>
+
+                    {addr.is_default && (
+                      <span className="text-xs px-2 py-1 bg-orange-600 text-white rounded">
+                        Default
+                      </span>
+                    )}
+                  </div>
                   <span className="uppercase tracking-wide">
                     {addr.full_name}
                   </span>
@@ -301,68 +313,48 @@ const Addresses = () => {
                     {addr.street}, {addr.city}
                   </span>
                   
-                  {/*Default & Label */}
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs px-2 py-1 rounded bg-gray-200 text-gray-700 uppercase">
-                      {addr.label}
+                </div>
+              <div className="flex justify-between mt-5">
+                {/*Toggle switch*/}
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!addr.is_default) {
+                      setDefaultAddress(addr.id);
+                    }
+                  }}
+                  className="absolute left-2 bottom-2 flex justify-between mt-2"
+                >
+                  <label className="relative  inline-flex items-center cursor-pointer gap-2">
+
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={addr.is_default}
+                      readOnly
+                    />
+
+                    <div
+                      className={`w-12 rounded-full h-6 transition-colors duration-300 ${
+                        addr.is_default ? "bg-green-500" : "bg-orange-400"
+                      }`}
+                    ></div>
+
+                    <span
+                      className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                        addr.is_default ? "translate-x-6" : "translate-x-0"
+                      }`}
+                    ></span>
+
+                    <span className="text-xs text-gray-700">
+                      {addr.is_default ? "Default" : "Set Default"}
                     </span>
 
-                    {addr.is_default && (
-                      <span className="text-xs px-2 py-1 bg-green-600 text-white rounded">
-                        Default
-                      </span>
-                    )}
-                  </div>
+                  </label>
                 </div>
 
-                {/*Toggle switch*/}
-                <div className="flex justify-between items-center">
-                  {addr.is_default && (
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation(); 
-
-                        if (!addr.is_default) {
-                          setDefaultAddress(addr.id);
-                        }
-                      }}
-                      className="flex justify-center mt-2"
-                    >
-                      <label className="relative inline-flex items-center cursor-pointer gap-2">
-
-                        {/* Hidden checkbox */}
-                        <input
-                          type="checkbox"
-                          checked={addr.is_default}
-                          readOnly
-                          className="sr-only peer"
-                        />
-
-                        {/* Track */}
-                        <div
-                          className={`w-12 h-6 rounded-full transition ${
-                            addr.is_default ? "bg-green-500" : "bg-gray-300"
-                          }`}
-                        ></div>
-
-                        {/* Thumb */}
-                        <span
-                          className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transform transition ${
-                            addr.is_default ? "translate-x-6" : "translate-x-0"
-                          }`}
-                        ></span>
-
-                        {/* Text */}
-                        <span className="text-xs text-gray-700">
-                          {addr.is_default ? "Default" : "Set Default"}
-                        </span>
-
-                      </label>
-                    </div>
-                  )}  
-                  
                   {/* Buttons Edit and Delete */}
-                <div className="flex justify-end gap-2 mt-6">
+                <div className="flex absolute bottom-2 right-2  justify-end gap-2 mt-6">
                     <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -385,15 +377,14 @@ const Addresses = () => {
                       Delete
                     </button>
                   </div>
-
                 </div>
-
               </div>
             ))}
           </div>         
         </>
         )}
 
+        {/* Editing Modal */}
         {showModal && (         
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center backdrop-blur-sm z-50">
           <div className="bg-white shadow-md rounded-xl py-6 px-5 md:w-[460px] w-[370px]">
@@ -411,7 +402,7 @@ const Addresses = () => {
               {/* Description */}
               <p className="text-sm text-gray-600 mt-2 text-center">
                 Do you really want to delete 
-                <span className="text-red-500 font-bold"> {selectedItem?.full_name}</span>'s Card from your cards?<br/> <span>This action cannot be undone.</span>
+                <span className="text-red-500 font-bold"> {selectedItem?.full_name}</span>'s Address from your addresses?<br/> <span>This action cannot be undone.</span>
               </p>
 
               {/* Buttons */}
