@@ -66,7 +66,7 @@ const Home = () => {
           All Our Featured Products
         </h1>
 
-        <div className="text-center sticky bg-white top-0 py-1 w-full">
+        <div className="text-center sticky bg-white top-0 py-1 w-full z-[500]">
           <SearchComponent />
         </div>
 

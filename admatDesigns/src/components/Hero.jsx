@@ -64,11 +64,11 @@ const Hero = () => {
             Furniture Future
           </h1>
 
-          <h2 className="text-4xl md:text-5xl font-semibold text-indigo-900 mt-2">
+          <h2 className="text-4xl md:text-5xl font-semibold text-orange-600 mt-2">
             Modern living made simple
           </h2>
 
-          <p className="italic bg-blue-200 px-4 py-1 mt-2 rounded-xl w-fit">
+          <p className="italic bg-orange-200 px-4 py-1 mt-2 rounded-xl w-fit">
             elegant, modern, exotic
           </p>
 
@@ -80,12 +80,12 @@ const Hero = () => {
           <div className="flex gap-4 mt-8">
             <button
               onClick={navigateProducts}
-              className="bg-indigo-700 text-white px-6 py-3 rounded hover:bg-indigo-800"
+              className="bg-orange-600 text-white px-6 py-3 rounded hover:bg-orange-700"
             >
               View Designs
             </button>
 
-            <button className="flex items-center gap-2 border px-6 py-3 rounded">
+            <button className="hidden flex items-center gap-2 border px-6 py-3 rounded">
               Get Started
               <FaArrowRight />
             </button>
@@ -104,7 +104,10 @@ const Hero = () => {
 
           {/* Loading */}
           {items.length === 0 ? (
-            <p className="text-center w-full">Loading products...</p>
+            <div className="flex flex-col items-center justify-center h-full">
+              <div className="w-10 h-10 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+              <p className="mt-3 text-gray-500">Loading items...</p>
+            </div>
           ) : (
             <div
               className="marquee-inner flex"
@@ -141,7 +144,7 @@ const Hero = () => {
       <div className="flex justify-center mt-10">
         <button
           onClick={scrollToProducts}
-          className="animate-bounce bg-indigo-700 text-white p-3 rounded-full"
+          className="animate-bounce bg-orange-600 text-white p-3 rounded-full"
         >
           <FaArrowDown size={24} />
         </button>

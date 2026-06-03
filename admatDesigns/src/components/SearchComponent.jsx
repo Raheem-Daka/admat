@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { FaSearch, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import placaHolder from "../assets/placeHolder.png"
+import placeHolder from "../assets/placeHolder.png"
+import { apiFetch } from "../api/api";
 
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -21,16 +22,17 @@ const SearchComponent = () => {
     try {
       setLoading(true);
 
-      const res = await fetch(
-        `${API_BASE}/products/?search=${encodeURIComponent(searchTerm)}&limit=6`
+      const data = await apiFetch(
+        `/products/?search=${encodeURIComponent(searchTerm)}&limit=6`
       );
 
-      const data = await res.json();
       setResults(data.results || data.items || []).slice(0,8);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
     }
   };
 
@@ -49,7 +51,7 @@ const SearchComponent = () => {
   // ✅ Debounce
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (query.trim().length > 1) {
+      if (query.trim().length > 1 && query !== lastQuery) {
         fetchResults(query);
         setLastQuery(query);
       } else if (!query.trim()) {
@@ -100,7 +102,7 @@ const SearchComponent = () => {
   };
 
   return (
-    <div className="search-container flex flex-col items-center z-40">
+    <div className="search-container relative flex flex-col items-center z-[200]">
 
       {/* MOBILE BUTTON */}
       <button
@@ -112,31 +114,40 @@ const SearchComponent = () => {
 
       {/* MOBILE SEARCH */}
       {searchOpen && (
-        <div className="lg:hidden w-full px-4 mt-3">
+        <div className="lg:hidden w-full mt-3 relative rounded">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search products..."
-            className="w-full border rounded-full px-4 py-2"
+            className="w-full focus-within:ring-2 focus-within:ring-orange-600 border rounded border border-orange-600 focus:ring-orange-600 px-4 py-2"
           />
 
           {query && (
-            <div className="bg-white shadow rounded mt-2">
-              {loading && <p className="p-3">Searching...</p>}
+            <div className="absolute top-full left-0 w-full bg-white shadow rounded mt-2 z-[300] backdrop-blur-md">
 
-              {!loading && results.length === 0 && query && (
+              {/* LOADING */}
+              {loading && (
+                <div className="flex flex-col items-center p-3">
+                  <div className="w-6 h-6 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                  <p className="text-sm">Searching...</p>
+                </div>
+              )}
+
+              {/* NO RESULTS */}
+              {!loading && results.length === 0 && (
                 <p className="p-3 text-gray-500">No results</p>
               )}
 
-              {results.map((item) => (
+              {/* RESULTS */}
+              {!loading && results.length > 0 && results.map((item) => (
                 <div
                   key={item.id}
                   onClick={() => handleSelect(item)}
                   className="flex gap-3 p-3 border-b cursor-pointer hover:bg-gray-100"
                 >
                   <img
-                    src={item.imageUrl || "/placeHolder.png"}
+                    src={item.imageUrl || placeHolder}
                     className="w-10 h-10 rounded object-cover"
                     alt=""
                   />
@@ -148,8 +159,10 @@ const SearchComponent = () => {
                   </div>
                 </div>
               ))}
+
             </div>
           )}
+
         </div>
       )}
 
@@ -169,7 +182,7 @@ const SearchComponent = () => {
 
           {/* INPUT */}
           <div
-            className={`flex items-center border pl-3 h-10 rounded-full transition-all ${
+            className={`flex items-center border pl-3 h-10 rounded-full transition-all focus:ring-orange-600 border-xl border-orange-600 ${
               searchOpen
                 ? "w-[300px]"
                 : "w-0 opacity-0 pointer-events-none"
@@ -179,7 +192,7 @@ const SearchComponent = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full outline-none bg-transparent text-sm"
+              className="w-full outline-none bg-transparent text-sm  "
               placeholder="Search..."
             />
 
@@ -188,7 +201,7 @@ const SearchComponent = () => {
 
           {/* DROPDOWN */}
           {searchOpen && query.trim().length > 1 && (
-            <div className="absolute top-full left-0 w-[300px] bg-white shadow rounded mt-2 max-h-80 overflow-y-auto">
+            <div className="absolute top-full left-0 w-[300px] bg-white shadow-lg rounded mt-2 max-h-80 overflow-y-auto z-[300]">
               
               {loading && <p className="p-3">Searching...</p>}
 

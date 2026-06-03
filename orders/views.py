@@ -29,6 +29,8 @@ class OrdersViewSet(viewsets.ModelViewSet):
             return CreateOrderSerializer
         return OrderSerializer
 
+    def get_default_address(self):
+        return Address.objects.filter(account=self.account, is_default=True).first()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

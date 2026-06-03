@@ -25,17 +25,22 @@ const DashboardPage = () => {
   const [cards, setCards] = useState([]);
 
   const Card = ({ title, value, onClick }) => (
+
     <div
-      onClick={onClick}
-      className="bg-white p-4 rounded-xl shadow cursor-pointer hover:scale-[1.03] hover:shadow-lg transition-transform duration-200"    >
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className="text-2xl font-semibold">{value}</p>
-    </div>
+        onClick={onClick}
+        className={`bg-white p-4 rounded-xl shadow transition-transform duration-200
+          ${onClick ? "cursor-pointer hover:scale-[1.03] hover:shadow-lg" : ""}
+        `}
+      >
+        <p className="text-sm text-gray-500">{title}</p>
+        <p className="text-2xl font-semibold">{value}</p>
+      </div>
+
   );
 
 
-
   const COLORS = ["#6366F1", "#22C55E", "#FACC15", "#EF4444"];
+
   useEffect(() => {
     const token = localStorage.getItem(ACCESS_TOKEN_KEY);
 
@@ -51,14 +56,24 @@ const DashboardPage = () => {
           setUser({ ...userData, token });
         }
 
-        {/*✅ Address & Cards data */}
-        const [ addressData, cardData, orderData] = await Promise.all([
+        const [addressData, cardData, orderData] = await Promise.all([
           apiFetch("/addresses/"),
           apiFetch("/billing/"),
           apiFetch("/orders/")
-        ]);        
+        ]);
+
+
         setAddresses(addressData?.results || addressData || []);
-        setCards(cardData?.results || cardData || []);
+
+
+        const normalizedCards = (cardData?.results || cardData || []).map((card) => ({
+          id: card.id,
+          cardName: card.card_name || "Unknown",
+          cardNumber: card.card_number || "",
+          expiry: card.expiry || "--/--"
+        }));
+
+        setCards(normalizedCards);
 
         const orderList = orderData?.results || orderData || [];
         setOrders(orderList);
@@ -90,20 +105,22 @@ const DashboardPage = () => {
     0
   );
 
-  const statusData = ["Delivered", "Processing", "Pending", "Cancelled"].map(
+  const normalize = (s) => (s || "").toLowerCase();
+
+  const statusData = ["delivered", "processing", "pending", "cancelled"].map(
     (status) => ({
-      name: status,
+      name: status.charAt(0).toUpperCase() + status.slice(1),
       value: orders.filter(
-        (o) => (o.status || "").toLowerCase() === status.toLowerCase()
+        (o) => normalize(o.status) === status
       ).length,
     })
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden">
       <ProfileSidePanel />
 
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 transition-all duration-300">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full">
             <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
@@ -124,7 +141,7 @@ const DashboardPage = () => {
             {/* STATS CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-              <Card title="Revenue" value={`MWK ${totalRevenue.toLocaleString()}`} />
+              <Card title="Revenue" value={`MWK ${totalRevenue.toLocaleString("en-MW")}`} />
 
               <Card onClick={() => navigate("/orders")} title="Active Orders" value={activeOrders.length} />
 
@@ -144,7 +161,7 @@ const DashboardPage = () => {
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={statusData}>
                     <XAxis dataKey="name" />
-                    <YAxis />
+                    <YAxis allowDecimals={false}/>
                     <Tooltip />
                     <Bar dataKey="value" fill="#6366F1" />
                   </BarChart>
@@ -160,7 +177,8 @@ const DashboardPage = () => {
                     <Pie
                       data={statusData}
                       dataKey="value"
-                      outerRadius={80}
+                      outerRadius={90}
+                      innerRadius={30}
                       label
                     >
                       {statusData.map((entry, index) => (
@@ -184,7 +202,7 @@ const DashboardPage = () => {
 
               <div className="space-y-3">
                 {activeOrders.length === 0 ? (
-                  <p className="text-gray-500">No orders yet.</p>
+                  <p className="text-gray-500 italic">No orders yet.</p>
                 ) : (
                   activeOrders.slice(0, 5).map((order) => (
                     <div
@@ -195,7 +213,7 @@ const DashboardPage = () => {
                         #{order.id} - {order.status}
                       </p>
                       <span className="font-semibold text-indigo-600">
-                        MWK {Number(order.total).toLocaleString()}
+                        MWK {Number(order.total || 0).toLocaleString()}
                       </span>
                     </div>
                   ))
@@ -206,41 +224,52 @@ const DashboardPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8 bg-white p-5 rounded-xl shadow">
 
               {/* Addresses */}
-              <div 
-              onClick={() => navigate("/account/addresses")}
-              className="border rounded p-3 text-sm text-gray-500 mb-2 bg-gradient-to-r from-indigo-100 to-indigo-50">
-                <h2 className="mb-4 font-semibold">Addresses</h2>
+              <div>
+                <div className="">
+                  <h2 className="font-semibold">Addresses</h2>
+                </div>
+                <div 
+                onClick={() => navigate("/account/addresses")}
+                className="border rounded p-3 text-sm text-gray-500 mb-2 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-transform duration-200">
 
-                {addresses.length === 0 ? (
-                  <p>No addresses saved</p>
-                ) : (
-                  addresses.slice(0, 2).map((addr, index) => (
-                    <div key={index} className="mb-2">
-                      <p className="font-medium text-gray-800">{addr.fullName}</p>
-                      <p className="text-sm text-gray-500">{addr.city}</p>
-                    </div>
-                  ))
-                )}
-              </div>              
+                  {addresses.length === 0 ? (
+                    <p>No addresses saved</p>
+                  ) : (
+                    addresses.slice(0, 2).map((addr, index) => (
+                      <div key={index} className="mb-2">
+                        <p className="font-semibold ">{addr.full_name}</p>
+                        <p>{addr.street}</p>
+                        <p className="text-sm ">{addr.city}</p>
+                      </div>
+                    ))
+                  )}
+                </div>                
+                </div>
+            
               
               {/* Payment Methods */}
-              <div 
-              onClick={() => navigate("/account/billing")}
-              className="border rounded p-3 text-sm text-gray-500 mb-2">
-                <h2 className="mb-4 font-semibold">Cards</h2>
+              <div className="">
+                <div>
+                  <h2 className=" font-semibold">Cards</h2>
+                </div>
+                <div 
+                onClick={() => navigate("/account/billing")}
+                className="border rounded p-3 text-sm text-gray-500 mb-2 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-transform duration-200">
+                  {cards.length === 0 ? (
+                    <p>No cards saved</p>
+                  ) : (
+                    cards.slice(0, 2).map((card, index) => (
+                      <div key={index} className="mb-2">
+                        <p className="font-semibold">{card.cardName || "Card"}</p>
+                        <p className="font-medium ">
+                          **** **** **** {card.cardNumber || ""}
+                        </p>
+                        <p className="text-sm">{card.expiry || "Card"}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
 
-                {cards.length === 0 ? (
-                  <p>No cards saved</p>
-                ) : (
-                  cards.slice(0, 2).map((card, index) => (
-                    <div key={index} className="mb-2">
-                      <p className="font-medium text-gray-800">
-                        **** **** **** {card.last4 || "0000"}
-                      </p>
-                      <p>{card.brand || "Card"}</p>
-                    </div>
-                  ))
-                )}
               </div>
 
               {/*Other Cards goes here */}

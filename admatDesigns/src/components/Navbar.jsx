@@ -45,7 +45,7 @@ const Navbar = () => {
     }
 
     const handleScroll = () => {
-        setIsScrolled(window.scrollY > window.innerHeight);
+        setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -55,7 +55,7 @@ const Navbar = () => {
 
   const profileLinks = [
     {label: "Account", path: "/account"},
-    {label: "Settings", path: "/setting"},
+    {label: "Settings", path: "/settings"},
 
   ];
 
@@ -70,7 +70,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 flex items-center w-full justify-between px-6 py-3 transition-all duration-300 z-50 md:px-2 lg:px-24 xl:px-32 ${
+      className={`fixed top-0 left-0 flex items-center w-full justify-between px-6 py-3 transition-all duration-300 md:px-2 lg:px-24 xl:px-32 z-[600] ${
         isScrolled
           ? "bg-white/30 backdrop-blur-xl shadow-sm border-b border-white/40 text-gray-800 py-3 md:py-4"
           : "bg-white/40 backdrop-blur-xl border-b border-white/20 text-black py-4 md:py-6"
@@ -80,11 +80,11 @@ const Navbar = () => {
       to="/" 
       onClick={() => window.scrollTo(0, 0)} 
       className="text-lg font-bold">
-        <h1 className="text-2xl font-bold">admatFurniture</h1>
+        <h1 className="text-2xl font-bold text-orange-600">BB</h1>
       </Link>
 
       {/* ✅ Desktop links */}
-      <div className="hidden md:flex items-center gap-6 ml-7">
+      <div className="hidden md:flex items-center gap-6 ml-7 text-orange-600">
         {navlinks.map((link, i) => (
           <NavLink
             key={i}
@@ -113,7 +113,7 @@ const Navbar = () => {
             {/*Cart */}
             <Link
               to="/cart"
-              className="px-3 py-1 rounded hover:bg-white hover:text-black transition hover:cursor-pointer"
+              className="px-3 text-orange-600 py-1 rounded hover:bg-white hover:text-black transition hover:cursor-pointer"
               aria-label="Cart"
             >
               <div className="relative">
@@ -134,8 +134,7 @@ const Navbar = () => {
                 aria-label="Toggle profile menu"
                 aria-expanded={profileOpen}
               >
-                <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center border hover:ring-2 hover:ring-indigo-400 transition">
-                  {user?.imageUrl ? (
+                <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center border hover:ring-2 hover:ring-orange-600 transition">                  {user?.imageUrl ? (
                     <img
                       src={user.imageUrl}
                       alt="profile"
@@ -153,7 +152,7 @@ const Navbar = () => {
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg z-50">
+                <div className="absolute right-0 top-12 mt-2 w-48 bg-white shadow-lg rounded-lg z-50">
                   <ProfileDropdown
                     links={profileLinks}
                     close={() => setProfileOpen(false)}
@@ -179,16 +178,17 @@ const Navbar = () => {
 
       {/* ✅ Mobile Hamburger */}
       <button className="md:hidden" onClick={toggleMenu}>
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
       {/* ✅ Mobile Menu */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-50">
+        <div className="fixed inset-0 text-white bg-black/100 min-h-screen backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-50">
           <FaTimes
-            className="absolute top-5 right-5 w-6 h-6 cursor-pointer"
+            size={24}
+            className="flex items-center absolute top-5 left-5 cursor-pointer text-orange-500"
             onClick={toggleMenu}
           />
 
@@ -198,7 +198,7 @@ const Navbar = () => {
               to={link.path}
               onClick={toggleMenu}
               className={({ isActive }) =>
-                isActive ? "underline font-semibold" : ""
+                isActive ? "underline font-semibold text-orange-500" : "text-orange-500"
               }
             >
               {link.name}
@@ -207,16 +207,68 @@ const Navbar = () => {
 
           {isAuthenticated ? (
             
-            <div className="absolute top-5 left-5 flex gap-3">
+            <div className=" absolute top-5 right-5 flex items-center gap-3 z-[40]">
+
+              {/* CART */}
               <Link to="/cart" onClick={toggleMenu}>
-              <FaCartPlus size={24} /></Link>
-              <Link to="/account" onClick={toggleMenu}>
-              <FaUser size={24}/>
+                <div className="relative">
+                  <FaCartPlus size={24} className="text-orange-500"/>
+
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-[18px] h-[18px] flex items-center justify-center rounded-full">
+                      {cartCount}
+                    </span>
+                  )}
+                </div>
               </Link>
+
+              {/* PROFILE */}
+              <div className="relative profile-dropdown">
+                <button
+                  onClick={() => setProfileOpen((prev) => !prev)}
+                  
+                  className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center border hover:ring-2 hover:ring-orange-400 transition"
+                >
+                  {user?.imageUrl ? (
+                    <img
+                      src={user.imageUrl}
+                      alt="profile"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/default-avatar.png";
+                      }}
+                    />
+                  ) : (
+                    <FaUser size={20} />
+                  )}
+                </button>
+
+                {/* ✅ DROPDOWN */}
+                {profileOpen && (
+                  <div 
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-10 w-48 bg-white text-black shadow-lg rounded-lg z-[100]">
+
+                    <ProfileDropdown
+                      links={profileLinks}
+                      close={() => setProfileOpen(false)}
+                      onLogout={() => {
+                        logout();
+                        setProfileOpen(false);
+                        toggleMenu(); 
+                        navigate("/");
+                      }}                     
+                    />
+                  </div>
+                )}
+              </div>
+
             </div>
           ) : (
             <Link to="/signin" onClick={toggleMenu}>Login</Link>
           )}
+
         </div>
       )}
     </nav>

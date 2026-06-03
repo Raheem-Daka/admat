@@ -3,15 +3,48 @@ from .models import Address, Billing, Account, UserProfile
 
 
 class AddressSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Address
-        fields = ['id', 'account', 'full_name', 'city', 'phone', 'street', 'created_at']
+        fields = [
+            'id',
+            'account',
+            'full_name',
+            'is_default',
+            'label',
+            'city',
+            'phone',
+            'street',
+            'created_at'
+        ]
         read_only_fields = ['account']
 
+    def validate_phone(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError("Phone must contain only numbers")
+
+        if len(value) < 10:
+            raise serializers.ValidationError("Phone number is too short")
+
+        return value
+
+    def validate_label(self, value):
+        if value not in ["home", "work"]:
+            raise serializers.ValidationError(
+                "Label must be 'home' or 'work'"
+            )
+        return value
+
+    def validate(self, data):
+        if len(data.get("street", "")) < 3:
+            raise serializers.ValidationError("Street is too short")
+
+        return data
+        
 class BillingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Billing
-        fields = ['id', 'account', 'card_name', 'last4', 'brand', 'expiry', 'created_at']
+        fields = ['id', 'account', 'card_name', 'is_default', 'last4', 'brand', 'expiry', 'created_at']
         read_only_fields = ['account', 'last4', 'brand']
 
 class AccountSerializer(serializers.ModelSerializer):

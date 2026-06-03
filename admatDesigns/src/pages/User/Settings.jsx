@@ -103,10 +103,10 @@ const Settings = () => {
 
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden">
       <ProfileSidePanel />
 
-      <div className="flex-1 p-8 space-y-8">
+      <div className="xl:ml-70 lg:ml-70 flex-1 p-6 transition-all duration-300">
         {loading ? (
           <div className="flex items-center justify-center py-auto gap-4">
             <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
@@ -118,64 +118,6 @@ const Settings = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-800">Settings</h1>
               <p className="text-gray-500 mt-1">Manage your account</p>
-            </div>
-
-            {/* PROFILE CARD */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border">
-              <h2 className="text-lg font-semibold mb-6">Profile</h2>
-
-              <div className="flex flex-col items-center gap-6">
-                {/* Avatar */}
-                <div className="relative">
-                  <img
-                    src={
-                      preview ||
-                      "https://via.placeholder.com/100?text=User"
-                    }
-                    alt="profile"
-                    loading="eager"
-                    className="w-24 h-24 rounded-full object-cover border "
-                  />
-
-                  <label className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700">
-                    ✏️
-                    <input
-                      type="file"
-                      hidden
-                      onChange={handleImageChange}
-                    />
-                  </label>
-                </div>
-
-                {/* User Info */}
-                <div className="xl:w-5xl lg:w-3xl flex-1 grid gap-3">
-                  <input
-                    type="text"
-                    name="username"
-                    value={user.username}
-                    onChange={handleUserChange}
-                    placeholder="Username"
-                    className="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                  />
-
-                  <input
-                    type="email"
-                    name="email"
-                    value={user.email}
-                    onChange={handleUserChange}
-                    placeholder="Email"
-                    className="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                  />
-
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-medium transition"
-                  >
-                    {saving ? "Saving..." : "Save Changes"}
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* PASSWORD CARD */}

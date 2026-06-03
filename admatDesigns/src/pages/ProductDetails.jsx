@@ -76,40 +76,42 @@ const ProductDetails = () => {
   };
 
   useEffect(() => {
-    setLoading(true);
-
-    apiFetch(`/product/${id}/${slug}/`)
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to load item");
+    const fetchItem = async () => {
+      try {
         setLoading(true);
-        return res.json();
-      })
-      .then(data => {
+
+        const data = await apiFetch(`/product/${id}/${slug}/`);
+
+        if (!data || !data.item) {
+          throw new Error("Invalid item data");
+        }
+
         setItem(data.item);
         setRelatedItems(data.related_items || []);
 
-      const resolveImageUrl = (url) => {
-        if (!url) return placeHolder;
-        return url.startsWith("http") ? url : `${API_BASE}${url}`;
-      };
+        const resolveImageUrl = (url) => {
+          if (!url) return placeHolder;
+          return url.startsWith("http") ? url : `${API_BASE}${url}`;
+        };
 
-      if (data.item?.imageUrl) {
-        setMainImage(resolveImageUrl(data.item.imageUrl));
-      } else if (data.item?.images?.length) {
-        setMainImage(resolveImageUrl(data.item.images[0].imageUrl));
-      } else {
-        setMainImage(placeHolder);
-      }        
-        setLoading(false);
-      })
-      .catch(err => {
+        if (data.item?.imageUrl) {
+          setMainImage(resolveImageUrl(data.item.imageUrl));
+        } else if (data.item?.images?.length) {
+          setMainImage(resolveImageUrl(data.item.images[0].imageUrl));
+        } else {
+          setMainImage(placeHolder);
+        }
+
+      } catch (err) {
         console.error(err);
-        setTimeout(() => {
-          navigate("/discounts");
-          setLoading(false);
-        }, 1500);
-       toast.error("Failed to load item details. Redirecting to discounts.");
-      });
+        toast.error("Failed to load item details. Redirecting...");
+        navigate("/discounts");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchItem();
   }, [id, slug]);
 
   const handleNavigate = (item) => {
@@ -183,10 +185,10 @@ const ProductDetails = () => {
       </div>
 
       {/* Price */}
-      <div className="mb-6 pt-5 w-1/2">
+      <div className=" mb-6 pt-5 lg:w-1/2 sm:flex justify-between items-center">
         {Number(item.current_price) !== Number(item.price) ? (
           /* ✅ DISCOUNTED ITEM */
-          <div className="flex justify-between">
+          <div className="flex justify-between w-full">
             <div className="flex gap-2">
               <span className="font-semibold text-xl">Was:</span>
               <p className="text-red-500 line-through border rounded bg-red-600 text-white px-2">
@@ -231,8 +233,8 @@ const ProductDetails = () => {
         <button 
         onClick={addToCart}
         disabled={adding}
-        className={`rounded bg-indigo-500 text-white px-4 py-2 ${
-          adding ? "bg-gray-400" : "bg-indigo-500 hover:bg-indigo-600"
+        className={`rounded bg-orange-600 text-white px-4 py-2 ${
+          adding ? "bg-gray-400" : "bg-orange-600 hover:bg-orange-700"
         }`}>
           {adding ? "Adding.." : "Add to Cart"}
         </button>

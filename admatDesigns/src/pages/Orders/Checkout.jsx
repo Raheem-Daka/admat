@@ -14,6 +14,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
     const navigate = useNavigate();
     const [placingOrder, setPlacingOrder] = useState(false);
     const { user } = useAuth();
+   
 
     const [formData, setFormData] = useState({
       full_name: "",
@@ -22,6 +23,8 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       city: "",
       payment_method: "cod",
     });
+
+    const defaultAddress = addresses.find(a => a.is_default) || addresses[0] || null;
 
   const placeOrder = async () => {
     if (
@@ -132,6 +135,14 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 <form
   className="rounded-xl mt-20 px-6 py-5 bg-white shadow xl:w-4xl mx-auto text-center items-center"
 >      <h1 className="font-bold text-2xl text-center py-5">Checkout</h1>
+      {defaultAddress && (
+        <div className="p-4 border rounded bg-green-50">
+          <p className="font-semibold">{defaultAddress.full_name}</p>
+          <p>{defaultAddress.street}, {defaultAddress.city}</p>
+          <p className="text-sm text-gray-600">{defaultAddress.phone}</p>
+        </div>
+      )}
+
       <div className="mb-6 space-y-3">
         <input
           type="text"

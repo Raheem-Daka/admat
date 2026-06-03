@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ProfileSidePanel from "../../components/ProfileSidePanel";
 import { apiFetch } from "../../api/api";
 import { FaMapMarkerAlt } from "react-icons/fa";
+import { toast } from "sonner";
 
 const Addresses = () => {
   const [addresses, setAddresses] = useState([]);
@@ -16,23 +17,90 @@ const Addresses = () => {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingId, setEditingId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedAddress, setSelectedAddress] =useState(null)
   const [isOpen, setIsOpen] = useState(false);
 
-  // ✅ FETCH ADDRESSES
-  useEffect(() => {
-    const fetchAddresses = async () => {
-      try {
-        const data = await apiFetch("/addresses/");
-        setAddresses(data.results || data || []);
-      } catch (err) {
-        console.error("Failed to fetch addresses", err);
-      } finally {
-        setTimeout(() => setLoading(false), 500);
-      }
-    };
+  const sorted = [...addresses].sort((a, b) => b.is_default - a.is_default);
 
+  const handleSelectAddress = (addr) => {
+    setSelectedAddress(addr);
+    localStorage.setItem("last_address_id", addr.id);
+
+  };
+  // ✅ FETCH ADDRESSES
+
+  useEffect(() => {
     fetchAddresses();
   }, []);
+
+  useEffect(() => {
+    const savedId = localStorage.getItem("last_address_id");
+
+    if (savedId) {
+      setSelectedAddress({
+        id: Number(savedId)
+      });
+    }
+  }, []);
+
+  const selectedFull = addresses.find(
+    (a) => a.id === selectedAddress?.id
+  );
+
+  const defaultAddress =
+    addresses.find((a) => a.is_default) ||
+    selectedFull ||
+    addresses[0];
+
+    
+  const formatAddresses = (data) => {
+    const results = data.results || data || [];
+
+    return results.map((addr) => ({
+      id: addr.id,
+      full_name: addr.full_name || "Unknown",
+      phone: addr.phone || "----",
+      city: addr.city || "----",
+      street: addr.street || "----",
+      label: addr.label || "home",
+      is_default: addr.is_default || false,
+    }));
+  };
+
+
+  //fetch Addresses
+  const fetchAddresses = async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch("/addresses/");
+      setAddresses(formatAddresses(data));
+    } catch (err) {
+      console.error("Failed to find addresses", err);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    }
+  };
+
+  //Address validation
+  const validateAddress = () => {
+    if (!formData.fullName.trim()) return "Full name is required";
+
+    if (!formData.phone.match(/^[0-9]{7,15}$/))
+      return "Invalid phone number";
+
+    if (formData.city.length < 2) return "City is required";
+
+    if (formData.street.length < 5)
+      return "Street must be more detailed";
+
+    return null;
+  };
+
 
   // ✅ HANDLE INPUT
   const handleChange = (e) => {
@@ -46,12 +114,21 @@ const Addresses = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const error = validateAddress();
+
+    if (error) {
+      toast.error(error);
+      return;
+    }
+
     try {
       const payload = {
         full_name: formData.fullName,
         phone: formData.phone,
         city: formData.city,
         street: formData.street,
+        label: formData.label,
+        is_default: formData.is_default
       };
 
       if (isEditing) {
@@ -68,7 +145,7 @@ const Addresses = () => {
 
       // ✅ REFRESH
       const data = await apiFetch("/addresses/");
-      setAddresses(data.results || data || []);
+      setAddresses(formatAddresses(data));
 
       resetForm();
       setIsOpen(false);
@@ -82,29 +159,69 @@ const Addresses = () => {
 
   // ✅ EDIT
   const handleEdit = (addr) => {
+    if(!addr.id) {
+      console.log("Missing address ID");
+      toast.error("Cannot edit this address, Please try again");
+    }
+
     setFormData({
       id: addr.id,
       fullName: addr.full_name,
       phone: addr.phone,
       city: addr.city,
       street: addr.street,
+      is_default: addr.is_default || false,
+      label: addr.label
     });
 
+    setEditingId(addr.id);
     setIsEditing(true);
     setIsOpen(true);
   };
 
+  // Set Default
+  const setDefaultAddress = async (id) => {
+  try {
+    await apiFetch(`/addresses/${id}/set-default/`, {
+      method: "PATCH",
+    });
+
+    // refresh list
+    const data = await apiFetch("/addresses/");
+    setAddresses(formatAddresses(data));
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to set default address");
+  }
+};
+
   // ✅ DELETE
   const handleDelete = async (id) => {
+
+      if (addresses.length === 1) {
+        toast.error("You must keep at least one address");
+        return;
+      }
     try {
       await apiFetch(`/addresses/${id}/`, {
         method: "DELETE",
       });
 
-      setAddresses(addresses.filter((a) => a.id !== id));
+      setAddresses((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {
-      console.error("Delete failed", err);
+      console.error("Failed to delete address", err);
     }
+  };
+
+  //Confirm Delete
+  const confirmDelete = async () => {
+    if (!selectedItem) return;
+
+    await handleDelete(selectedItem.id);
+
+    setShowModal(false);
+    setSelectedItem(null);
   };
 
   // ✅ RESET FORM
@@ -115,30 +232,32 @@ const Addresses = () => {
       phone: "",
       city: "",
       street: "",
+      label: ""
     });
   };
 
   const openModal = () => {
     resetForm();
     setIsEditing(false);
+    setEditingId(null);
     setIsOpen(true);
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen overflow-x-hidden">
       <ProfileSidePanel />
 
-      <div className="p-6 w-full">
+      <div className="flex-1 p-6 transition-all duration-300">
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FaMapMarkerAlt className="text-indigo-600" />
+            <FaMapMarkerAlt className="text-orange-600" />
             Addresses
           </h1>
 
           <button
             onClick={openModal}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:shadow-md transition"
+            className="bg-gradient-to-br from-orange-600 to-orange-400 text-white px-4 py-2 rounded-lg shadow hover:shadow-md transition"
           >
             + Add Address
           </button>
@@ -147,8 +266,8 @@ const Addresses = () => {
         {/* LOADING */}
         {loading ? (
           <div className="flex flex-col items-center py-10">
-            <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-2 text-gray-500">Loading...</p>
+            <div className="w-10 h-10 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-2 text-gray-500">Loading addresses...</p>
           </div>
         ) : addresses.length === 0 ? (
           // ✅ EMPTY STATE
@@ -157,42 +276,167 @@ const Addresses = () => {
             <p>No addresses yet</p>
           </div>
         ) : (
-          // ✅ LIST
-          <div className="grid gap-4">
-            {addresses.map((addr) => (
+        <>
+          {defaultAddress && (
+              <div className="mb-4 p-4 bg-green-50 border rounded">
+                <p className="font-semibold">{defaultAddress.full_name}</p>
+                <p>{defaultAddress.street}, {defaultAddress.city}</p>
+              </div>
+            )}
+
+          {/* ✅ LIST*/}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sorted.map((addr) => (
               <div
                 key={addr.id}
-                className="relative p-6 rounded-2xl text-white shadow-lg bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-hidden"
+                onClick={() => handleSelectAddress(addr)}
+                className={`relative p-6 rounded text-white shadow-lg ${addr.is_default ? "bg-gradient-to-br from-orange-500 via-orange-200 to-orange-300" : "bg-gradient-to-br from-orange-300 via-orange-200 to-orange-100"} ${selectedAddress?.id === addr.id ? "ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-orange-300 cursor-pointer"}`}
               >
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 text-gray-600 font-medium">
                   <span className="uppercase tracking-wide">
                     {addr.full_name}
                   </span>
-                  <span className="text-white text-sm text-gray-600">{addr.phone}</span>
-                  <span className="text-white text-sm text-gray-500">
+                  <span className="text-sm">{addr.phone}</span>
+                  <span className="text-sm">
                     {addr.street}, {addr.city}
                   </span>
+                  
+                  {/*Default & Label */}
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs px-2 py-1 rounded bg-gray-200 text-gray-700 uppercase">
+                      {addr.label}
+                    </span>
+
+                    {addr.is_default && (
+                      <span className="text-xs px-2 py-1 bg-green-600 text-white rounded">
+                        Default
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex gap-2 mt-6">
-                  <button
-                    onClick={() => handleEdit(addr)}
-                    className="px-3 py-1 rounded bg-white/20 hover:bg-white/30"
-                  >
-                    Edit
-                  </button>
+                {/*Toggle switch*/}
+                <div className="flex justify-between items-center">
+                  {addr.is_default && (
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation(); 
 
-                  <button
-                    onClick={() => handleDelete(addr.id)}
-                    className="px-3 py-1 rounded bg-red-500/80 hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
+                        if (!addr.is_default) {
+                          setDefaultAddress(addr.id);
+                        }
+                      }}
+                      className="flex justify-center mt-2"
+                    >
+                      <label className="relative inline-flex items-center cursor-pointer gap-2">
+
+                        {/* Hidden checkbox */}
+                        <input
+                          type="checkbox"
+                          checked={addr.is_default}
+                          readOnly
+                          className="sr-only peer"
+                        />
+
+                        {/* Track */}
+                        <div
+                          className={`w-12 h-6 rounded-full transition ${
+                            addr.is_default ? "bg-green-500" : "bg-gray-300"
+                          }`}
+                        ></div>
+
+                        {/* Thumb */}
+                        <span
+                          className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transform transition ${
+                            addr.is_default ? "translate-x-6" : "translate-x-0"
+                          }`}
+                        ></span>
+
+                        {/* Text */}
+                        <span className="text-xs text-gray-700">
+                          {addr.is_default ? "Default" : "Set Default"}
+                        </span>
+
+                      </label>
+                    </div>
+                  )}  
+                  
+                  {/* Buttons Edit and Delete */}
+                <div className="flex justify-end gap-2 mt-6">
+                    <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(addr)
+                    }}
+                      className="px-3 py-1 rounded bg-orange-600 w-[80px] hover:bg-orange-600/50"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedItem(addr);
+                        setShowModal(true);
+                      }}
+                        
+                      className="px-3 py-1 rounded bg-red-500 w-[80px] hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
+
                 </div>
+
               </div>
             ))}
-          </div>
+          </div>         
+        </>
         )}
+
+        {showModal && (         
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center backdrop-blur-sm z-50">
+          <div className="bg-white shadow-md rounded-xl py-6 px-5 md:w-[460px] w-[370px]">
+               {/* Icon */}
+               <div className="flex items-center justify-center p-4 bg-red-100 rounded-full w-16 h-16 mx-auto">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.875 5.75h1.917m0 0h15.333m-15.333 0v13.417a1.917 1.917 0 0 0 1.916 1.916h9.584a1.917 1.917 0 0 0 1.916-1.916V5.75m-10.541 0V3.833a1.917 1.917 0 0 1 1.916-1.916h3.834a1.917 1.917 0 0 1 1.916 1.916V5.75m-5.75 4.792v5.75m3.834-5.75v5.75" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-gray-900 text-center font-semibold mt-4 text-xl">Are you sure?
+              </h2>
+
+              {/* Description */}
+              <p className="text-sm text-gray-600 mt-2 text-center">
+                Do you really want to delete 
+                <span className="text-red-500 font-bold"> {selectedItem?.full_name}</span>'s Card from your cards?<br/> <span>This action cannot be undone.</span>
+              </p>
+
+              {/* Buttons */}
+              <div className="flex items-center justify-center gap-4 mt-5 w-full">
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    setSelectedItem(null);
+                  }}
+                  className="w-full md:w-36 h-10 rounded-md border border-gray-300 bg-white text-gray-600 font-medium text-sm hover:bg-gray-100 active:scale-95 transition"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={confirmDelete}
+                  className="w-full md:w-36 h-10 rounded-md text-white bg-red-600 font-medium text-sm hover:bg-red-700 active:scale-95 transition"
+                >
+                  Yes, Remove
+                </button>
+              </div>
+          </div>
+        </div>
+        )}
+
 
         {/* ✅ MODAL */}
         {isOpen && (
@@ -239,6 +483,16 @@ const Addresses = () => {
                   required
                 />
 
+                {/* Select label */}
+                <select
+                  name="label"
+                  value={formData.label || "home"}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                >
+                  <option value="home">Home</option>
+                  <option value="work">Work</option>
+                </select>
                 <div className="flex justify-between mt-4">
                   <button
                     type="button"

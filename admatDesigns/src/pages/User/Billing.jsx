@@ -134,7 +134,7 @@ const Billing = () => {
   const handleEdit = (card) => {
     if (!card.id) {
       console.log("Missing card ID");
-      toast.error("Failed, please try again")
+      toast.error("Cannot edit this card, please try again")
       return;
     }
 
@@ -143,12 +143,30 @@ const Billing = () => {
       cardName: card.cardName,
       cardNumber: card.cardNumber,
       expiry: card.expiry,
+      is_default: card.is_default || false
     });
 
     setEditingId(card.id);
     setIsEditing(true);
     setIsOpen(true);
   }; 
+
+  //Set default
+  const setDefaultAddress = async (id) => {
+  try {
+    await apiFetch(`/card/${id}/set-default/`, {
+      method: "PATCH",
+    });
+
+    // refresh list
+    const data = await apiFetch("/card/");
+    setAddresses(formatAddresses(data));
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to set default address");
+  }
+};
 
   // DELETE CARD (API)
   const handleDelete = async (id) => {
@@ -205,24 +223,24 @@ const Billing = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden">
       <ProfileSidePanel />
 
-      <div className="p-6 w-full">
+      <div className="flex-1 p-6 transition-all duration-300">
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">My Cards</h1>
 
           <button
             onClick={openModal}
-            className="bg-indigo-600 text-white px-4 py-2 rounded"
+            className="bg-gradient-to-br from-orange-600 to-orange-300 text-white px-4 py-2 rounded"
           >
             + Add Card
           </button>
         </div>
 
         {/* LIST */}
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
           
         {/* ✅ LOADING STATE */}
           {loading ? (
@@ -232,7 +250,7 @@ const Billing = () => {
             </div>
 
           ) :  cards.length === 0 ? (
-            <div className="text-center text-gray-500 py-10">
+            <div className="flex flex-col justify-center text-gray-500 py-10">
               <p>No cards yet 💳</p>
               <p className="text-sm">Click "Add Card" to get started</p>
             </div>
@@ -240,31 +258,34 @@ const Billing = () => {
             cards.map((card, index) => (
               <div
                 key={card.id || index}
-                className="relative p-6 rounded-2xl text-white shadow-lg bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-hidden"
+                className={`relative p-6 rounded text-white shadow-lg ${card.is_default ? "bg-gradient-to-br from-orange-300 via-orange-200 to-orange-100" : "bg-gradient-to-br from-orange-300 via-orange-200 to-orange-100"}`}
               >
-                <div className="absolute top-4 left-4 text-sm font-semibold">
-                  {getBrand(card.cardNumber)}
+                <div className="text-gray-600">
+                  <div className="absolute top-4 left-4 text-sm font-semibold">
+                    {getBrand(card.cardNumber)}
+                  </div>
+
+                  <div className="absolute top-4 right-4 text-xs opacity-70">
+                    <h2 className="font-semibold">{card.cardName}'s Card</h2>
+                  </div>
+
+                  <p className="text-lg tracking-widest mt-4">
+                    {maskCard(card.cardNumber)}
+                  </p>
+
+                  <div className="flex justify-between mt-6 text-sm">
+                    <span className="uppercase tracking-wide">
+                      {card.cardName}
+                    </span>
+                    <span>{card.expiry}</span>
+                  </div>
+
                 </div>
 
-                <div className="absolute top-4 right-4 text-xs opacity-70">
-                  <h2 className="font-semibold">{card.cardName}'s Card</h2>
-                </div>
-
-                <p className="text-lg tracking-widest mt-4">
-                  {maskCard(card.cardNumber)}
-                </p>
-
-                <div className="flex justify-between mt-6 text-sm">
-                  <span className="uppercase tracking-wide">
-                    {card.cardName}
-                  </span>
-                  <span>{card.expiry}</span>
-                </div>
-
-                <div className="flex gap-2 mt-6">
+                <div className="flex justify-end gap-2 mt-6">
                   <button
                     onClick={() => handleEdit(card)}
-                    className="px-3 py-1 rounded bg-white/20 hover:bg-white/30"
+                    className="px-3 py-1 rounded bg-orange-600 w-[80px] hover:bg-orange-600/50"
                   >
                     Edit
                   </button>
@@ -274,7 +295,7 @@ const Billing = () => {
                       setSelectedItem(card);
                       setShowModal(true);
                     }}
-                    className="px-3 py-1 rounded bg-red-500/80 hover:bg-red-600"
+                    className="px-3 py-1 rounded bg-red-500/80 w-[80px] hover:bg-red-600"
                   >
                     Delete
                   </button>
@@ -343,7 +364,7 @@ const Billing = () => {
                   placeholder="Card Name"
                   value={formData.cardName}
                   onChange={handleChange}
-                  className="border p-2"
+                  className="border border-orange-600 focus:ring-2 focus:ring-orange-600 border p-2"
                   inputMode="text"
                   required
                 />
@@ -355,7 +376,7 @@ const Billing = () => {
                   value={isEditing ? maskCard(formData.cardNumber) : formData.cardNumber}
                   disabled={isEditing}
                   onChange={handleChange}
-                  className="border p-2 rounded"
+                  className="border border-orange-600 border p-2 rounded"
                   inputMode="numeric"
                   required
                 />
@@ -374,7 +395,7 @@ const Billing = () => {
                   placeholder="MM/YY"
                   value={formData.expiry}
                   onChange={handleChange}
-                  className="border p-2 rounded"
+                  className="border border-orange-600 p-2 rounded"
                   inputMode="numeric"
                   required
                 />
@@ -383,7 +404,7 @@ const Billing = () => {
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
-                    className="bg-gray-400 px-3 py-2 rounded"
+                    className="bg-red-600 text-white px-3 py-2 rounded"
                   >
                     Cancel
                   </button>
@@ -391,7 +412,7 @@ const Billing = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="bg-blue-600 text-white px-3 py-2 rounded flex items-center gap-2"
+                    className="bg-gradient-to-tr from-orange-600 to-orange-300 text-white px-3 py-1 w-[80px] rounded flex items-center justify-center gap-2"
                   >
                     {loading && (
                       <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>

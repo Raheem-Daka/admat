@@ -207,7 +207,7 @@ const Tracking = () => {
     <div className="flex min-h-screen">
       <ProfileSidePanel />
 
-      <main className="flex-grow p-6">
+      <main className="xl:ml-70 lg:ml-70 flex-1 p-6 transition-all duration-300">
         <h1 className="text-2xl font-bold mb-6">Tracking</h1>
 
         <div className="flex justify-between">

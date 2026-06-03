@@ -3,7 +3,7 @@ from .models import Billing, Address, Account, UserProfile
 
 @admin.register(Billing)
 class BillingAdmin(admin.ModelAdmin):
-    list_display = ('account', 'card_name', 'last4', 'brand', 'expiry', 'created_at')
+    list_display = ('account', 'card_name', 'is_default', 'last4', 'brand', 'expiry', 'created_at')
     search_fields = ('card_name', 'last4', 'brand', 'expiry')
     list_filter = ('created_at', 'updated_at')
     ordering = ('-created_at',)
@@ -18,7 +18,7 @@ class BillingAdmin(admin.ModelAdmin):
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ('account', 'full_name', 'city', 'phone', 'street', 'created_at')
+    list_display = ('account', 'full_name','label', 'is_default', 'city', 'phone', 'street', 'created_at')
     search_fields = ('full_name', 'city', 'phone', 'street')
     list_filter = ('created_at', 'updated_at')
     ordering = ('-created_at',)
