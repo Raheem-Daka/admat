@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Item, Category, Discount, ItemImages
+from .models import Item, Category, Discount, ItemImages, Review
 
 @admin.register(Discount)
 class DiscountAdmin(admin.ModelAdmin):
@@ -38,7 +38,10 @@ class ItemImagesAdmin(admin.ModelAdmin):
         }),
     )
 
-
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('item', 'user', 'rating', 'comment')
+    search_fields = ('user', 'comments')
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'created_at', 'updated_at')

@@ -76,7 +76,7 @@ const SignIn = () => {
       className="flex w-full mx-auto flex-col items-center justify-center max-w-96">
         
         <h2 className="text-4xl font-medium text-gray-900">Sign in</h2>
-        <p className="mt-3 text-sm text-gray-500/90 bg-indigo-200 w-full text-center text-indigo-500 rounded py-1 ">Welcome back! Please sign in to continue</p>
+        <p className="mt-3 text-sm text-gray-500/90 bg-orange-200 w-full text-center text-orange-600 rounded py-1 ">Welcome back! Please sign in to continue</p>
         <div className="mt-10 mb-2 grid w-full grid-cols-3 gap-6">
                 <button type="button" className="flex items-center justify-center rounded border border-gray-200 py-2.5 hover:bg-gray-50 focus:border-gray-300 cursor-pointer">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -122,9 +122,9 @@ const SignIn = () => {
 
             {/* Divider */}
              <div className="my-5 flex w-full items-center gap-4">
-                <div className="h-px w-full bg-gray-300/90"></div>
-                <p className="w-full text-sm text-nowrap text-gray-500/90">or sign in with email</p>
-                <div className="h-px w-full bg-gray-300/90"></div>
+                <div className="h-px w-full bg-orange-300"></div>
+                <p className="w-full text-sm text-nowrap text-gray-500">or sign in with email</p>
+                <div className="h-px w-full bg-orange-300"></div>
             </div>
 
           {error && (
@@ -132,8 +132,8 @@ const SignIn = () => {
           )}
 
             {/* Email Input */}
-            <div className="flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-gray-200 bg-transparent pl-5 focus-within:border-gray-300 focus-within:ring-1 focus-within:ring-gray-300">
-              <FaEnvelope className="text-gray-400 mr-2"/>
+            <div className="flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-orange-300 bg-transparent pl-5 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600">
+              <FaEnvelope className="text-orange-600 mr-2"/>
               <input
                 type="email"
                 name="email"
@@ -146,8 +146,8 @@ const SignIn = () => {
             </div>
 
             {/* Password Input */}
-             <div className="relative mt-4 flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-gray-200 bg-transparent pl-5 focus-within:border-gray-300 focus-within:ring-1 focus-within:ring-gray-300">
-                <FaLock className="text-gray-400 mr-2"/>
+             <div className="relative mt-4 flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-orange-300 bg-transparent pl-5 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600">
+                <FaLock className="text-orange-600 mr-2"/>
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -164,7 +164,7 @@ const SignIn = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff className="text-orange-600" size={18} /> : <Eye size={18} className="text-orange-600" />}
               </button>
             </div>
 
@@ -175,14 +175,14 @@ const SignIn = () => {
                     onChange={() => setRememberMe(prev => !prev)}
                     className="peer hidden" 
                     type="checkbox"/>
-                    <span className="relative flex size-4.5 items-center justify-center rounded border border-slate-300 peer-checked:border-gray-800 peer-checked:bg-gray-800">
+                    <span className="relative flex size-4.5 items-center justify-center rounded border border-orange-300 peer-checked:border-orange-900 peer-checked:bg-orange-600">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check size-3 text-white" aria-hidden="true" >
                             <path d="M20 6 9 17l-5-5"></path>
                         </svg>
                     </span>
                     <span className="text-gray-500 select-none">Remember me</span>
                 </label>
-                <a className="text-gray-800 underline" href="#">
+                <a className="text-orange-600 underline" href="#">
                     Forgot password?
                 </a>
             </div>
@@ -190,7 +190,8 @@ const SignIn = () => {
             {/* Sign In Button */}
             <button
               disabled={loading}
-              className="mt-8 h-11 w-full cursor-pointer rounded bg-linear-to-b from-gray-600 to-gray-800 text-white transition hover:from-gray-700 hover:to-gray-900"            >
+              className="mt-8 h-11 w-full cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-white transition hover:from-orange-700 hover:to-orange-900"            
+              >
               {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -205,7 +206,7 @@ const SignIn = () => {
             Don’t have an account?
             <Link
               to="/signup"
-              className="ml-2 text-gray-600 font-semibold hover:underline"
+              className="ml-2 text-orange-600 font-semibold hover:underline"
             >
               Sign up
             </Link>

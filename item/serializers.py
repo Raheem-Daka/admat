@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Item, Category, Discount, ItemImages
+from .models import Item, Category, Discount, ItemImages, Review
 
 
 class DiscountSerializer(serializers.ModelSerializer):
@@ -75,7 +75,18 @@ class ItemSerializer(serializers.ModelSerializer):
             rep["imageUrl"] = request.build_absolute_uri(rep["imageUrl"])
         return rep
 
-
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = [
+            'id',
+            'item',
+            'user',
+            'rating',
+            'comment',
+            'created_at'
+        ]
+        read_only_fields = ['item', 'user']
 
 class CategorySerializer(serializers.ModelSerializer):
     imageUrl = serializers.SerializerMethodField()

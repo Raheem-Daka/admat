@@ -53,7 +53,7 @@ function App() {
           duration: 2500,
           style: {
             borderRadius: "12px",
-            background: "#4F46E5",
+            background: "#ff4d00",
             color: "#fff",
           },
         }}

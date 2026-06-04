@@ -5,12 +5,15 @@ import placeHolder from "../assets/placeHolder.png";
 import {toast} from "sonner"
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../utils/authKeys";
 import { apiFetch } from "../api/api";
+import RatingInput from "../components/Rating";
+import { useAuth } from "../utils/AuthContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const ProductDetails = () => {
   const { id, slug } = useParams();
   const navigate = useNavigate();
+  const { user, setUser } = useAuth();
 
   const [item, setItem] = useState(null);
   const [relatedItems, setRelatedItems] = useState([]);
@@ -19,8 +22,16 @@ const ProductDetails = () => {
 
   const [adding, setAdding] = useState(false)
 
-  //Add to Cart function
+  const refreshItem = async () => {
+    try {
+      const data = await apiFetch(`/product/${item.id}/`);
+      setItem(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
+  //Add to Cart function
   const addToCart = async () => {
     if (adding || !item) return;
 
@@ -140,6 +151,7 @@ const ProductDetails = () => {
     <div className="container p-6 max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">{item.name}</h1>
 
+
       {/* Images */}
       <div className="flex sm:flex-col lg:flex-row gap-6" >
         {/* Main Image */}
@@ -168,7 +180,7 @@ const ProductDetails = () => {
                   onClick={() => setMainImage(imgUrl)}
                   className={`rounded-xl xl:h-50 lg:h-48 md:h-44 sm:h-40 overflow-hidden cursor-pointer border-2 ${
                     mainImage === imgUrl
-                      ? "border-indigo-500"
+                      ? "border-orange-600"
                       : "border-transparent"
                   }`}
                 >
@@ -183,6 +195,36 @@ const ProductDetails = () => {
           </div>
         )}      
       </div>
+
+      {/* item name */}
+      <div className="py-5">
+        <h1 className="text-3xl font-medium">{item.name}</h1>
+      </div>
+
+      {/* Rating */}
+      {item && (
+        <>
+          <div className="flex items-center gap-2 mt-2">
+            <RatingInput 
+            itemId={item.id} 
+            onRated={refreshItem} />
+
+            <p className="text-base text-gray-600">
+              {item.rating_count > 0
+                ? `(${(item.rating ?? 0).toFixed(1)} · ${item.rating_count} ${
+                    item.rating_count === 1 ? "review" : "reviews"
+                  })`
+                : "(No reviews yet)"}
+            </p>
+          </div>
+
+            {!user && (
+            <p className="text-sm text-gray-500">
+              Please log in to leave a review
+            </p>
+          )}
+        </>
+      )}
 
       {/* Price */}
       <div className=" mb-6 pt-5 lg:w-1/2 sm:flex justify-between items-center">
@@ -202,6 +244,7 @@ const ProductDetails = () => {
                 MWK {item.current_price}
               </p>
             </div>
+
           </div>
         ) : (
           /* ✅ NORMAL ITEM (NO DISCOUNT) */
@@ -211,9 +254,28 @@ const ProductDetails = () => {
         )}
       </div>
 
-      {/* Description */}
-      <p className="text-gray-700 my-4">{item.description}</p>
+      <div>
+        <span className="text-gray-500/70">(inclusive of all taxes)</span>
+      </div>
 
+
+      {/* Description */}
+      <div className="gap-2">
+        <h1 className="text-base font-semibold mt-6">About Product</h1>
+
+        <ul className="text-gray-700 my-4 list-disc pl-6 space-y-1">
+          {item.description && (
+            <ul className="text-gray-700 my-4 list-disc pl-6 space-y-1">
+              {item.description
+                .split(/\n|,/)
+                .map((line, i) =>
+                  line.trim() ? <li key={i}>{line.trim()}</li> : null
+                )}
+            </ul>
+          )}
+        </ul>
+      </div>
+    
       {/* Discounts */}
       {item.discounts?.length > 0 && (
         <div className="space-y-1 mb-6">

@@ -1,10 +1,13 @@
+import os
 from django.db import models
 from django.db.models import F
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
-import os
+from django.db.models import Avg
+from django.contrib.auth.models import User
+
 
 
 class Category(models.Model):
@@ -56,6 +59,9 @@ class Item(models.Model):
     is_available = models.BooleanField(default=True)
     purchase_count = models.IntegerField(default=0)
     views = models.IntegerField(default=0)
+    rating = models.FloatField(default=0)
+    rating_count = models.PositiveIntegerField(default=0)
+
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -91,8 +97,21 @@ class Item(models.Model):
                 self.image = None        
                 super().save(update_fields=["image"])
 
+    def update_rating(self):
+        avg = self.reviews.aggregate(avg=Avg("rating"))["avg"]
+        self.rating = avg or 0
+        self.rating_count = self.reviews.count()
+        self.save(update_fields=["rating", "rating_count"])
+
     def __str__(self):
         return self.name
+
+class Review(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField()
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class ItemImages(models.Model):

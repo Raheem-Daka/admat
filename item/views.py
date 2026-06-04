@@ -3,13 +3,58 @@ from django.utils import timezone
 from django.db.models import Q, Prefetch, F
 from rest_framework import viewsets
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from .models import Item, Category, Discount
-from .serializers import ItemSerializer, CategorySerializer, DiscountSerializer
+from .models import Item, Category, Discount, Review
+from .serializers import ItemSerializer, CategorySerializer, DiscountSerializer, ReviewSerializer
 from django.views.decorators.cache import cache_page
 from django.db.models import Case, When, IntegerField, Value
 from django.utils import timezone
+
+
+# Rating
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def add_review(request, item_id):
+    item = get_object_or_404(Item, id=item_id)
+
+    rating = request.data.get("rating")
+
+    # ✅ validation
+    if rating is None:
+        return Response({"error": "Rating is required"}, status=400)
+
+    try:
+        rating = int(rating)
+    except ValueError:
+        return Response({"error": "Rating must be a number"}, status=400)
+
+    if not (1 <= rating <= 5):
+        return Response({"error": "Rating must be between 1 and 5"}, status=400)
+
+    # ✅ update or create review
+    review, created = Review.objects.update_or_create(
+        user=request.user,
+        item=item,
+        defaults={
+            "rating": rating,
+            "comment": request.data.get("comment", "")
+        }
+    )
+
+    # ✅ update item rating
+    item.update_rating()
+
+    # ✅ serialize
+    serializer = ReviewSerializer(review)
+
+    return Response({
+        "message": "Review updated" if not created else "Review created",
+        "review": serializer.data,
+        "created": created
+    })
+
 
 # Product detail (pk + slug)
 @api_view(['GET'])
@@ -177,7 +222,6 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
             }
             ).data
             })
-
 
 # Categories
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
