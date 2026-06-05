@@ -26,7 +26,7 @@ const Addresses = () => {
   const sorted = [...addresses].sort((a, b) => b.is_default - a.is_default);
 
   const handleSelectAddress = (addr) => {
-    setSelectedAddress(addr);
+    setSelectedAddress(addr.id);
     localStorage.setItem("last_address_id", addr.id);
 
   };
@@ -37,25 +37,33 @@ const Addresses = () => {
   }, []);
 
   useEffect(() => {
-    const savedId = localStorage.getItem("last_address_id");
 
-    if (savedId) {
-      setSelectedAddress({
-        id: Number(savedId)
-      });
+    if (!selectedAddress) {
+      const savedId = Number(localStorage.getItem("last_address_id"));
+      
+    if (!addresses.length) return;
+
+      const preferred =
+        addresses.find(a => a.id === savedId) ||
+        addresses.find(a => a.is_default) ||
+        addresses[0];
+
+      if (preferred) {
+        setSelectedAddress(preferred.id);
+      }
     }
-  }, []);
+  }, [addresses]);
 
   const selectedFull = addresses.find(
-    (a) => a.id === selectedAddress?.id
+    (a) => a.id === selectedAddress
   );
+  
 
   const defaultAddress =
+    selectedFull ||    
     addresses.find((a) => a.is_default) ||
-    selectedFull ||
     addresses[0];
 
-    
   const formatAddresses = (data) => {
     const results = data.results || data || [];
 
@@ -150,10 +158,11 @@ const Addresses = () => {
       resetForm();
       setIsOpen(false);
       setIsEditing(false);
+      toast.success(isEditing ? "Address updated ✅" : "Address added ✅");
 
     } catch (err) {
       console.error("Save failed", err);
-      alert("Failed to save address");
+      toast.error("Failed to save address, Please try again");
     }
   };
 
@@ -162,6 +171,7 @@ const Addresses = () => {
     if(!addr.id) {
       console.log("Missing address ID");
       toast.error("Cannot edit this address, Please try again");
+      return;
     }
 
     setFormData({
@@ -198,17 +208,32 @@ const Addresses = () => {
 
   // ✅ DELETE
   const handleDelete = async (id) => {
+    if (addresses.length === 1) {
+      toast.error("You must keep at least one address");
+      return;
+    }
 
-      if (addresses.length === 1) {
-        toast.error("You must keep at least one address");
-        return;
-      }
     try {
       await apiFetch(`/addresses/${id}/`, {
         method: "DELETE",
       });
 
-      setAddresses((prev) => prev.filter((a) => a.id !== id));
+      setAddresses(prev => {
+        const updated = prev.filter(a => a.id !== id);
+
+        // ✅ fix selection if deleted address was selected
+        if (selectedAddress === id) {
+          const fallback =
+            updated.find(a => a.is_default) ||
+            updated[0] ||
+            null;
+
+          setSelectedAddress(fallback?.id || null);
+        }
+
+        return updated;
+      });
+
     } catch (err) {
       console.error("Failed to delete address", err);
     }
@@ -222,6 +247,7 @@ const Addresses = () => {
 
     setShowModal(false);
     setSelectedItem(null);
+    toast.success("Address deleted ✅");
   };
 
   // ✅ RESET FORM
@@ -290,7 +316,7 @@ const Addresses = () => {
               <div
                 key={addr.id}
                 onClick={() => handleSelectAddress(addr)}
-                className={`relative p-6 rounded text-white shadow-lg ${addr.is_default ? "bg-gradient-to-br from-orange-500 via-orange-200 to-orange-300" : "bg-gradient-to-br from-orange-300 via-orange-200 to-orange-100"} ${selectedAddress?.id === addr.id ? "ring-2 ring-orange-500" : "hover:ring-2 hover:ring-orange-300 cursor-pointer"}`}
+                className={`relative p-6 rounded text-white shadow-lg ${addr.is_default ? "bg-gradient-to-br from-orange-500 via-orange-200 to-orange-300" : "bg-gradient-to-br from-orange-300 via-orange-200 to-orange-100"} ${selectedAddress === addr.id ? "ring-2 ring-orange-500" : "hover:ring-2 hover:ring-orange-300 cursor-pointer"}`}
               >
                 <div className="flex flex-col gap-1 text-gray-600 font-medium">
                   {/*Default & Label */}

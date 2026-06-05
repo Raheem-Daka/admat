@@ -112,7 +112,7 @@ const OrderDetails = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
-        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
         <p className="mt-3 text-gray-500">Loading order...</p>
       </div>
     );
@@ -136,7 +136,7 @@ const OrderDetails = () => {
     <div className="max-w-4xl mx-auto p-6">
       <button
         onClick={() => navigate("/orders")}
-        className="mb-4 bg-indigo-600 text-white gap-1 rounded p-2 flex items-center"
+        className="mb-4 cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900 gap-1 p-2 flex items-center"
       >
         <FaArrowLeft />
         Back to Orders
@@ -158,7 +158,7 @@ const OrderDetails = () => {
         <div className="flex gap-2 mt-3">
           <button
             onClick={() => navigate(`/orders-tracking?order=${order.id}`)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+            className="px-4 py-2 cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900 transition"
           >
             Track Order
           </button>
@@ -266,7 +266,7 @@ const OrderDetails = () => {
       )}
 
       {/* Items */}
-      <div className="border rounded-xl p-4 bg-white shadow-sm mb-6">
+      <div className="border border-gray-300 rounded-xl p-4 bg-white shadow-sm mb-6">
         <h2 className="text-xl font-semibold mb-4">Items</h2>
 
         {order.items.map((item) => (
@@ -292,7 +292,7 @@ const OrderDetails = () => {
       </div>
 
       {/* Summary */}
-      <div className="border rounded-xl p-4 bg-white shadow-sm">
+      <div className="border border-gray-300 rounded-xl p-4 bg-white shadow-sm">
         <div className="flex justify-between mb-2">
           <span>Subtotal</span>
           <span>MWK {Number(order.subtotal).toLocaleString()}</span>
@@ -301,7 +301,7 @@ const OrderDetails = () => {
           <span>Delivery</span>
           <span>MWK {Number(order.delivery_fee).toLocaleString()}</span>
         </div>
-        <hr className="my-2" />
+        <hr className="my-2 text-gray-300" />
         <div className="flex justify-between font-bold text-lg">
           <span>Total</span>
           <span>MWK {Number(order.total).toLocaleString()}</span>

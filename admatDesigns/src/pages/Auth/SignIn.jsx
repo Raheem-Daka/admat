@@ -73,7 +73,7 @@ const SignIn = () => {
   return (
       <form 
       onSubmit={handleSubmit}
-      className="flex w-full mx-auto flex-col items-center justify-center max-w-96">
+      className="flex w-full mx-auto flex-col items-center justify-center xl:max-w-100 lg:max-w-96">
         
         <h2 className="text-4xl font-medium text-gray-900">Sign in</h2>
         <p className="mt-3 text-sm text-gray-500/90 bg-orange-200 w-full text-center text-orange-600 rounded py-1 ">Welcome back! Please sign in to continue</p>
@@ -190,7 +190,7 @@ const SignIn = () => {
             {/* Sign In Button */}
             <button
               disabled={loading}
-              className="mt-8 h-11 w-full cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-white transition hover:from-orange-700 hover:to-orange-900"            
+              className="mt-8 h-11 w-full cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900"            
               >
               {loading ? (
               <span className="flex items-center justify-center gap-2">

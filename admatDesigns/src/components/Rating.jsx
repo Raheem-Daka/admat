@@ -2,36 +2,39 @@ import { useState } from "react";
 import { apiFetch } from "../api/api";
 import { toast } from "sonner";
 
-const RatingInput = ({ itemId, onRated }) => {
-  const [rating, setRating] = useState(0);
+const RatingInput = ({ itemId, onRated, initialRating }) => {
+  const [rating, setRating] = useState(initialRating || 0);
   const [loading, setLoading] = useState(false);
 
   const submitRating = async (value) => {
-    if (loading) return;
 
-    setRating(value);
-    setLoading(true);
+    if (loading) return
 
-    try {
-      const res = await apiFetch(`/reviews/${itemId}/`, {
+      setRating(value);
+      setLoading(true);
+    
+  try {  
+    const data = await apiFetch(`/reviews/${itemId}/`, {
         method: "POST",
         body: JSON.stringify({ rating: value }),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to submit rating");
-      }
+      console.log("SUCCESS:", data);  
 
       // ✅ refresh parent
       if (onRated) onRated();
 
+      toast.success(data.message || "Rating submitted ✅");
+
     } catch (error) {
       console.error(error);
-      toast.error("Failed to submit rating");
+      toast.error(error?.detail || "Failed to submit rating");
     } finally {
       setLoading(false);
     }
   };
+
+
 
   return (
     <div className={`flex gap-1 ${loading ? "opacity-50" : "cursor-pointer"}`}>

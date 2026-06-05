@@ -233,7 +233,7 @@ const Billing = () => {
 
           <button
             onClick={openModal}
-            className="bg-gradient-to-br from-orange-600 to-orange-300 text-white px-4 py-2 rounded"
+            className="cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900 px-4 py-2"
           >
             + Add Card
           </button>

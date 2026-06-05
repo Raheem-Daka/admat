@@ -28,11 +28,13 @@ const DiscountProducts = () => {
 
         const data = await apiFetch(url);
 
-        setItems(data.results || []);
+        setItems(data.results ? data.results : data.items || []);
       } catch (err) {
         console.error("Error fetching discount products:", err);
       } finally {
-        setLoading(false);
+        setTimeout(() => {
+          setLoading(false);
+        }, 1000)
       }
     };
 
@@ -43,17 +45,21 @@ const handleNavigate = (id, slug) => {
     navigate(`/product/${id}/${slug}`);
   };
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10">
+        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <p className="mt-3 text-gray-500">Loading discount items...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="px-10">
       <h1 className="lg:text-4xl sm:text-2xl font-bold py-10 text-center">
         Get quality products on discount
       </h1>
 
-      {loading && (
-        <p className="text-center text-lg text-gray-500 animate-pulse">
-          Loading products...
-        </p>
-      )}
 
       <div className="w-full">
         <div className="">
@@ -76,7 +82,7 @@ const handleNavigate = (id, slug) => {
             <DesignCard
               key={item.id}
               item={item}
-              onClick={handleNavigate}
+              onClick={() => handleNavigate(item.id, item.slug)}
             />
           ))}
         </div>

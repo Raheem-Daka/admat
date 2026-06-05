@@ -93,7 +93,7 @@ const Home = () => {
             <div className="flex justify-center py-10">
               <button
                 onClick={handleNavProducts}
-                className="flex items-center gap-2 justify-center rounded bg-indigo-600 text-white px-3 py-2 hover:bg-indigo-700"
+                className="flex items-center gap-2 justify-center cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900 px-3 py-2"
               >
                 View All
                 <FaArrowRight />
@@ -137,7 +137,7 @@ const Home = () => {
           <div className="py-10 flex justify-center">
             <button 
             onClick={handleNavigation}
-            className="py-2 px-3 flex items-center gap-2 rounded bg-indigo-600 text-white">
+            className="py-2 px-3 flex items-center gap-2 cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900">
                 View all
                 <FaArrowRight />
             </button>

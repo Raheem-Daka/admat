@@ -66,14 +66,14 @@ const Cart = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center py-10">
-        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
         <p className="mt-3 text-gray-500">Loading cart items...</p>
       </div>
     );
   }
 
   if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
-    return <div className="p-6 text-center">Your cart is empty 🛒</div>;
+    return <div className="p-6 h-screen text-center flex justify-center items-center">Your cart is empty 🛒</div>;
   }
 
   const total = cart.items.reduce(
@@ -89,56 +89,59 @@ const Cart = () => {
         {cart.items.map((ci) => (
           <div
             key={ci.id}
-            className="flex gap-4 items-center border rounded-lg p-4"
+            className="flex flex-col justify-between sm:flex-row gap-4 sm:items-center border border-gray-300 rounded-lg p-4"
           >
             {/* ✅ Image */}
-            <img
-              src={resolveImageUrl(
-                ci.item.imageUrl ||
-                  (ci.item.images?.length
-                    ? ci.item.images[0].imageUrl
-                    : placeHolder)
-              )}
-              alt={ci.item.name}
-              className="w-24 h-24 object-cover rounded"
-            />
+            <div className="flex lg:flex-row flex-grow justify-between sm:gap-x-4">
+              <img
+                src={resolveImageUrl(
+                  ci.item.imageUrl ||
+                    (ci.item.images?.length
+                      ? ci.item.images[0].imageUrl
+                      : placeHolder)
+                )}
+                alt={ci.item.name}
+                className="w-24 h-24 object-cover rounded"
+              />
 
-            {/* ✅ Info */}
-            <div className="flex-1">
-              <h2 className="font-semibold">{ci.item.name}</h2>
+              <div className="flex-1 ">
+                <h2 className="font-semibold">{ci.item.name}</h2>
 
-              {Number(ci.item.current_price) !== Number(ci.item.price) ? (
-                <div className="text-sm">
-                  <p className="text-red-500 line-through">
-                    Was: MWK {ci.item.price}
-                  </p>
+                {Number(ci.item.current_price) !== Number(ci.item.price) ? (
+                  <div className="text-sm">
+                    <p className="text-red-500 line-through">
+                      Was: MWK {ci.item.price}
+                    </p>
+                    <p className="text-green-600 font-semibold">
+                      Now: MWK {ci.item.current_price}
+                    </p>
+                  </div>
+                ) : (
                   <p className="text-green-600 font-semibold">
-                    Now: MWK {ci.item.current_price}
+                    MWK {ci.item.current_price}
                   </p>
-                </div>
-              ) : (
-                <p className="text-green-600 font-semibold">
-                  MWK {ci.item.current_price}
-                </p>
-              )}
+                )}
+              </div>
+
             </div>
+            {/* ✅ Info */}
 
             {/* ✅ Quantity */}
             <div className="flex items-center gap-2">
               <button
               disabled={updating === ci.item.id}
                 onClick={() => updateQuantity(ci.item.id, ci.quantity - 1)}
-                className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 border border-orange-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 −
               </button>
 
-              <span>{ci.quantity}</span>
+              <span className="text-gray-500">{ci.quantity}</span>
 
               <button
               disabled={updating === ci.item.id}
                 onClick={() => updateQuantity(ci.item.id, ci.quantity + 1)}
-                className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 border border-orange-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 +
               </button>
@@ -157,14 +160,14 @@ const Cart = () => {
       </div>
 
       {/* ✅ Total */}
-      <div className="mt-8 flex justify-between items-center border-t pt-6">
-        <h2 className="text-xl font-semibold">
+      <div className="mt-8 flex justify-between items-center border-t border-gray-300 pt-6">
+        <h2 className="text-xl text-gray-500 font-semibold">
           Total: MWK {total.toFixed(2)}
         </h2>
 
         <button
           onClick={() => navigate("/checkout")}
-          className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700"
+          className="rounded bg-linear-to-b from-orange-600 to-orange-800 hover:from-orange-700 hover:to-orange-900 text-white px-4 py-2"
         >
           Checkout
         </button>

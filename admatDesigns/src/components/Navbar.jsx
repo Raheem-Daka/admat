@@ -169,7 +169,7 @@ const Navbar = () => {
         ) : (
           <Link
             to="/signin"
-            className="border px-4 py-2 rounded hover:bg-white hover:text-black transition hover:cursor-pointer"
+            className="text-orange-100 border px-4 py-2 rounded bg-linear-to-b from-orange-600 to-orange-800 hover:from-orange-700 hover:to-orange-900 hover:text-orange-200 transition hover:cursor-pointer"
           >
             Login
           </Link>

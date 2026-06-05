@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import DesignCard from "../components/DesignCard";
 import placeHolder from "../assets/placeHolder.png";
 import {toast} from "sonner"
@@ -24,8 +24,9 @@ const ProductDetails = () => {
 
   const refreshItem = async () => {
     try {
-      const data = await apiFetch(`/product/${item.id}/`);
-      setItem(data);
+      const data = await apiFetch(`/product/${item.id}/${item.slug}/`);
+      setItem(data.item);
+      setRelatedItems(data.related_items || []);
     } catch (err) {
       console.error(err);
     }
@@ -85,6 +86,7 @@ const ProductDetails = () => {
       setAdding(false);
     }
   };
+
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -148,27 +150,26 @@ const ProductDetails = () => {
   }
 
   return (
-    <div className="container p-6 max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">{item.name}</h1>
-
+    <div className="container p-6 lg:max-w-5xl mx-auto">
 
       {/* Images */}
-      <div className="flex sm:flex-col lg:flex-row gap-6" >
+      <div className="flex flex-col md:flex-row lg:flex-row  gap-6 items-stretch  lg:h-[450px]" >
         {/* Main Image */}
-        <div className="lg:w-1/2 w-full ">
-          <img
-            src={mainImage}
-            alt={item.name}
-            className="w-full xl:h-[420px] lg:h-[400px] md:h-[300px] sm:h-[250px] rounded-xl shadow-lg object-cover"
-            onError={(e) => {
-              e.currentTarget.src = placeHolder;
-            }}
-          />
-        </div>
+          <div className="lg:w-1/2 w-full  h-[250px] md:h-[450px] lg:h-[450px]">
+            <img
+              src={mainImage}
+              alt={item.name}
+              className="w-full h-full rounded-xl shadow-lg object-cover"
+              onError={(e) => {
+                e.currentTarget.src = placeHolder;
+              }}
+            />
+          </div>
+
 
         {/* Thumbnails */}
         {item.images?.length > 0 && (
-          <div className="grid grid-cols-2 gap-4 lg:w-1/2 w-full">
+          <div className="lg:w-1/2 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-1 lg:grid-cols-2 lg:auto-rows-fr gap-y-2 gap-x-4">
             {item.images.map((img, idx) => {
             const imgUrl = img.imageUrl.startsWith("http")
               ? img.imageUrl
@@ -178,10 +179,11 @@ const ProductDetails = () => {
                 <div
                   key={img.id || idx}
                   onClick={() => setMainImage(imgUrl)}
-                  className={`rounded-xl xl:h-50 lg:h-48 md:h-44 sm:h-40 overflow-hidden cursor-pointer border-2 ${
-                    mainImage === imgUrl
-                      ? "border-orange-600"
-                      : "border-transparent"
+                  className={`rounded-lg overflow-hidden cursor-pointer border-2 aspect-square max-w-[130px] md:max-w-[130px] lg:max-w-[210px]
+                     ${
+                      mainImage === imgUrl
+                        ? "border-orange-600"
+                        : "border-gray-300"
                   }`}
                 >
                   <img
@@ -202,14 +204,34 @@ const ProductDetails = () => {
       </div>
 
       {/* Rating */}
-      {item && (
+        {item && (
         <>
           <div className="flex items-center gap-2 mt-2">
-            <RatingInput 
-            itemId={item.id} 
-            onRated={refreshItem} />
+            {user && (
+              <RatingInput 
+                itemId={item.id} 
+                onRated={refreshItem}
+                initialRating={item.user_rating}
+              />
+            )}
 
-            <p className="text-base text-gray-600">
+            {!user && (
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg
+                    key={star}
+                    width="18"
+                    height="18"
+                    viewBox="0 0 18 17"
+                    fill={(item.rating ?? 0) >= star ? "#ea4a00" : "#ccc"}
+                  >
+                    <path d="M8.049.927c.3-.921 1.603-.921 1.902 0l1.294 3.983a1 1 0 0 0 .951.69h4.188c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 0 0-.364 1.118l1.295 3.983c.299.921-.756 1.688-1.54 1.118L9.589 13.63a1 1 0 0 0-1.176 0l-3.389 2.46c-.783.57-1.838-.197-1.539-1.118L4.78 10.99a1 1 0 0 0-.363-1.118L1.028 7.41c-.783-.57-.38-1.81.588-1.81h4.188a1 1 0 0 0 .95-.69z"/>
+                  </svg>
+                ))}
+              </div>
+
+            )}
+            <p className="text-sm text-gray-600">
               {item.rating_count > 0
                 ? `(${(item.rating ?? 0).toFixed(1)} · ${item.rating_count} ${
                     item.rating_count === 1 ? "review" : "reviews"
@@ -218,28 +240,39 @@ const ProductDetails = () => {
             </p>
           </div>
 
-            {!user && (
-            <p className="text-sm text-gray-500">
-              Please log in to leave a review
+          {!user && (
+
+            <Link to="/signin">
+              <p 
+              className="text-sm text-orange-500 hover:transform hover:transition-all ease-in-out">
+                Please log in to leave a review
+              </p>
+            </Link>
+          )}
+
+          {user && item.user_rating && (
+            <p className="text-sm text-orange-500">
+              You rated this {item.user_rating} ⭐
             </p>
           )}
         </>
       )}
 
+
       {/* Price */}
-      <div className=" mb-6 pt-5 lg:w-1/2 sm:flex justify-between items-center">
+      <div className=" mb-2 pt-5 lg:w-1/2 sm:flex justify-between items-center">
         {Number(item.current_price) !== Number(item.price) ? (
           /* ✅ DISCOUNTED ITEM */
-          <div className="flex justify-between w-full">
-            <div className="flex gap-2">
-              <span className="font-semibold text-xl">Was:</span>
-              <p className="text-red-500 line-through border rounded bg-red-600 text-white px-2">
+            <div className="flex flex-col sm:flex-col md:flex-row md:justify-between gap-y-4 w-full">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-md text-gray-500">Was:</span>
+              <p className="text-red-500 line-through flex items-center border rounded bg-red-600 text-white px-2">
                 MWK {item.price}
               </p>
             </div>
 
-            <div className="flex gap-2">
-              <span className="font-semibold text-xl">Now:</span>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-md text-gray-500">Now:</span>
               <p className="text-green-600 text-xl font-semibold">
                 MWK {item.current_price}
               </p>
@@ -255,25 +288,23 @@ const ProductDetails = () => {
       </div>
 
       <div>
-        <span className="text-gray-500/70">(inclusive of all taxes)</span>
+        <span className="text-sm text-gray-500/70">(inclusive of all taxes)</span>
       </div>
 
 
       {/* Description */}
       <div className="gap-2">
-        <h1 className="text-base font-semibold mt-6">About Product</h1>
+        <h1 className="text-lg text-gray-500 font-semibold mt-6">About Product</h1>
 
-        <ul className="text-gray-700 my-4 list-disc pl-6 space-y-1">
-          {item.description && (
-            <ul className="text-gray-700 my-4 list-disc pl-6 space-y-1">
-              {item.description
-                .split(/\n|,/)
-                .map((line, i) =>
-                  line.trim() ? <li key={i}>{line.trim()}</li> : null
-                )}
-            </ul>
-          )}
-        </ul>
+        {item.description && (
+          <ul className="text-gray-700 my-4 list-disc pl-6 space-y-1">
+            {item.description
+              .split(/\n|,/)
+              .map((line, i) =>
+                line.trim() ? <li key={i}>{line.trim()}</li> : null
+              )}
+          </ul>
+        )}      
       </div>
     
       {/* Discounts */}
@@ -295,7 +326,7 @@ const ProductDetails = () => {
         <button 
         onClick={addToCart}
         disabled={adding}
-        className={`rounded bg-orange-600 text-white px-4 py-2 ${
+        className={`rounded bg-linear-to-b from-orange-600 to-orange-800 hover:from-orange-700 hover:to-orange-900 text-white px-4 py-2 ${
           adding ? "bg-gray-400" : "bg-orange-600 hover:bg-orange-700"
         }`}>
           {adding ? "Adding.." : "Add to Cart"}

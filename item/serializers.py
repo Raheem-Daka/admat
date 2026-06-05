@@ -46,6 +46,10 @@ class ItemSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.get_name_display', read_only=True)
     discounts = DiscountSerializer(many=True, read_only=True)
     images = ItemImagesSerializer(many=True, read_only=True)
+    user_rating = serializers.SerializerMethodField()
+    
+    rating = serializers.FloatField(read_only=True)
+    rating_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Item
@@ -64,8 +68,20 @@ class ItemSerializer(serializers.ModelSerializer):
             'current_price',
             'category_name',
             'discounts',
+            'user_rating',
+            'rating',
+            'rating_count',
         ]
-    
+
+    def get_user_rating(self, obj):
+        request = self.context.get("request")
+
+        # ✅ FIX: handle missing request
+        if not request or not request.user.is_authenticated:
+            return None
+
+        review = obj.reviews.filter(user=request.user).first()
+        return review.rating if review else None    
     
     def to_representation(self, instance):
         rep = super().to_representation(instance)
