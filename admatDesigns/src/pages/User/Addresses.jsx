@@ -40,7 +40,7 @@ const Addresses = () => {
 
     if (!selectedAddress) {
       const savedId = Number(localStorage.getItem("last_address_id"));
-      
+
     if (!addresses.length) return;
 
       const preferred =
@@ -191,20 +191,29 @@ const Addresses = () => {
 
   // Set Default
   const setDefaultAddress = async (id) => {
-  try {
-    await apiFetch(`/addresses/${id}/set-default/`, {
-      method: "PATCH",
-    });
+    
+    try {
+      await apiFetch(`/addresses/${id}/set-default/`, {
+        method: "PATCH",
+      });
 
-    // refresh list
-    const data = await apiFetch("/addresses/");
-    setAddresses(formatAddresses(data));
+      const data = await apiFetch("/addresses/");
+      const formatted = formatAddresses(data);
+      setAddresses(formatted);
+      toast.success("Successfully changed default card")
 
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to set default address");
-  }
-};
+      // ✅ update selected
+      const newDefault = formatted.find(a => a.is_default);
+      if (newDefault) {
+        setSelectedAddress(newDefault.id);
+        localStorage.setItem("last_address_id", newDefault.id);
+      }
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to set default address");
+    }
+  };
 
   // ✅ DELETE
   const handleDelete = async (id) => {
@@ -258,7 +267,8 @@ const Addresses = () => {
       phone: "",
       city: "",
       street: "",
-      label: ""
+      label: "home",
+      is_default: false
     });
   };
 
@@ -283,7 +293,7 @@ const Addresses = () => {
 
           <button
             onClick={openModal}
-            className="bg-gradient-to-br from-orange-600 to-orange-400 text-white px-4 py-2 rounded-lg shadow hover:shadow-md transition"
+            className="cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900 py-3 px-2"
           >
             + Add Address
           </button>
@@ -311,12 +321,12 @@ const Addresses = () => {
             )}
 
           {/* ✅ LIST*/}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {sorted.map((addr) => (
               <div
                 key={addr.id}
                 onClick={() => handleSelectAddress(addr)}
-                className={`relative p-6 rounded text-white shadow-lg ${addr.is_default ? "bg-gradient-to-br from-orange-500 via-orange-200 to-orange-300" : "bg-gradient-to-br from-orange-300 via-orange-200 to-orange-100"} ${selectedAddress === addr.id ? "ring-2 ring-orange-500" : "hover:ring-2 hover:ring-orange-300 cursor-pointer"}`}
+                className={`relative p-6 rounded text-white shadow-lg ${addr.is_default ? "bg-gradient-to-br from-orange-500 via-orange-200 to-orange-300" : "border-1 border-orange-600"} ${selectedAddress === addr.id ? "ring-2 ring-orange-500" : "hover:ring-2 hover:ring-orange-300 cursor-pointer"}`}
               >
                 <div className="flex flex-col gap-1 text-gray-600 font-medium">
                   {/*Default & Label */}
@@ -410,7 +420,7 @@ const Addresses = () => {
         </>
         )}
 
-        {/* Editing Modal */}
+        {/* Delete Modal */}
         {showModal && (         
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center backdrop-blur-sm z-50">
           <div className="bg-white shadow-md rounded-xl py-6 px-5 md:w-[460px] w-[370px]">
@@ -510,6 +520,7 @@ const Addresses = () => {
                   <option value="home">Home</option>
                   <option value="work">Work</option>
                 </select>
+
                 <div className="flex justify-between mt-4">
                   <button
                     type="button"

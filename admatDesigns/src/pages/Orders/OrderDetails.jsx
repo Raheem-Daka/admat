@@ -83,7 +83,8 @@ const OrderDetails = () => {
       }
     );
 
-      toast.success("Order cancelled");
+      toast.success("Order cancelled successfully");
+      navigate("/orders")
 
       setOrder(prev => ({
         ...prev,
@@ -175,7 +176,7 @@ const OrderDetails = () => {
         </div>
       </div>
 
-              {/* DELETE CONFIRMATION MODAL */}
+        {/* DELETE CONFIRMATION MODAL */}
         {showModal && (
           <div className="fixed inset-0 bg-black/50 flex justify-center items-center backdrop-blur-sm z-50">
           <div className="bg-white shadow-md rounded-xl py-6 px-5 md:w-[460px] w-[370px]">
@@ -194,7 +195,7 @@ const OrderDetails = () => {
               <p className="text-sm text-gray-600 mt-2 text-center">
                 Do you really want to cancel order  
                 <span className="text-red-500 font-bold"> # {order?.id} </span>with items: <span className="font-semibold text-red-500">
-                  <ul>
+                  <ul className="my-2 inline-block text-left">
                     {order.items.length <= 3 ? (
                       order.items.map(item => (
                         <li key={item.id}>{item.item_name}</li>
@@ -205,7 +206,7 @@ const OrderDetails = () => {
                   </ul>
                   </span>
                   <br/> 
-                  <span>This action cannot be undone.</span>
+                <span>This action cannot be undone.</span>
               </p>
 
               {/* Buttons */}

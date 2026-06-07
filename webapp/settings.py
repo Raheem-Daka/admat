@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'orders',
     'account',
     'tracking',
+    'settings',
 
     
     'channels',

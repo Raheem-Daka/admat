@@ -23,3 +23,6 @@ class SignInSerializer(serializers.Serializer):
 
 class SignOutSerializer(serializers.Serializer):
     pass
+
+class ChangePasswordView(serializers.Serializer):
+    pass

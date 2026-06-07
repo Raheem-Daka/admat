@@ -22,6 +22,9 @@ const SignIn = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [show2FA, setShow2FA] = useState(false);
+  const [otp, setOtp] = useState("");
+
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleChange = (e) => {
@@ -46,9 +49,17 @@ const SignIn = () => {
         }),
       });
 
-      if (!data.access || !data.refresh) {
-        throw new Error(data.detail || data.message || "Login failed, Please try again");
-      }        
+      console.log("LOGIN RESPONSE:", data)
+
+      if (data.requires_2fa){
+        toast.info("2FA required, Enter your OTP");
+        localStorage.setItem("2fa_email", formData.email)
+        setShow2FA(true);
+
+        return;
+      } 
+
+      if(data.access && data.refresh) {
         login(data.access, data.refresh);
         toast.success("Signed in successfully")
 
@@ -60,9 +71,16 @@ const SignIn = () => {
         } else {
             navigate("/", {replace : true });
         }
+        return        
+      }
 
     } catch (err) {
-      setError(err.message);
+      console.log("LOGIN ERROR", err)
+      setError(
+        err?.message ||
+        err?.respons?.data?.message ||
+        "Failed to sighn in, Please try again"
+      );
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -70,7 +88,31 @@ const SignIn = () => {
     }
   };
 
+  const verifyOTP = async () => {
+    try {
+      const email = localStorage.getItem("2fa_email");
+
+      const data = await apiFetch("/login_2fa/", {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          otp,
+        }),
+      });
+
+      login(data.access, data.refresh);
+      toast.success("Login successful ✅");
+
+      setShow2FA(false);
+      navigate("/");
+
+    } catch (err) {
+      setError("Invalid OTP");
+    }
+  };
+
   return (
+    <>
       <form 
       onSubmit={handleSubmit}
       className="flex w-full mx-auto flex-col items-center justify-center xl:max-w-100 lg:max-w-96">
@@ -211,7 +253,44 @@ const SignIn = () => {
               Sign up
             </Link>
           </div>
-        </form>
+      </form>
+
+      {show2FA && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          
+          <div className="bg-white p-6 rounded-2xl shadow-xl w-[90%] max-w-sm text-center">
+
+            <h3 className="text-xl text-gray-500 font-semibold mb-3">Two-Factor Authentication</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Enter the 6-digit code from your authenticator app
+            </p>
+
+            <input
+              type="text"
+              maxLength={6}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="123456"
+              className="w-full border p-3 text-center text-xl tracking-widest rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+            />
+
+            <button
+              onClick={verifyOTP}
+              className="mt-4 w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg transition"
+            >
+              Verify
+            </button>
+
+            <button
+              onClick={() => setShow2FA(false)}
+              className="mt-2 text-sm text-gray-500 hover:underline"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

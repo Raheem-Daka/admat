@@ -23,6 +23,8 @@ const Profile = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0)
 
+  const fileInputRef = React.useRef(null);
+
   const validateImage = (file) => {
     if (!file) return false;
 
@@ -166,7 +168,7 @@ const Profile = () => {
       }
 
       setSaving(true);
-      setProgress(0);
+
 
       const form = new FormData();
       form.append("username", formData.username);
@@ -206,11 +208,14 @@ const Profile = () => {
             setSaving(false);
 
             setUser(data);
-            setFormData({
-              username: data.username,
-              email: data.email,
-              image: null,
-            });
+
+            const resetForm = (data) => {
+              setFormData({
+                username: data.username,
+                email: data.email,
+                image: null,
+              });
+            };
 
             setPreview(data.imageUrl || null);
             setIsEditing(false);
@@ -240,15 +245,25 @@ const Profile = () => {
     }
   };  
 
+    useEffect(() => {
+    const timer = setTimeout(() => {
+      setProgress(0);
+    }, 2000);
+
+    // ✅ cleanup (VERY IMPORTANT)
+    return () => clearTimeout(timer);
+  }, [progress]);
+
+
   return (
 
-    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden">
+    <div className="flex min-h-screen overflow-x-hidden">
         <ProfileSidePanel />      
-      <div className="xl:ml-70 lg:ml-70 flex-1 p-6 transition-all duration-300">
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+      <div className="flex-1 p-6 transition-all duration-300">
+        <div className="rounded lg:max-w-4xl mx-auto p-6">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex flex-col items-center justify-center py-20 h-screen">
+              <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
               <p className="mt-3 text-gray-500">Loading profile...</p>
             </div>
 
@@ -261,14 +276,14 @@ const Profile = () => {
                 {isEditing ? (
                   <>
                     Editing{" "}
-                    <span className="text-indigo-600">
+                    <span className="text-orange-600">
                       {user?.username || "User"}
                     </span>
                     's profile
                   </>
                 ) : (
                   <>
-                    <span className="text-indigo-600">
+                    <span className="text-orange-600">
                       {user?.username || "User"}
                     </span>{" "}
                     's profile
@@ -284,9 +299,9 @@ const Profile = () => {
                 onDragOver={isEditing ? handleDragOver : undefined}
                 onDragLeave={isEditing ?  handleDragLeave : undefined}
                 onDrop={isEditing ? handleDrop : undefined}
-                className={`relative w-28 h-28 rounded-full border-2 flex items-center justify-center overflow-hidden cursor-pointer transition
-                  ${isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-300"}
-                  ${isEditing ? "hover:border-indigo-400" : ""}
+                className={`border relative w-28 h-28 rounded-full border-2 flex items-center justify-center overflow-hidden cursor-pointer transition
+                  ${isDragging ? "border border-orange-600 bg-orange-50" : "border-gray-300 border"}
+                  ${isEditing ? "hover:border-orange-400" : ""}
                 `}
               >
                 <img
@@ -297,7 +312,7 @@ const Profile = () => {
 
                 {/* Overlay when editing */}
                 {isEditing && (
-                  <div className="absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center text-white text-xs text-center px-2">
+                  <div className="absolute inset-0 pointer-events-none bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center text-white text-xs text-center px-2">
                     Drop image or click
                   </div>
                 )}
@@ -305,10 +320,11 @@ const Profile = () => {
                 {/* Hidden file input */}
                 {isEditing && (
                   <input
+                  ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
                   />
                 )}
               </div>
@@ -321,7 +337,7 @@ const Profile = () => {
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-indigo-600 h-full transition-[width] duration-500 ease-out"
+                  className="bg-orange-600 h-full transition-[width] duration-500 ease-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -376,7 +392,7 @@ const Profile = () => {
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+                className="cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900 py-3 px-2"
               >
                 Edit Profile
               </button>

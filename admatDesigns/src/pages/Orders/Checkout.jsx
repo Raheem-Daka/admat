@@ -1,13 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ACCESS_TOKEN_KEY } from "../../utils/authKeys";
 import { useAuth } from "../../utils/AuthContext";
 import { apiFetch } from "../../api/api";
+import { FaChevronDown } from "react-icons/fa";
 
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   const Checkout = () => {
     const [cart, setCart] = useState(null);
@@ -17,6 +14,19 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
     const [addresses, setAddresses] = useState([])
     const [placingOrder, setPlacingOrder] = useState(false);
     const { user } = useAuth();
+    const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+      const handleClickOutside = () => setIsOpen(false);
+
+      if (isOpen) {
+        document.addEventListener("click", handleClickOutside);
+      }
+
+      return () => {
+        document.removeEventListener("click", handleClickOutside);
+      };
+    }, [isOpen]);
    
 
     const [formData, setFormData] = useState({
@@ -28,6 +38,13 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
     });
 
   const placeOrder = async () => {
+    if(placingOrder) return
+
+    if (!selectedAddress) {
+      toast.error("Please select a delivery address");
+      return;
+    }
+
     if (
       !formData.full_name.trim() ||
       !formData.phone.trim() ||
@@ -45,8 +62,14 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
       if (formData.payment_method === "cod") {
         await apiFetch(`/orders/`,{
-            method: "POST",
-            body: JSON.stringify(formData),
+            method: "POST",  
+            headers: {
+                "Content-Type": "application/json",
+              },
+            body: JSON.stringify({
+              ...formData,
+              address_id: selectedAddress,
+            }),
           }
         );
 
@@ -60,8 +83,15 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
       }
 
     } catch (err) {
-      console.log("ERROR RESPONSE:", err.response?.data);
-      toast.error("Failed to place order");
+
+      console.log("ERROR RESPONSE:", err);
+
+      const message = 
+        err?.data?.message || 
+        err?.message || 
+        "Failed to place order, Please try again";
+
+      toast.error(message);
     } finally {
       setPlacingOrder(false);
     }
@@ -85,70 +115,69 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
   // Fetchaddress
   const fetchAddresses = async () => {
     try {
-      const data = await apiFetch("/addresses");
-      setAddresses(Array.isArray(data) ? data : data.addresses || []);
+      const data = await apiFetch("/addresses/");
+      const formatted = formatAddresses(data);
+
+      console.log("RAW DATA:", data);         // ✅ correct debug
+      console.log("FORMATTED:", formatted);   // ✅ correct debug
+
+      setAddresses(formatted);
+
     } catch (err) {
       console.log("Address fetch error:", err);
     }
-  }
+  };  
 
-  // Default Address
+  useEffect(() => {
+    if (!Array.isArray(addresses) || addresses.length === 0) return;
 
-const selectedFullAddress = useMemo(() => {
-  if (!Array.isArray(addresses) || addresses.length === 0) 
-    return null;
-  
-    return (
-      addresses.find(a => a.id === selectedAddress) ||
-      addresses.find(a => a.is_default) ||
-      addresses[0]
-    );
+    if (!selectedAddress) {
+      const defaultAddr =
+        addresses.find(a => a.is_default) || addresses[0];
+
+      setSelectedAddress(defaultAddr.id);
+    }
   }, [addresses, selectedAddress]);
 
+  // Address fromat
+  const formatAddresses = (data) => {
+    const results = data?.results || data || [];
 
-  const defaultAddress =
-    (Array.isArray(addresses)
-      ? addresses.find(a => a.is_default)
-      : null) ||
-    selectedFullAddress ||
-    (Array.isArray(addresses) ? addresses[0] : null);
+    return results.map((addr) => ({
+      id: addr.id,
+      full_name: addr.full_name,
+      phone: addr.phone,
+      city: addr.city,
+      street: addr.street,
+      is_default: addr.is_default,
+    }));
+  };
+  // Default Address
+  const selectedFullAddress = useMemo(() => {
+    if (!Array.isArray(addresses) || addresses.length === 0) 
+      return null;
+    
+      return (
+        addresses.find(a => a.id === selectedAddress) ||
+        addresses.find(a => a.is_default) ||
+        addresses[0]
+      );
+    }, [addresses, selectedAddress]);
+
 
   //Auto select Default address
   useEffect(() => {
-    if (!Array.isArray(addresses) || addresses.length === 0) 
-      return;
-    
-    const savedId = Number(localStorage.getItem("last_address_id"));
+    if (!selectedFullAddress) return;
 
-    let selected =
-      addresses.find(a => a.id === savedId) ||   // saved
-      addresses.find(a => a.is_default) ||       // default
-      addresses[0];                              // fallback
+    setFormData(prev => ({
+      ...prev,
+      full_name: selectedFullAddress.full_name || "",
+      phone: selectedFullAddress.phone || "",
+      address: selectedFullAddress.street || "",
+      city: selectedFullAddress.city || "",
+    }));
+  }, [selectedFullAddress]);
 
-    if (selected) {
-      setSelectedAddress(selected.id);
-
-      setFormData(prev => ({
-        ...prev,
-        full_name: selected.full_name,
-        phone: selected.phone,
-        address: selected.street,
-        city: selected.city,
-      }));
-    }
-  }, [addresses]);
-
-  useEffect(() => {
-    if (defaultAddress) {
-      setFormData((prev) => ({
-        ...prev,
-        full_name: defaultAddress.full_name,
-        phone: defaultAddress.phone,
-        address: defaultAddress.street,
-        city: defaultAddress.city,
-      }));
-    }
-  }, [defaultAddress]);
 
   useEffect(() => {
     const token = user?.token;
@@ -159,21 +188,20 @@ const selectedFullAddress = useMemo(() => {
       return;
     }
 
-    fetchCart(token);
+    fetchCart();
     fetchAddresses();
   }, [user?.token]);
 
   const handleSelectAddress = (addr) => {
     setSelectedAddress(addr.id);
 
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       full_name: addr.full_name,
       phone: addr.phone,
       address: addr.street,
       city: addr.city,
-      payment_method: formData.payment_method,
-    });
+    }));
   };
 
   const fetchCart = async () => {
@@ -230,6 +258,7 @@ const selectedFullAddress = useMemo(() => {
 
   return (
     <>
+
       {Array.isArray(addresses) && addresses.length === 0 && (
         <div className="p-4 border rounded bg-yellow-50 text-center">
           <p className="mb-2 text-sm text-gray-600">
@@ -242,7 +271,7 @@ const selectedFullAddress = useMemo(() => {
             Add Address
           </button>
         </div>
-      )}
+      )}     
 
       <form
         onSubmit={(e) => {
@@ -253,13 +282,61 @@ const selectedFullAddress = useMemo(() => {
       >
         {/* ✅ LEFT SIDE (Checkout form) */}
         <div>
-          <h1 className="font-bold text-2xl mb-5">Checkout</h1>
+          <h1 className="font-semibold text-2xl text-gray-500 mb-5">Checkout</h1>
 
-          {defaultAddress && (
-            <div className="p-4 border rounded bg-green-50 mb-4">
-              <p className="font-semibold">{defaultAddress.full_name}</p>
-              <p>{defaultAddress.street}, {defaultAddress.city}</p>
-              <p className="text-sm text-gray-600">{defaultAddress.phone}</p>
+          {/* selected address */}
+<div className="relative w-full max-w-6xl mx-auto">
+  <button
+  type="button"
+    onClick={(e) => {
+      e.stopPropagation(); // ✅ prevent closing
+      setIsOpen(prev => !prev);
+    }}
+    className="flex justify-between items-center w-full border p-3 rounded border-orange-300 text-left bg-white"
+  >    
+  {selectedFullAddress
+      ? `${selectedFullAddress.full_name} — ${selectedFullAddress.city}`
+      : "Select delivery address"
+  }
+  <FaChevronDown />
+  </button>
+
+  {isOpen && (
+    <div className="absolute z-10 mt-1 w-full bg-white border rounded shadow max-h-60 overflow-y-auto animate-fadeIn">
+      {addresses.map(addr => (
+        <div
+          key={addr.id}
+          onClick={() => {
+            handleSelectAddress(addr);
+            setIsOpen(false);
+          }}
+          className={`p-3 cursor-pointer transition flex justify-between items-center ${
+            selectedAddress === addr.id
+              ? "bg-orange-100 border-l-4 border-orange-500"
+              : "hover:bg-orange-50"
+          }`}        
+          >
+          <p className="font-medium">{addr.full_name}</p>
+          <p className="text-sm">
+            {addr.street}, {addr.city}
+          </p>
+        </div>
+        
+      ))}
+    </div>
+  )}
+</div>
+          {selectedFullAddress && (
+            <div className="my-3 py-3  rounded">
+              <div>
+                <h2 className="font-semibold text-xl text-gray-500">selected address</h2>
+              </div>
+              <div className="text-orange-200 bg-orange-600 rounded p-3">
+                <p className="uppercase font-semibold">{selectedFullAddress.full_name}</p>
+                <p>{selectedFullAddress.street}, {selectedFullAddress.city}</p>
+                <p className="text-sm">{selectedFullAddress.phone}</p>
+
+              </div>
             </div>
           )}
 
@@ -322,7 +399,7 @@ const selectedFullAddress = useMemo(() => {
 
         {/* ✅ RIGHT SIDE (Order Summary) */}
         <div>
-          <h2 className="text-2xl font-semibold mb-4">Order Summary</h2>
+          <h2 className="font-semibold text-2xl text-gray-500  mb-5">Order Summary</h2>
 
           <div className="space-y-4">
             {cart.items.map((ci) => (
@@ -365,10 +442,22 @@ const selectedFullAddress = useMemo(() => {
 
           <button
             type="submit"
-            disabled={placingOrder || addresses.length === 0}
-            className="mt-6 w-full rounded bg-linear-to-b from-orange-600 to-orange-800 hover:from-orange-700 hover:to-orange-900 text-white px-4 py-2 transition disabled:opacity-50"
+            disabled={
+              placingOrder ||
+              !Array.isArray(addresses) ||
+              addresses.length === 0 ||
+              !selectedAddress
+            }            
+            className="mt-6 w-full rounded bg-linear-to-b from-orange-600 to-orange-800 hover:from-orange-700 hover:to-orange-900 text-white px-4 py-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {placingOrder ? "Placing order..." : "Place order"}
+            {placingOrder ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Placing order...
+              </span>
+            ) : (
+              "Place order"
+            )}          
           </button>
         </div>
       </form>

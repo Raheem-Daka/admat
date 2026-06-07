@@ -149,10 +149,10 @@ const ProfileSidePanel = () => {
             </div>
         </div>
         {/* LOGOUT BUTTON */}
-        <div className="border flex items-start ">
+        <div className="flex items-start ">
           <button
             onClick={handleLogout}
-            className="flex items-center justify-center w-full gap-2 bg-red-600 text-white py-3 rounded-xl hover:bg-red-700 transition"
+            className="flex items-center justify-center w-full gap-2 bg-red-600 text-white py-3 rounded hover:bg-red-700 transition"
           >
             <LogOut className="w-5 h-5" />
             Logout

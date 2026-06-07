@@ -15,6 +15,9 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { toast } from "sonner";
+import { useMemo } from "react";
+
 
 const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
@@ -23,6 +26,33 @@ const DashboardPage = () => {
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
   const [cards, setCards] = useState([]);
+
+  const defaultAddress = addresses.find(addr => addr.is_default);
+  const defaultCard = cards.find(card => card.is_default);
+
+
+  const [filters, setFilters] = useState({
+    status: "all",
+    startDate: "",
+    endDate: "",
+  });
+
+
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const status = (order.status || "").toLowerCase();
+
+      if (filters.status !== "all" && status !== filters.status) return false;
+
+      const date = new Date(order.created_at);
+
+      if (filters.startDate && date < new Date(filters.startDate)) return false;
+      if (filters.endDate && date > new Date(filters.endDate)) return false;
+
+      return true;
+    });
+  }, [orders, filters]);
 
   const Card = ({ title, value, onClick }) => (
 
@@ -37,67 +67,88 @@ const DashboardPage = () => {
       </div>
 
   );
-
-
   const COLORS = ["#6366F1", "#22C55E", "#FACC15", "#EF4444"];
 
-  useEffect(() => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+  const fetchData = async () => {
+    try {
+      if (!user) {
+        const userData = await apiFetch("/profile/");
+        setUser(userData);
+      }
 
-    if (!token) {
+      const [addressData, cardData, orderData] = await Promise.all([
+        apiFetch("/addresses/"),
+        apiFetch("/billing/"),
+        apiFetch("/orders/")
+      ]);
+
+
+      setAddresses(addressData?.results || addressData || []);
+
+
+      const normalizedCards = (cardData?.results || cardData || []).map((card) => ({
+        id: card.id,
+        cardName: card.card_name || "Unknown",
+        cardNumber: card.card_number || "",
+        expiry: card.expiry || "--/--",
+        is_default: card.is_default, // ✅ ADD THIS
+      }));
+
+      setCards(normalizedCards);
+
+      const orderList = orderData?.results || orderData || [];
+      setOrders(orderList);
+
+    } catch (err) {
       navigate("/signin", { replace: true });
-      return;
+    } finally {
+      setLoading(false);
     }
+  }
 
-    const fetchData = async () => {
+
+  useEffect(() => {
+    const init = async () => {
       try {
         if (!user) {
           const userData = await apiFetch("/profile/");
-          setUser({ ...userData, token });
+          setUser(userData);
         }
 
-        const [addressData, cardData, orderData] = await Promise.all([
-          apiFetch("/addresses/"),
-          apiFetch("/billing/"),
-          apiFetch("/orders/")
-        ]);
-
-
-        setAddresses(addressData?.results || addressData || []);
-
-
-        const normalizedCards = (cardData?.results || cardData || []).map((card) => ({
-          id: card.id,
-          cardName: card.card_name || "Unknown",
-          cardNumber: card.card_number || "",
-          expiry: card.expiry || "--/--"
-        }));
-
-        setCards(normalizedCards);
-
-        const orderList = orderData?.results || orderData || [];
-        setOrders(orderList);
-
-      } catch (err) {
+        await fetchData();
+      } catch {
         navigate("/signin", { replace: true });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [navigate, user, setUser]);
+    init();
+  }, []);
+
+
+  useEffect(() => {
+    const socket = new WebSocket("ws://127.0.0.1:8000/ws/orders/");
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      toast.info("📦 Order updated")
+      fetchData(); 
+    };
+
+    return () => socket.close();
+  }, []);
 
   // ✅ Derived data
-  const activeOrders = orders.filter(
+  const activeOrders = filteredOrders.filter(
     (o) => (o.status || "").toLowerCase() !== "cancelled"
   );
 
-  const cancelledOrders = orders.filter(
+  const cancelledOrders = filteredOrders.filter(
     (o) => (o.status || "").toLowerCase() === "cancelled"
   );
 
-  const totalRevenue = orders.reduce(
+  const totalRevenue = filteredOrders.reduce(
     (sum, order) =>
       (order.status || "").toLowerCase() !== "cancelled"
         ? sum + Number(order.total || 0)
@@ -110,20 +161,20 @@ const DashboardPage = () => {
   const statusData = ["delivered", "processing", "pending", "cancelled"].map(
     (status) => ({
       name: status.charAt(0).toUpperCase() + status.slice(1),
-      value: orders.filter(
+      value: filteredOrders.filter(
         (o) => normalize(o.status) === status
       ).length,
     })
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden">
+    <div className="flex min-h-screen overflow-x-hidden">
       <ProfileSidePanel />
 
       <div className="flex-1 p-6 transition-all duration-300">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full">
-            <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-3 text-gray-500">Loading dashboard...</p>
           </div>
         ) : (
@@ -131,12 +182,61 @@ const DashboardPage = () => {
             {/* HEADER */}
             <div className="mb-6">
               <h1 className="text-2xl font-semibold">
-                Welcome, <span className="text-indigo-600">{user?.username}</span>
+                Welcome, <span className="text-orange-600">{user?.username}</span>
               </h1>
               <p className="text-gray-500">
                 Here’s your account overview
               </p>
             </div>
+
+            {/*Date Filters */}
+            <div className="flex gap-3 mt-4 flex-wrap py-5">
+
+            <select
+              value={filters.status}
+              onChange={(e) =>
+                setFilters({ 
+                  ...filters, 
+                  status: e.target.value 
+                })
+              }
+              className="border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-600  rounded"
+            >
+              <option value="all">All</option>
+              <option value="delivered">Delivered</option>
+              <option value="processing">Processing</option>
+              <option value="pending">Pending</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+
+            <input
+              type="date"
+              value={filters.startDate}
+              onChange={(e) =>
+                setFilters({ ...filters, startDate: e.target.value })
+              }
+              className="border border-gray-300 p-2 text-sm  focus:outline-none focus:ring-2 focus:ring-orange-600  rounded"
+            />
+
+            <input
+              type="date"
+              value={filters.endDate}
+              onChange={(e) =>
+                setFilters({ ...filters, endDate: e.target.value })
+              }
+              className="border border-gray-300 p-2 text-sm  focus:outline-none focus:ring-2 focus:ring-orange-600  rounded"
+            />
+
+            <button
+              onClick={() =>
+                setFilters({ status: "all", startDate: "", endDate: "" })
+              }
+              className="px-3 py-2 bg-gray-200 rounded text-sm hover:bg-gray-300 hover:cursor-pointer"
+            >
+              Reset
+            </button>
+
+          </div>
 
             {/* STATS CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -147,7 +247,7 @@ const DashboardPage = () => {
 
               <Card onClick={() => navigate("/orders")} title="Cancelled" value={cancelledOrders.length} />
 
-              <Card title="Total Orders" value={orders.length} />
+              <Card title="Total Orders" value={filteredOrders.length} />
 
             </div>
 
@@ -163,7 +263,7 @@ const DashboardPage = () => {
                     <XAxis dataKey="name" />
                     <YAxis allowDecimals={false}/>
                     <Tooltip />
-                    <Bar dataKey="value" fill="#6366F1" />
+                    <Bar dataKey="value" fill="#ea580c" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -207,12 +307,12 @@ const DashboardPage = () => {
                   activeOrders.slice(0, 5).map((order) => (
                     <div
                       key={order.id}
-                      className="flex justify-between p-3 border rounded"
+                      className="flex justify-between p-3 border border-gray-300 rounded"
                     >
                       <p>
                         #{order.id} - {order.status}
                       </p>
-                      <span className="font-semibold text-indigo-600">
+                      <span className="font-semibold text-orange-600">
                         MWK {Number(order.total || 0).toLocaleString()}
                       </span>
                     </div>
@@ -224,54 +324,42 @@ const DashboardPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8 bg-white p-5 rounded-xl shadow">
 
               {/* Addresses */}
-              <div>
-                <div className="">
-                  <h2 className="font-semibold">Addresses</h2>
-                </div>
-                <div 
+              <div
                 onClick={() => navigate("/account/addresses")}
-                className="border rounded p-3 text-sm text-gray-500 mb-2 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-transform duration-200">
-
-                  {addresses.length === 0 ? (
-                    <p>No addresses saved</p>
-                  ) : (
-                    addresses.slice(0, 2).map((addr, index) => (
-                      <div key={index} className="mb-2">
-                        <p className="font-semibold ">{addr.full_name}</p>
-                        <p>{addr.street}</p>
-                        <p className="text-sm ">{addr.city}</p>
-                      </div>
-                    ))
-                  )}
-                </div>                
-                </div>
-            
+                className="border-2 rounded p-3 border-orange-600 cursor-pointer hover:scale-[1.02] transition"
+              >
+                {defaultAddress ? (
+                  <>
+                    <span className="text-xs bg-orange-200 text-orange-700 px-2 py-1 rounded mb-2 inline-block">
+                      Default
+                    </span>
+                    <p className="font-semibold text-gray-500">{defaultAddress.full_name}</p>
+                    <p className="text-sm">{defaultAddress.street}</p>
+                    <p className="text-sm">{defaultAddress.city}</p>
+                  </>
+                ) : (
+                  <p>No default address</p>
+                )}
+              </div>            
               
               {/* Payment Methods */}
-              <div className="">
-                <div>
-                  <h2 className=" font-semibold">Cards</h2>
-                </div>
-                <div 
+              <div
                 onClick={() => navigate("/account/billing")}
-                className="border rounded p-3 text-sm text-gray-500 mb-2 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-transform duration-200">
-                  {cards.length === 0 ? (
-                    <p>No cards saved</p>
-                  ) : (
-                    cards.slice(0, 2).map((card, index) => (
-                      <div key={index} className="mb-2">
-                        <p className="font-semibold">{card.cardName || "Card"}</p>
-                        <p className="font-medium ">
-                          **** **** **** {card.cardNumber || ""}
-                        </p>
-                        <p className="text-sm">{card.expiry || "Card"}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-
+                className="border-2 rounded p-3 border-orange-600 cursor-pointer hover:scale-[1.02] transition"
+              >
+                {defaultCard ? (
+                  <>
+                    <span className="text-xs bg-white/20 px-2 py-1 rounded">
+                      Default
+                    </span>
+                    <p className="font-semibold text-gray-500">{defaultCard.cardName}</p>
+                    <p>**** **** **** {defaultCard.cardNumber}</p>
+                    <p className="text-sm">{defaultCard.expiry}</p>
+                  </>
+                ) : (
+                  <p>No default card</p>
+                )}
               </div>
-
               {/*Other Cards goes here */}
             </div>
           </>

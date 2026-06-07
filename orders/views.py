@@ -14,10 +14,27 @@ from django.conf import settings
 from django.db.models import F
 from django.utils import timezone
 from datetime import timedelta
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 # Create your views here.
 class OrdersViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
+
+    def notify_order_update(order):
+        channel_layer = get_channel_layer()
+
+        async_to_sync(channel_layer.group_send)(
+            "orders_updates",
+            {
+                "type": "send_update",
+                "data": {
+                    "message": "Order updated",
+                    "order_id": order.id,
+                    "status": order.status,
+                }
+            }
+        )
 
     def get_queryset(self):
         if self.request.user.is_staff:

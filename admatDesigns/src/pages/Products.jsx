@@ -76,7 +76,7 @@ const Products = () => {
             md:grid-cols-4
             lg:grid-cols-6
             xl:grid-cols-7
-            gap-3
+            gap-x-2 gap-y-2
           "
         >
           {items.map(item => (
