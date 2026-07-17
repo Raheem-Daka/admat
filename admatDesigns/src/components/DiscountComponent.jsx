@@ -9,7 +9,7 @@ const DiscountComponent = () => {
   const [current, setCurrent] = useState(0);
 
   const navigateDiscountProducts = () => {
-    navigate("/discount_products");
+    navigate("/products/discounts");
   };
 
   const handleNavigate = (id, slug) => {

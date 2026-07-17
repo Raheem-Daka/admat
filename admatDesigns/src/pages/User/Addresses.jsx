@@ -324,7 +324,11 @@ const Addresses = () => {
               <div
                 key={addr.id}
                 onClick={() => handleSelectAddress(addr)}
-                className={`relative p-6 rounded text-white shadow-lg ${addr.is_default ? "bg-gradient-to-br from-orange-500 via-orange-200 to-orange-300" : "border-1 border-orange-600"} ${selectedAddress === addr.id ? "ring-2 ring-orange-500" : "hover:ring-2 hover:ring-orange-300 cursor-pointer"}`}
+                className={`relative p-6 rounded text-white shadow-lg ${addr.is_default 
+                  ? "" 
+                  : "border-1 border-orange-600"} ${selectedAddress === addr.id 
+                    ? "ring-2 ring-orange-500" 
+                    : "hover:ring-2 hover:ring-orange-300 cursor-pointer"}`}
               >
                 <div className="flex flex-col gap-1 text-gray-600 font-medium">
 

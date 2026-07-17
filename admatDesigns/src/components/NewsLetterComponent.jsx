@@ -2,7 +2,7 @@ import React from 'react'
 
 const NewsLetterComponent = () => {
   return (
-    <div className="bg-black rounded-xl lg:w-5xl py-10">
+    <div className="bg-range-50 rounded-xl lg:w-5xl py-10">
         <section className="flex flex-col items-center text-white">
             <div className="flex flex-col items-center">
                 <h2 className="text-center text-4xl font-semibold max-w-2xl">Subscribe <span className="bg-gradient-to-t from-orange-600 to-black p-1 bg-left inline-block bg-no-repeat">newsletter</span></h2>

@@ -79,19 +79,19 @@ const Contact = () => {
   };
 
   return (
-    <div className="flex justify-center bg-white rounded-lg">
+    <div className="pt-10 flex justify-center bg-white rounded-lg">
         {/*Form */}
         <form onSubmit={handleSubmit} className="xl:min-w-3xl lg:min-w-2xl md:min-w-xl items-center text-sm text-slate-80 mx-auto">
           <div className="text-center mb-6">
-            <p className="text-md bg-indigo-200 text-indigo-600 font-semibold px-3 py-1 rounded">Contact Us</p> 
+            <p className="text-md bg-orange-200 text-orange-600 font-semibold px-3 py-1 rounded">Contact Us</p> 
             <h1 className="text-4xl font-bold py-4 text-center">Let’s Get In Touch.</h1>
             <p className="max-md:text-sm text-gray-500 pb-10 text-center">
-                Or just reach out manually to us at <a href="#" className="text-indigo-600 hover:underline">admin@admin.com</a>
+                Or just reach out manually to us at <a href="#" className="text-orange-600 hover:underline">admin@admin.com</a>
             </p>
           </div>
           <div>
             <label className="block font-medium">Name</label>
-            <div className="flex items-center mt-2 mb-4 h-10 pl-3 border border-slate-300 rounded focus-within:ring-2 focus-within:ring-indigo-400 transition-all overflow-hidden">
+            <div className="flex items-center mt-2 mb-4 h-10 pl-3 border border-slate-300 rounded focus-within:ring-2 focus-within:ring-orange-400 transition-all overflow-hidden">
               <FaUser className="text-gray-400 mr-2" />              
               <input
                 type="text"
@@ -99,7 +99,7 @@ const Contact = () => {
                 placeholder="Enter your full name"
                 value={formData.name}
                 onChange={handleChange}
-                className="bg-white h-full px-2 w-full outline-none bg-transparent py-2 focus:outline-none focus:ring-blue-300"
+                className="bg-white h-full px-2 w-full outline-none bg-transparent py-2 focus:outline-none focus:ring-orange-300"
               />
             </div>
             {errors.name && (
@@ -109,7 +109,7 @@ const Contact = () => {
 
           <div>
             <label className="block font-medium">Email</label>
-            <div className="flex items-center mt-2 mb-4 h-10 pl-3 border border-slate-300 rounded focus-within:ring-2 focus-within:ring-indigo-400 transition-all overflow-hidden">
+            <div className="flex items-center mt-2 mb-4 h-10 pl-3 border border-gray-300 rounded focus-within:ring-2 focus-within:ring-orange-400 transition-all overflow-hidden">
               <FaEnvelope className="text-gray-400 mr-2" />
               <input
                 type="email"
@@ -117,7 +117,7 @@ const Contact = () => {
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
-                className="bg-white h-full px-2 w-full outline-none bg-transparent py-2 focus:outline-none  focus:ring-blue-300"
+                className="bg-white h-full px-2 w-full outline-none bg-transparent py-2 focus:outline-none  focus:ring-orange-300"
               />
             </div>
             {errors.email && (
@@ -132,7 +132,7 @@ const Contact = () => {
               value={formData.message}
               onChange={handleChange}
               rows={5}
-              className="bg-transparent w-full px-3 py-2 border border-slate-300 rounded-md resize-none outline-none focus:outline-none focus-within:ring-indigo-400 focus:ring-blue-300 transition-all min-h-[100px]"
+              className="bg-transparent w-full px-3 py-2 border border-gray-300 rounded-md resize-none outline-none focus:outline-none focus-within:ring-orange-400 focus:ring-orange-300 transition-all min-h-[100px]"
             />
             {errors.message && (
               <span className="bg-red-600 rounded mt-2 text-white p-1 text-sm">{errors.message}</span>
@@ -144,8 +144,8 @@ const Contact = () => {
             type="submit"
             className={`flex items-center justify-center mt-5 py-2.5 w-full rounded transition ${
               sending
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-800 hover:bg-gray-500 text-white"
+                ? "bg-orange-300 cursor-not-allowed"
+                : "bg-gradient-to-t from-orange-500 via-orange-400 to-orange-500 hover:bg-orange-500 text-white cursor-pointer"
             }`}
           >
             {sending ? "Sending.." : "Submit"}

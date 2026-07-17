@@ -46,7 +46,7 @@ const Products = () => {
   };
 
   return (
-    <div className="px-10 ">
+    <div className="p-10 ">
       
       <h1 className="text-4xl font-bold text-center">
         All Products

@@ -4,6 +4,7 @@ import { ACCESS_TOKEN_KEY } from '../../utils/authKeys';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/api';
 import { toast } from 'sonner';
+import { FaCreditCard } from 'react-icons/fa';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -51,9 +52,7 @@ const Billing = () => {
     } catch (err) {
       console.error(err);
     } finally {
-        setTimeout(() => {
-          setLoading(false);
-        }, 1000);
+      setLoading(false);
     }
   };
 
@@ -161,7 +160,7 @@ const Billing = () => {
       });
 
       toast.success("Default card updated");
-      fetchCards(); // refresh list
+      fetchCards(); 
 
     } catch (err) {
       console.error(err);
@@ -244,13 +243,13 @@ const Billing = () => {
         {/* ✅ LOADING STATE */}
           {loading ? (
             <div className="flex flex-col justify-center items-center py-10">
-              <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-10 h-10 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
               <p className="text-center">Loading cards..</p>
             </div>
 
           ) :  cards.length === 0 ? (
             <div className="flex flex-col justify-center text-gray-500 py-10">
-              <p>No cards yet 💳</p>
+              <p className="flex items-center gap-2"><FaCreditCard />No cards yet 💳</p>
               <p className="text-sm">Click "Add Card" to get started</p>
             </div>
           ) : ( 
@@ -262,12 +261,12 @@ const Billing = () => {
               <div
                 key={card.id || index}
                 className={`relative p-6 rounded text-white shadow-lg ${card.is_default 
-                  ? "bg-gradient-to-br from-orange-500 via-orange-400 to-orange-300 ring-2 ring-orange-600" 
+                  ? "ring-2 ring-orange-600" 
                   : "border border-orange-600 focus:ring-2 focus:ring-orange-600 cursor-pointer"}`}
               >
                                   
                 <div className="text-gray-600">
-                  <div className="absolute top-4 left-4 flex items-center text-sm space-x-2 font-semibold">
+                  <div className="absolute top-4 left-4 flex items-center gap-2 text-sm space-x-2 font-semibold">
                     {/*Default & Label */}
                     <span className="flex justify-between items-center mb-2">
                       {card.is_default && (
@@ -351,7 +350,7 @@ const Billing = () => {
                         setSelectedItem(card);
                         setShowModal(true);
                       }}
-                      className="px-3 py-1 rounded bg-red-500/80 w-[80px] hover:bg-red-600"
+                      className="px-3 py-1 rounded bg-red-500 w-[80px] hover:bg-red-400 duration-300"
                     >
                       Delete
                     </button>

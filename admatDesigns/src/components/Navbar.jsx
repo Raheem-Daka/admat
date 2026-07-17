@@ -83,7 +83,7 @@ const Navbar = () => {
         <h1 className="text-2xl font-bold text-orange-600">BB</h1>
       </Link>
 
-      {/* ✅ Desktop links */}
+      {/* ✅ Desktop links 
       <div className="hidden md:flex items-center gap-6 ml-7 text-orange-600">
         {navlinks.map((link, i) => (
           <NavLink
@@ -99,6 +99,28 @@ const Navbar = () => {
               {link.name}
             </span>
             <span className="block absolute top-full left-0 group-hover:translate-y-[-100%] transition-transform duration-300">
+              {link.name}
+            </span>
+          </NavLink>
+        ))}
+      </div>*/}
+
+      <div className="hidden md:flex items-center gap-6 ml-7 text-orange-600">
+        {navlinks.map((link, i) => (
+          <NavLink
+            key={i}
+            to={link.path}
+            className={({ isActive }) =>
+              `relative inline-block overflow-hidden h-6 group ${
+                isActive ? "underline font-semibold" : ""
+              }`
+            }
+          >
+            <span className="block transition-transform duration-300 group-hover:-translate-y-full">
+              {link.name}
+            </span>
+
+            <span className="absolute left-0 top-full block transition-transform duration-300 group-hover:-translate-y-full">
               {link.name}
             </span>
           </NavLink>
