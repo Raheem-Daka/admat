@@ -65,7 +65,7 @@ const ProfileSidePanel = () => {
 
       {/* SIDEBAR */}
       <div
-        className={`fixed top-0 left-0 h-screen w-auto bg-gradient-to-b from-orange-300 to-orange-100 p-4 pt-14 transform transition-all duration-300 flex flex-col gap-6 z-50
+        className={`fixed top-0 left-0 max-h-dvh w-auto bg-gradient-to-b from-orange-300 to-orange-100 p-4 pt-14 transform transition-all duration-300 flex flex-col gap-6 z-50
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0 lg:sticky lg:w-70 top-5 lg:left-0 start-self lg:max-h[calc(100vh-80px)] lg:overflow-y-auto`}
       >

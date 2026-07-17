@@ -349,7 +349,8 @@ const DashboardPage = () => {
               >
                 {defaultCard ? (
                   <>
-                    <span className="text-xs bg-white/20 px-2 py-1 rounded">
+                    <span className="text-xs bg-orange-200 text-orange-700 px-2 py-1 rounded mb-2 inline-block">
+
                       Default
                     </span>
                     <p className="font-semibold text-gray-500">{defaultCard.cardName}</p>

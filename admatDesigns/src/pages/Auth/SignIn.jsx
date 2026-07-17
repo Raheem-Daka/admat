@@ -76,7 +76,7 @@ const SignIn = () => {
 
     } catch (err) {
       console.log("LOGIN ERROR", err)
-      setError(
+      toast.error(
         err?.message ||
         err?.respons?.data?.message ||
         "Failed to sighn in, Please try again"
@@ -271,7 +271,7 @@ const SignIn = () => {
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               placeholder="123456"
-              className="w-full border p-3 text-center text-xl tracking-widest rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              className="w-full border text-base py-2 text-center tracking-widest rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
             />
 
             <button

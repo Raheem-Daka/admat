@@ -14,6 +14,7 @@ import {
 from 'react-icons/fa';
 import { toast } from "sonner"
 
+const WS_URL = import.meta.env.VITE_WS_URL;
 
 const Tracking = () => {
   const [trackedItems, setTrackedItems] = useState([]);
@@ -21,11 +22,12 @@ const Tracking = () => {
   const [error, setError] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
   const [prevStatuses, setPrevStatuses] = useState({})
-  const [socket, setSocket] = useState(null);
+  const socketRef = useRef(null);
   const [connected, setConnected] = useState(false);
-
+  const [highlightId, setHighlightId] = useState(null);
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("order");
+  const reconnectRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -48,11 +50,11 @@ const Tracking = () => {
   };
 
   const statusStyles = {
-    delivered: "bg-green-100 text-green-700",
-    shipped: "bg-blue-100 text-blue-700",
-    in_transit: "bg-indigo-100 text-indigo-700",
+    delivered: "bg-orange-100 text-orange-700",
+    shipped: "bg-orange-200 text-orange-800",
+    in_transit: "bg-amber-100 text-amber-700",
     processing: "bg-yellow-100 text-yellow-700",
-    pending: "bg-gray-100 text-gray-700",
+    pending: "bg-gray-100 text-gray-600",
   };
 
   useEffect(() => {
@@ -72,9 +74,9 @@ const Tracking = () => {
           : (response?.results || []);
           console.log(response?.results)
 
-          setTrackedItems(prev => {
-            const newStatuses = {};
+          const newStatuses = {};
 
+          setTrackedItems(prev => {
             data.forEach(item => {
               const prevStatus = prevStatuses[item.id];
 
@@ -88,22 +90,14 @@ const Tracking = () => {
             setPrevStatuses(newStatuses);
             return data;
           });
-
-          const newStatuses = {};
-          data.forEach(item => {
-            newStatuses[item.id] = item.status;
-          });
         
-          setPrevStatuses(newStatuses);
-          setTrackedItems(data);
-
       } catch (err) {
         setError(err.message || 'Failed to load tracks');
         toast.error("Failed to load tracks")
       } finally {
         timeoutRef.current = setTimeout(() => {
           setLoading(false);
-        }, 800);
+        }, 1000);
       }
     };
 
@@ -118,7 +112,6 @@ const Tracking = () => {
   }, [orderId]);
 
   useEffect(() => {
-    let socket;
     let isMounted = true;
 
     const isTokenExpired = (token) => {
@@ -145,24 +138,25 @@ const Tracking = () => {
 
       // Expired token → stop (or refresh here)
       if (isTokenExpired(token)) {
-        console.warn("🔄 Token expired → refreshing...");
-        setConnected(false);
+        toast.error("Session expired. Please sign in again.");
+        navigate("/signin");
+        //setConnected(false);
         return;
       }
 
       // CONNECT websocket with token
-      socket = new WebSocket(
-        `ws://127.0.0.1:8000/ws/tracking/?token=${token}`
+      socketRef.current = new WebSocket(
+        `${WS_URL}/ws/tracking/?token=${token}`
       );
 
-      socket.onopen = () => {
+      socketRef.current.onopen = () => {
         if (isMounted) {
           setConnected(true);
           console.log("✅ WebSocket connected");
         }
       };
 
-      socket.onmessage = (event) => {
+      socketRef.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
         setTrackedItems((prev) =>
@@ -172,26 +166,40 @@ const Tracking = () => {
         );
 
         setPrevStatuses(prev => {
-          if (prev[data.id] !== data.status) {
+          if (prev[data.id] &&prev[data.id] !== data.status) {
             toast.success(`Order #${data.order_id} → ${data.status}`);
           }
 
           return { ...prev, [data.id]: data.status };
-        });     
+        });
+        
+        // highlight + scroll
+        setHighlightId(data.id);
+        setTimeout(() => setHighlightId(null), 1500);
+      
+        setTimeout(() => {
+          document.getElementById(`row-${data.id}`)?.scrollIntoView({
+            behavior: "smooth",
+          });          
+        }, 100)
       };
 
-      socket.onerror = (err) => {
+      socketRef.current.onerror = (err) => {
         console.error("❌ WebSocket error", err);
-        socket.close(); 
+        socketRef.current?.close(); 
       };
 
-      socket.onclose = () => {
+      socketRef.current.onclose = () => {
         if (!isMounted) return;
 
         setConnected(false);
+
+        const token =localStorage.getItem(ACCESS_TOKEN_KEY);
+        if(!token || isTokenExpired(token)) return;
         console.log("⚠️ Socket closed, reconnecting in 3s...");
 
-        setTimeout(connect, 3000);
+        reconnectRef.current = setTimeout(connect, 3000);
+        
       };
     };
 
@@ -199,7 +207,11 @@ const Tracking = () => {
 
     return () => {
       isMounted = false;
-      socket?.close();
+      socketRef.current?.close();
+      
+      if (reconnectRef.current) {
+        clearTimeout(reconnectRef.current);
+      }                                                               
     };
   }, []);
 
@@ -213,7 +225,7 @@ const Tracking = () => {
         <div className="flex justify-between">
           <button
             onClick={() => window.history.back()}
-            className="flex items-center gap-2 mb-4 px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition"
+            className="flex items-center gap-2 mb-4 px-4 py-2 text-white bg-orange-600 rounded hover:bg-orange-700 transition"
           >
             <FaArrowLeft />
             Back
@@ -247,7 +259,7 @@ const Tracking = () => {
         {/* LOADING */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-10">
-            <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-3 text-gray-500">Loading tracked items...</p>
           </div>
         )}
@@ -258,9 +270,9 @@ const Tracking = () => {
         {/* CONTENT */}
         {!loading && !error && (
           <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200 rounded-lg">
+            <table className="min-w-full border border-gray-300 rounded">
 
-              <thead>
+              <thead className='text-gray-500 rounded'>
                 <tr>
                   <th className="p-3 border text-left">Tracking #</th>
                   <th className="p-3 border text-left">Order #</th>
@@ -270,9 +282,9 @@ const Tracking = () => {
                 </tr>
               </thead>
 
-              <tbody>
+              <tbody className="border border-gray-300">
                 {trackedItems.length === 0 ? (
-                  <tr>
+                  <tr className="border border-gray-300">
                     <td colSpan="5" className="text-center p-6 text-gray-500">
                       {orderId 
                         ? `No tracking found for order #${orderId}`
@@ -289,14 +301,17 @@ const Tracking = () => {
 
                       {/* MAIN ROW */}
                       <tr
+                        id={`row-${item.id}`}
                         onClick={() =>
                           setExpandedRow(expandedRow === item.id ? null : item.id)
                         }                        
-                        className={`cursor-pointer transition ${
-                            item.status?.toLowerCase() === "cancelled"
+                        className={`cursor-pointer transition text-sm text-gray-500 ${highlightId === item.id
+                          ? "bg-yellow-100"
+                              : item.status?.toLowerCase() === "cancelled"
                               ? "bg-red-50 hover:bg-red-100"
-                              : "hover:bg-indigo-50"
-                          }`}
+                              : "hover:bg-orange-50"
+                          }`
+                        }
                       >
                         <td className="p-3 border">{item.tracking_number}</td>
                         <td className="p-3 border">#{item.order_id}</td>
@@ -304,7 +319,7 @@ const Tracking = () => {
 
                         {/* STATUS COLUMN WITH PROGRESS */}
                         <td className="p-3 border">
-
+                       
                           {/* PROGRESS WITH ICONS */}
                           <div className="flex items-center justify-between gap-2 mb-2">
                           {isCancelled ? (
@@ -313,6 +328,7 @@ const Tracking = () => {
                                 <FaTimesCircle className="inline mr-1" />
                                 Cancelled
                               </span>
+                              
                             </div>
                           ) : (
                             statusSteps.map((step, index) => {
@@ -327,20 +343,21 @@ const Tracking = () => {
                                     <div
                                       className={`flex items-center justify-center w-6 h-6 rounded-full text-xs transition ${
                                         isActive
-                                          ? "bg-indigo-700 text-white"
+                                          ? "bg-orange-600 text-white"
                                           : index < currentIndex
-                                          ? "bg-indigo-600 text-white"
+                                          ? "bg-orange-400 text-white"
                                           : "bg-gray-300 text-gray-500"
                                       }`}
                                     >
-                                      {statusIcons[step]}
+                                      
+                                    {statusIcons[step]}
                                     </div>
 
                                     {index < statusSteps.length - 1 && (
                                       <div
                                         className={`w-8 h-1 ${
                                           index < currentIndex
-                                            ? "bg-indigo-600"
+                                            ? "bg-orange-300"
                                             : "bg-gray-300"
                                         }`}
                                       />
@@ -348,7 +365,7 @@ const Tracking = () => {
                                   </div>
 
                                   {isActive && (
-                                    <span className="mt-1 text-[10px] text-indigo-700 font-semibold">
+                                    <span className="mt-1 text-[10px] text-orange-600 font-semibold">
                                       {step.replace("_", " ")}
                                     </span>
                                   )}
@@ -370,7 +387,7 @@ const Tracking = () => {
                       {expandedRow === item.id && (
                         <tr>
                           <td colSpan="5" className="p-4 bg-gray-50">
-                            <div className="border-l-2 border-indigo-300 pl-4 space-y-4">
+                            <div className="border-l-2 border-orange-300 pl-4 space-y-4">
 
                               {item.events?.length ? (
                                 item.events.map(event => (
@@ -378,7 +395,11 @@ const Tracking = () => {
 
                                     <div className="flex items-center gap-2 mb-1 gap-2">
 
-                                      <div className="w-4 h-4 bg-indigo-500 rounded-full"></div>
+                                      {/* Pinging DOT */}
+                                      <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-600"></span>
+                                      </span>
 
                                       <p className="font-semibold capitalize text-sm">
                                         {event.status.replace("_"," ")}

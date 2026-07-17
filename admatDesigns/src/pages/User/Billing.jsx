@@ -44,6 +44,7 @@ const Billing = () => {
         cardName: card.card_name || "Unknown",
         cardNumber: card.card_number || "",
         expiry: card.expiry || "--/--",
+        is_default: card.is_default || false,
       }));
 
       setCards(formatted);
@@ -149,24 +150,24 @@ const Billing = () => {
     setEditingId(card.id);
     setIsEditing(true);
     setIsOpen(true);
+    toast.success("Card edited successfully ✅")
   }; 
 
   //Set default
-  const setDefaultAddress = async (id) => {
-  try {
-    await apiFetch(`/card/${id}/set-default/`, {
-      method: "PATCH",
-    });
+  const setDefaultCard = async (id) => {
+    try {
+      await apiFetch(`/billing/${id}/set-default/`, {
+        method: "PATCH",
+      });
 
-    // refresh list
-    const data = await apiFetch("/card/");
-    setAddresses(formatAddresses(data));
+      toast.success("Default card updated");
+      fetchCards(); // refresh list
 
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to set default address");
-  }
-};
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to set default card");
+    }
+  };
 
   // DELETE CARD (API)
   const handleDelete = async (id) => {
@@ -189,6 +190,7 @@ const Billing = () => {
       
       setShowModal(false);
       setSelectedItem(null);
+      toast.success("Card deleted successfully ✅")
   };
 
   // RESET
@@ -238,9 +240,6 @@ const Billing = () => {
             + Add Card
           </button>
         </div>
-
-        {/* LIST */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
           
         {/* ✅ LOADING STATE */}
           {loading ? (
@@ -254,15 +253,31 @@ const Billing = () => {
               <p>No cards yet 💳</p>
               <p className="text-sm">Click "Add Card" to get started</p>
             </div>
-          ) : (
-            cards.map((card, index) => (
+          ) : ( 
+            <>
+            {/* LIST */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {cards.map((card, index) =>
+              (
               <div
                 key={card.id || index}
-                className={`relative p-6 rounded text-white shadow-lg ${card.is_default ? "bg-gradient-to-br from-orange-300 via-orange-200 to-orange-100" : "bg-gradient-to-br from-orange-300 via-orange-200 to-orange-100"}`}
+                className={`relative p-6 rounded text-white shadow-lg ${card.is_default 
+                  ? "bg-gradient-to-br from-orange-500 via-orange-400 to-orange-300 ring-2 ring-orange-600" 
+                  : "border border-orange-600 focus:ring-2 focus:ring-orange-600 cursor-pointer"}`}
               >
+                                  
                 <div className="text-gray-600">
-                  <div className="absolute top-4 left-4 text-sm font-semibold">
+                  <div className="absolute top-4 left-4 flex items-center text-sm space-x-2 font-semibold">
+                    {/*Default & Label */}
+                    <span className="flex justify-between items-center mb-2">
+                      {card.is_default && (
+                        <span className="text-xs px-2 py-1 bg-orange-600 text-white rounded">
+                          Default
+                        </span>
+                      )}
+                    </span>                    
                     {getBrand(card.cardNumber)}
+
                   </div>
 
                   <div className="absolute top-4 right-4 text-xs opacity-70">
@@ -282,28 +297,72 @@ const Billing = () => {
 
                 </div>
 
-                <div className="flex justify-end gap-2 mt-6">
-                  <button
-                    onClick={() => handleEdit(card)}
-                    className="px-3 py-1 rounded bg-orange-600 w-[80px] hover:bg-orange-600/50"
-                  >
-                    Edit
-                  </button>
+                <div className="flex justify-between items-center  w-full gap-2 mt-6">
 
-                  <button
-                    onClick={() => {
-                      setSelectedItem(card);
-                      setShowModal(true);
-                    }}
-                    className="px-3 py-1 rounded bg-red-500/80 w-[80px] hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
+                  {/* Toggle switch Default/Not Default */}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!card.is_default) {
+                          setDefaultCard(card.id);
+                        }
+                      }}
+                      className="bottom-2 flex"
+                    >
+                      <label className="relative inline-flex items-center cursor-pointer gap-2">
+
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={card.is_default}
+                          readOnly
+                        />
+
+                        <div
+                          className={`w-12 rounded-full h-6 transition-colors duration-300 ${
+                            card.is_default ? "bg-green-500" : "bg-orange-400"
+                          }`}
+                        ></div>
+
+                        <span
+                          className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                            card.is_default ? "translate-x-6" : "translate-x-0"
+                          }`}
+                        ></span>
+
+                        <span className="text-xs text-gray-700">
+                          {card.is_default ? "Default" : "Set Default"}
+                        </span>
+
+                      </label>
+                    </div>
+                  
+                  {/* Delete and Edit Buttons */}
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => handleEdit(card)}
+                      className="px-3 py-1 rounded bg-orange-600 w-[80px] hover:bg-orange-600/50"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setSelectedItem(card);
+                        setShowModal(true);
+                      }}
+                      className="px-3 py-1 rounded bg-red-500/80 w-[80px] hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
-            ))
+            ))}
+          </div>              
+          </>
+          
           )}
-        </div>
 
         {/* DELETE CONFIRMATION MODAL */}
         {showModal && (
@@ -373,7 +432,7 @@ const Billing = () => {
                 type="text"
                   name="cardNumber"
                   placeholder="1234 5678 .... ...."
-                  value={isEditing ? maskCard(formData.cardNumber) : formData.cardNumber}
+                  value={formData.cardNumber}
                   disabled={isEditing}
                   onChange={handleChange}
                   className="border border-orange-600 border p-2 rounded"

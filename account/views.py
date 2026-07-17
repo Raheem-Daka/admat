@@ -63,6 +63,17 @@ class BillingViewSet(viewsets.ModelViewSet):
         user = self.request.user
         account, _ = Account.objects.get_or_create(user=user)
         serializer.save(user=user, account=account)
+        
+    @action(detail=True, methods=["patch"], url_path="set-default")
+    def set_default(self, request, pk=None):
+        card = self.get_object()
+
+        Billing.objects.filter(account=card.account).update(is_default=False)
+
+        card.is_default = True
+        card.save()
+
+        return Response({"message": "Default address set"}, status=status.HTTP_200_OK)
 
 class AccountViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]

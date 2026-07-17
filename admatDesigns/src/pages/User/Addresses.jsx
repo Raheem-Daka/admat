@@ -23,8 +23,6 @@ const Addresses = () => {
   const [selectedAddress, setSelectedAddress] =useState(null)
   const [isOpen, setIsOpen] = useState(false);
 
-  const sorted = [...addresses].sort((a, b) => b.is_default - a.is_default);
-
   const handleSelectAddress = (addr) => {
     setSelectedAddress(addr.id);
     localStorage.setItem("last_address_id", addr.id);
@@ -313,33 +311,34 @@ const Addresses = () => {
           </div>
         ) : (
         <>
-          {defaultAddress && (
+          {/*{defaultAddress && (
               <div className="mb-4 p-4 bg-green-50 border rounded">
                 <p className="font-semibold">{defaultAddress.full_name}</p>
                 <p>{defaultAddress.street}, {defaultAddress.city}</p>
               </div>
-            )}
+            )}*/}
 
           {/* ✅ LIST*/}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {sorted.map((addr) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {addresses.map((addr) => (
               <div
                 key={addr.id}
                 onClick={() => handleSelectAddress(addr)}
                 className={`relative p-6 rounded text-white shadow-lg ${addr.is_default ? "bg-gradient-to-br from-orange-500 via-orange-200 to-orange-300" : "border-1 border-orange-600"} ${selectedAddress === addr.id ? "ring-2 ring-orange-500" : "hover:ring-2 hover:ring-orange-300 cursor-pointer"}`}
               >
                 <div className="flex flex-col gap-1 text-gray-600 font-medium">
+
                   {/*Default & Label */}
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs px-2 py-1 rounded bg-gray-200 text-orange-700 uppercase">
-                      {addr.label} address
-                    </span>
-
                     {addr.is_default && (
                       <span className="text-xs px-2 py-1 bg-orange-600 text-white rounded">
                         Default
                       </span>
                     )}
+
+                    <span className="text-xs px-2 py-1 rounded bg-gray-200 text-orange-700 uppercase">
+                      {addr.label} address
+                    </span>
                   </div>
                   <span className="uppercase tracking-wide">
                     {addr.full_name}
@@ -350,8 +349,11 @@ const Addresses = () => {
                   </span>
                   
                 </div>
-              <div className="flex justify-between mt-5">
-                {/*Toggle switch*/}
+
+
+              <div className="flex justify-between items-center w-full gap-2 mt-6">
+
+                {/* Toggle switch Default/Not Default */}
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
@@ -359,9 +361,9 @@ const Addresses = () => {
                       setDefaultAddress(addr.id);
                     }
                   }}
-                  className="absolute left-2 bottom-2 flex justify-between mt-2"
+                  className="flex bottom-2"
                 >
-                  <label className="relative  inline-flex items-center cursor-pointer gap-2">
+                  <label className="relative inline-flex items-center cursor-pointer gap-2">
 
                     <input
                       type="checkbox"
@@ -389,8 +391,13 @@ const Addresses = () => {
                   </label>
                 </div>
 
+
                   {/* Buttons Edit and Delete */}
-                <div className="flex absolute bottom-2 right-2  justify-end gap-2 mt-6">
+                <div className="flex items-center justify-between mb-2">
+                  
+
+                  {/* Delete and Edit Buttons */}
+                  <div className="space-x-2">
                     <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -412,6 +419,8 @@ const Addresses = () => {
                     >
                       Delete
                     </button>
+
+                  </div>
                   </div>
                 </div>
               </div>

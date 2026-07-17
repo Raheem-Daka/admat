@@ -33,10 +33,12 @@ const CategoryList = () => {
     <section className="px-4">
       <h2 className="text-lg font-semibold mb-3">Shop by Category</h2>
 
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex gap-3 overflow-x-auto px-3 rounded py-1 bg-orange-300 items-center">
         {categories.map((cat) => (
           <NavLink
             key={cat.id}
+            title={formatName(cat.name)}
+            aria-label={formatName(cat.name)}
             to={() => {
               const params = new URLSearchParams(searchParams);
               const currentCategory = searchParams.get("category");
@@ -50,17 +52,17 @@ const CategoryList = () => {
               return `/discounts?${params.toString()}`;
             }}
             className={() =>
-              `flex flex-col  border border-gray-200 items-center gap-1 px-3 py-1 rounded text-sm truncate transition ${
+              `flex   border border-gray-200 items-center gap-1 px-3 py-1 rounded text-sm truncate transition ${
                 activeCategory === cat.slug
-                  ? "bg-indigo-700 text-white"
-                  : "bg-indigo-50 hover:bg-indigo-700 hover:text-white"
+                  ? "bg-orange-600 text-white"
+                  : "bg-orange-100 hover:bg-orange-600 hover:text-white"
               }`
             }
           >            
             <img
               src={cat.imageUrl || placeHolder}
               onError={(e) => (e.currentTarget.src = placeHolder)}
-              className="w-8 h-8 object-contain bg-white p-1 rounded"
+              className="w-8 h-8 object-contain bg-transparent p-1 rounded"
               alt={cat.name}
             />
             {formatName(cat.name)}

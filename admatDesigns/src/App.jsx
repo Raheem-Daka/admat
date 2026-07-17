@@ -60,7 +60,7 @@ function App() {
       />
 
       <div className="flex flex-col min-h-screen z-0">
-        <main className="flex-grow pt-24">
+        <main className="flex-grow pt-20">
           <Routes>
             {/* ✅ Auth routes */}
             <Route

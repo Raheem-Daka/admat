@@ -80,8 +80,8 @@ const Home = () => {
           <p className="text-center text-red-500 mt-10">{error}</p>
         ) : (
           <div className="py-5">
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 lg:gap-2 md:gap-3 sm:gap-2 px-4 gap-x-2 gap-y-2">
-              {items.map((item) => (
+            <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+              {items.slice(0, 18).map((item) => (
                 <DesignCard
                   key={item.id}
                   item={item}

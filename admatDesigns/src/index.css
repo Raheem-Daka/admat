@@ -58,3 +58,20 @@ input[type="range"]::-moz-range-thumb {
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-in-out;
 }
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #f97316; /* orange */
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: #f97316;
+  border-radius: 9999px;
+  cursor: pointer;
+}

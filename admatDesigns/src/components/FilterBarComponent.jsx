@@ -1,11 +1,14 @@
 import { useSearchParams } from "react-router-dom";
 import PriceRangeSlider from "./PriceRangeSlider";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 const Chip = ({ label, onRemove }) => (
-  <div className="bg-gray-200 px-3 py-1 rounded-full flex items-center gap-2 text-sm shadow-sm">
+  <div className="bg-orange-300 px-3 py-1 rounded flex items-center gap-2 text-sm shadow-sm">
     {label}
-    <button className="text-gray-600 hover:text-black" onClick={onRemove}>
+    <button 
+    title="Reset"
+    className=" text-orange-600 hover:text-black font-bold" 
+    onClick={onRemove}>
       ✕
     </button>
   </div>
@@ -37,23 +40,25 @@ const FilterBar = () => {
     setSearchParams(params);
   };
 
+  useEffect(() => {
+    return () => clearTimeout(debounceRef.current);
+  }, []);
+
   return (
     <div className="mt-2">
       <div className="flex flex-wrap justify-center mt-5 items-center mb-4 gap-4">
         {minPrice && (
           <Chip
             label={`Min: ${minPrice}`}
-            onRemove={() => updateParams({ min_price: null })}
+            onRemove={() => updateParams({ min_price: null, maxPrice: null })}
           />
         )}
 
         <PriceRangeSlider
-          min={0}
+          min={0} 
           max={2000}
-          value={[
-            Number(minPrice) || 0,
-            Number(maxPrice) || 2000,
-          ]}
+          initialMin={Number(minPrice) || 0}
+          initialMax={Number(maxPrice) || 2000}
           onChange={({ min, max }) => {
             clearTimeout(debounceRef.current);
 
@@ -67,7 +72,7 @@ const FilterBar = () => {
                   max_price: max,
                 });
               }
-            }, 300);
+            }, 1000);
           }}
         />
 
@@ -76,18 +81,22 @@ const FilterBar = () => {
             label={`Max: ${maxPrice}`}
             onRemove={() => updateParams({ max_price: null })}
           />
-        )}
+        )}            
       </div>
 
       {/* ✅ CONTROLS */}
-      <div className="flex justify-center gap-5 items-center">
+      <div className="flex justify-center text-sm gap-5 items-center">
         <button
           onClick={() =>
             updateParams({
               has_discount: hasDiscount ? null : "true",
             })
           }
-          className="border px-3 py-1 rounded"
+          className={`border px-3 py-1 rounded 
+            ${hasDiscount 
+              ? "bg-orange-600 text-white" 
+              : ""
+            }`}
         >
           {hasDiscount ? "Remove Discount" : "Discount Only"}
         </button>
@@ -104,10 +113,8 @@ const FilterBar = () => {
           <option value="-price">Price ↓</option>
           <option value="-views">Popular</option>
         </select>
-      </div>
 
       {/* ✅ CHIPS */}
-      <div className="flex justify-center gap-2 flex-wrap mt-2">
         {category && (
           <Chip
             label={`Category: ${category}`}
@@ -115,24 +122,10 @@ const FilterBar = () => {
           />
         )}
 
-        {hasDiscount && (
-          <Chip
-            label="Discount"
-            onRemove={() => updateParams({ has_discount: null })}
-          />
-        )}
-
-        {ordering && (
-          <Chip
-            label="Sort"
-            onRemove={() => updateParams({ ordering: null })}
-          />
-        )}
-
         {(minPrice || maxPrice || category || hasDiscount || ordering) && (
           <button
             onClick={() => setSearchParams({})}
-            className="text-white rounded bg-red-500 px-3 py-1 text-sm hover:bg-white hover:text-red-500 hover:cursor-pointer hover:border"
+            className="text-white rounded bg-red-500 border border-red-500 px-3 py-1 text-sm hover:bg-white hover:text-red-500 transition"
           >
             Clear all
           </button>

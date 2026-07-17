@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useCart } from "../../context/CartContext";
 import placeHolder from "../../assets/placeholder.png";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -151,9 +152,8 @@ const Cart = () => {
             <button
               disabled={updating === ci.item.id}
               onClick={() => removeItem(ci.item.id)}
-              className="ml-4 px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Remove
+              className="cursor-pointer text-red-600 transition-all duration-200 ease-in-out hover:text-red-700">
+                <RiDeleteBin6Line size={24} />
             </button>
           </div>
         ))}

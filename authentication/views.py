@@ -84,7 +84,7 @@ class SignInViewSet(viewsets.ViewSet):
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 return Response(
-                    {"message": "Invalid credentials"},
+                    {"message": "Invalid credentials, please try again."},
                     status=401,
                 )
 
@@ -100,7 +100,7 @@ class SignInViewSet(viewsets.ViewSet):
 
             if not user:
                 return Response(
-                    {"error": "Invalid credentials"},
+                    {"error": "Invalid credentials, please try again."},
                     status=401,
                 )
 

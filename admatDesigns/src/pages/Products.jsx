@@ -68,16 +68,7 @@ const Products = () => {
         </p>
       ) : (
         <div
-          className="
-            mt-10
-            grid
-            grid-cols-1
-            sm:grid-cols-3
-            md:grid-cols-4
-            lg:grid-cols-6
-            xl:grid-cols-7
-            gap-x-2 gap-y-2
-          "
+          className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]"
         >
           {items.map(item => (
             <DesignCard

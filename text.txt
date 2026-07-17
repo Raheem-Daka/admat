@@ -1,3 +1,10 @@
+cd Documents/Admat/
+venv\scripts\activate
+python manage.py runserver
+
+cd Documents/Admat/admatDesigns
+npm run dev
+
 ssh-keygen -t ed25519 -C "your_email@example.com"
 eval $(ssh-agent -s)
 ssh-add ~/.ssh/id_ed25519
@@ -45,3 +52,12 @@ const payload = JSON.parse(atob(token.split('.')[1]));
 console.log(payload);
 console.log("Expires at:", new Date(payload.exp * 1000));
 console.log("Now:", new Date());
+
+
+import { FaTrash } from "react-icons/fa";
+import { MdDelete, MdDeleteForever } from "react-icons/md";
+import { AiOutlineDelete } from "react-icons/ai";
+
+<FaTrash />
+<MdDelete />
+<MdDeleteForever />

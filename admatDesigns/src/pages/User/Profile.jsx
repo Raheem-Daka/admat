@@ -312,7 +312,7 @@ const Profile = () => {
 
                 {/* Overlay when editing */}
                 {isEditing && (
-                  <div className="absolute inset-0 pointer-events-none bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center text-white text-xs text-center px-2">
+                  <div className="absolute backdrop-blur-sm inset-0 pointer-events-none bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center text-white text-xs text-center px-2">
                     Drop image or click
                   </div>
                 )}
@@ -368,7 +368,7 @@ const Profile = () => {
                 disabled={!isEditing}
                 value={formData.username}
                 onChange={handleChange}
-                className="w-full mt-1 border p-2 rounded disabled:bg-gray-100"
+                className="w-full mt-1 border border-orange-600 focus:ring-2 focus:ring-orange-600 focus:outline-none p-2 text-sm rounded disabled:bg-gray-100"
               />
             </div>
 
@@ -380,7 +380,7 @@ const Profile = () => {
                 disabled={!isEditing}
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full mt-1 border p-2 rounded disabled:bg-gray-100"
+                className="w-full mt-1 border border-orange-600 focus:ring-2 focus:ring-orange-600 focus:outline-none text-sm p-2 rounded disabled:bg-gray-100"
               />
             </div>
 
@@ -392,7 +392,7 @@ const Profile = () => {
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900 py-3 px-2"
+                className="cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900 py-3 px-2 text-sm text-sm"
               >
                 Edit Profile
               </button>
@@ -407,7 +407,7 @@ const Profile = () => {
                     });
                     setPreview(user.imageUrl || null);
                     setIsEditing(false)}}
-                  className="bg-gray-300 px-4 py-2 rounded"
+                  className="bg-gray-300 px-4 py-2 rounded text-sm"
                 >
                   Cancel
                 </button>
@@ -415,7 +415,7 @@ const Profile = () => {
                 <button
                   onClick={handleSave}
                   disabled={!isEditing || saving}
-                  className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
+                  className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 text-sm"
                 >
                   {saving && (
                     <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

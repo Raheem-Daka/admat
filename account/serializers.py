@@ -44,8 +44,29 @@ class AddressSerializer(serializers.ModelSerializer):
 class BillingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Billing
-        fields = ['id', 'account', 'card_name', 'is_default', 'last4', 'brand', 'expiry', 'created_at']
+        fields = [
+            'id',
+            'account',
+            'card_name',
+            'is_default',
+            'last4',
+            'brand',
+            'expiry',
+            'created_at'
+        ]
         read_only_fields = ['account', 'last4', 'brand']
+
+    def create(self, validated_data):
+        number = self.initial_data.get("last4", "")
+        if number and len(number) >= 4:
+            validated_data["last4"] = number[-4:]
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        number = self.initial_data.get("last4", "")
+        if number and len(number) >= 4:
+            validated_data["last4"] = number[-4:]
+        return super().update(instance, validated_data)
 
 class AccountSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
