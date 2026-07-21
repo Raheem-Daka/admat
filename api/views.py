@@ -5,6 +5,7 @@ from rest_framework.response import Response
  
 from django.shortcuts import render
 
+
 def frontend(request):
     return render(request, "index.html")
     
@@ -22,7 +23,7 @@ def home(request):
     data = {
         'message': 'welcome to the API',
         'items': item_serializer.data,
-        'categories':category_serializer.data 
+        'categories':category_serializer.data
         }
     return Response(data)
 
