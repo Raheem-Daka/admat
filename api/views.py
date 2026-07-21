@@ -3,7 +3,11 @@ from item.models import Item, Category
 from item.serializers import ItemSerializer, CategorySerializer
 from rest_framework.response import Response
  
+from django.shortcuts import render
 
+def frontend(request):
+    return render(request, "index.html")
+    
 @api_view(['GET'])
 def home(request):
     items = Item.objects.all()[:8]
