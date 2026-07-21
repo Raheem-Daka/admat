@@ -1,15 +1,14 @@
-
 #from rest_framework_simplejwt.settings import api_settings
 from datetime import timedelta
 from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -20,9 +19,9 @@ if not SECRET_KEY:
     raise RuntimeError("DJANGO_SECRET_KEY is not set")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["RWDaka.pythonanywhere.com", "127.0.0.1", "localhost"]
 
 
 # Application definition
@@ -48,7 +47,7 @@ INSTALLED_APPS = [
     'tracking',
     'settings',
 
-    
+
     'channels',
 ]
 
@@ -76,7 +75,7 @@ ROOT_URLCONF = 'webapp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'admatDesigns' / 'dist'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -99,18 +98,29 @@ WSGI_APPLICATION = 'webapp.wsgi.application'
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "RWDaka$shop_db",
+        "USER": "RWDaka",
+        "PASSWORD": "Born2far",
+        "HOST": "RWDaka.mysql.pythonanywhere-services.com",
+        "PORT": "3306",
+    }
 }"""
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '...',
-        'USER': '...',
-        'PASSWORD': '...',
-        'HOST': '...',
-        'PORT': '5432',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("MYSQL_NAME"),
+        "USER": os.getenv("MYSQL_USER"),
+        "PASSWORD": os.getenv("MYSQL_PASSWORD"),
+        "HOST": os.getenv("MYSQL_HOST"),
+        "PORT": os.getenv("MYSQL_PORT"),
     }
 }
+
 
 
 # Password validation
@@ -150,13 +160,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    BASE_DIR / 'admatDesigns' / 'build' / 'assets',
+    BASE_DIR / 'admatDesigns' / 'dist',
 ]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 CORS_ALLOWED_ORIGINS = [
+    "http://RWDaka.pythonanywhere.com",
     "http://localhost:5173",
 ]
 
@@ -202,3 +213,4 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
