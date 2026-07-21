@@ -126,9 +126,10 @@ const DashboardPage = () => {
     init();
   }, []);
 
+  const WS_URL = import.meta.env.VITE_WS_URL
 
   useEffect(() => {
-    const socket = new WebSocket("ws://127.0.0.1:8000/ws/orders/");
+    const socket = new WebSocket(`${WS_URL}/ws/orders/`);
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
