@@ -61,3 +61,10 @@ import { AiOutlineDelete } from "react-icons/ai";
 <FaTrash />
 <MdDelete />
 <MdDeleteForever />
+
+git add -f admatDesigns/dist
+git commit -m "Update frontend build"
+git push
+
+git pull
+python manage.py collectstatic --noinput

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf.urls.static import static
 from django.conf import settings
 from api.views import frontend
@@ -17,6 +17,8 @@ urlpatterns = [
     path('api/', include('account.urls')),
     path('api/', include('tracking.urls')),
     path('api/', include('settings.urls')),
+
+    re_path(r'^.*$', frontend, name='frontend'),
 ]
 
 if settings.DEBUG:

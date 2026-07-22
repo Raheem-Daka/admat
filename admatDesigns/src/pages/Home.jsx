@@ -79,7 +79,7 @@ const Home = () => {
         ) : error ? (
           <p className="text-center text-red-500 mt-10">{error}</p>
         ) : (
-          <div className="py-5">
+          <div className="p-5">
             <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
               {items.slice(0, 18).map((item) => (
                 <DesignCard
@@ -110,7 +110,7 @@ const Home = () => {
         {/* Category Section */}
       {loading ? (
           <div className="flex flex-col items-center justify-center w-full py-10">
-            <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-3 text-gray-500">Loading categories...</p>
           </div>        
         ) : error ? (
