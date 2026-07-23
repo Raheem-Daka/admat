@@ -29,7 +29,6 @@ ALLOWED_HOSTS = ["RWDaka.pythonanywhere.com", "127.0.0.1", "localhost"]
 INSTALLED_APPS = [
  
     "jazzmin",   # must be BEFORE django.contrib.admin
-    "django.contrib.admin",
 
    'django.contrib.admin',
     'django.contrib.auth',
