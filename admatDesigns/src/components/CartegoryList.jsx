@@ -30,10 +30,10 @@ const CategoryList = () => {
   }, []);
 
   return (
-    <section className="px-4">
+    <section className="">
       <h2 className="text-lg font-semibold mb-3">Shop by Category</h2>
 
-      <div className="flex gap-3 overflow-x-auto px-3 rounded py-1 bg-orange-300 items-center">
+      <div className="flex gap-3 overflow-x-scroll rounded py-1 px-2 bg-orange-300 items-center w-full max-w-full">
         {categories.map((cat) => (
           <NavLink
             key={cat.id}
@@ -52,7 +52,7 @@ const CategoryList = () => {
               return `/discounts?${params.toString()}`;
             }}
             className={() =>
-              `flex   border border-gray-200 items-center gap-1 px-3 py-1 rounded text-sm truncate transition ${
+              `flex shrink-0  border border-gray-200 items-center gap-1 py-1 rounded text-sm truncate transition ${
                 activeCategory === cat.slug
                   ? "bg-orange-600 text-white"
                   : "bg-orange-100 hover:bg-orange-600 hover:text-white"

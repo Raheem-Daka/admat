@@ -21,11 +21,11 @@ const PriceRangeSlider = ({ min = 0, max = 1000, onChange }) => {
   }, [minVal, maxVal, onChange]);
 
   return (
-    <div className="xl:w-[500px] lg:w-[400px] md:w-[300px] sm:w-[200px] px-2">
+    <div className="w-full sm:max-w-[400px] lg:max-w-[500px] px-2 text-xs">
       
-      <div className="flex justify-between text-sm mb-1">
-        <span title={`Min: ${minVal}`}>{minVal}</span>
-        <span>{maxVal}</span>
+      <div className="flex justify-between text-xs sm:text-sm mb-2 text-gray-600">
+        <span title={`Min: ${minVal}`}>MWK{minVal}</span>
+        <span>MWK{maxVal}</span>
       </div>
 
       <div className="relative h-8">

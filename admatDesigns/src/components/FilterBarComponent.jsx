@@ -46,7 +46,7 @@ const FilterBar = () => {
 
   return (
     <div className="mt-2">
-      <div className="flex flex-wrap justify-center mt-5 items-center mb-4 gap-4">
+      <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center mt-5 mb-4 gap-4">
         {minPrice && (
           <Chip
             label={`Min: ${minPrice}`}
@@ -85,14 +85,14 @@ const FilterBar = () => {
       </div>
 
       {/* ✅ CONTROLS */}
-      <div className="flex justify-center text-sm gap-5 items-center">
+      <div className="flex flex-col lg:flex-row justify-center text-sm gap-2 lg:gap-5">
         <button
           onClick={() =>
             updateParams({
               has_discount: hasDiscount ? null : "true",
             })
           }
-          className={`border px-3 py-1 rounded 
+          className={`border border-orange-300 px-3 py-1 rounded w-full sm:w-auto 
             ${hasDiscount 
               ? "bg-orange-600 text-white" 
               : ""
@@ -106,7 +106,7 @@ const FilterBar = () => {
           onChange={(e) =>
             updateParams({ ordering: e.target.value })
           }
-          className="border px-2 py-1 rounded"
+          className="border px-2 py-1 rounded w-full sm:w-auto"
         >
           <option value="">Sort</option>
           <option value="price">Price ↑</option>
@@ -114,7 +114,7 @@ const FilterBar = () => {
           <option value="-views">Popular</option>
         </select>
 
-      {/* ✅ CHIPS */}
+        {/* ✅ CHIPS */}
         {category && (
           <Chip
             label={`Category: ${category}`}
@@ -125,7 +125,7 @@ const FilterBar = () => {
         {(minPrice || maxPrice || category || hasDiscount || ordering) && (
           <button
             onClick={() => setSearchParams({})}
-            className="text-white rounded bg-red-500 border border-red-500 px-3 py-1 text-sm hover:bg-white hover:text-red-500 transition"
+            className="w-full sm:w-auto text-white rounded bg-red-500 border border-red-500 px-3 py-1 text-sm hover:bg-white hover:text-red-500 transition"
           >
             Clear all
           </button>

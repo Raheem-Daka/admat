@@ -46,7 +46,7 @@ const Products = () => {
   };
 
   return (
-    <div className="p-10 ">
+    <div className="p-5 ">
       
       <h1 className="text-4xl font-bold text-center">
         All Products
@@ -56,7 +56,9 @@ const Products = () => {
       <div className="sticky top-0 z-20 bg-white py-2 w-full">
           <SearchComponent />
           <FilterBarComponent />
-        <CategoryList />
+        <div className="overflow-x-scroll">
+          <CategoryList />
+        </div>
       </div>
 
       {/* Content */}
