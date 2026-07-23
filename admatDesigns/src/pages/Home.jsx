@@ -55,11 +55,11 @@ const Home = () => {
     navigate("/products")
   }
   return (
-    <div className="max-w-full">
+    <div className="w-full overflow-auto bg-orange-300">
       <Hero />
 
       {/* ✅ Products section */}
-      <section className="border-t border-slate-100 pb-5">
+      <section className="border border-slate-100 pb-5 w-full">
         <h1 
         id="products" 
         className="text-4xl font-bold text-center pt-5">

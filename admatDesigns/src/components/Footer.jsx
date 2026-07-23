@@ -29,7 +29,7 @@ const Footer = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
 
-          <ul className="space-y-2">
+          <ul className="space-y-2 text-sm">
             <li>
               <Link to="/" className="hover:text-orange-600 transition">
                 Home
@@ -60,7 +60,7 @@ const Footer = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4">Follow Us</h2>
 
-          <div className="flex gap-4">
+          <div className="lg:flex flex flex-col items-start gap-4 text-sm">
             <Link
               to="#"
               className="flex flex-col items-center hover:text-orange-600 transition"
