@@ -60,7 +60,8 @@ const Footer = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4">Follow Us</h2>
 
-          <div className=" flex sm:flex-col items-start gap-4 text-sm">
+   
+          <div className="flex flex-col lg:flex-row items-start gap-4 text-sm">
             <Link
               to="#"
               className="flex lg:flex-col gap-2 items-center hover:text-orange-600 transition"

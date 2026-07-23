@@ -55,7 +55,7 @@ const Home = () => {
     navigate("/products")
   }
   return (
-    <div className="w-full overflow-auto bg-orange-300">
+    <div className="w-full text-sm">
       <Hero />
 
       {/* ✅ Products section */}
