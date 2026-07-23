@@ -1,20 +1,22 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
+  base: "/",
+
   plugins: [
     react(),
     tailwindcss(),
   ],
 
   optimizeDeps: {
-    include: ['recharts'], // ✅ fix dependency pre-bundling
+    include: ["recharts"],
   },
 
   build: {
     commonjsOptions: {
-      transformMixedEsModules: true, // ✅ fix CJS/ESM conflict
+      transformMixedEsModules: true,
     },
   },
-})
+});

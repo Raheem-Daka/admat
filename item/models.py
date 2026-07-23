@@ -51,7 +51,7 @@ class Category(models.Model):
 class Item(models.Model):
     class Meta:
         ordering = ["-created_at"]
-        
+
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="items")
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -116,6 +116,8 @@ class Review(models.Model):
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ("user", "item")
 
 class ItemImages(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="images")

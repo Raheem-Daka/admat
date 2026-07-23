@@ -189,7 +189,7 @@ class ItemViewSet(viewsets.ReadOnlyModelViewSet):
         elif search:
             queryset = queryset.order_by("-relevance", "-views")
 
-        return queryset.distinct()
+        return queryset.distinct().order_by("-created_at")
 
     @action(detail=False, methods=['get'], url_path='discounts', permission_classes=[AllowAny])
     def discount_products(self, request):
@@ -243,6 +243,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
                 "images",
                 Prefetch("discounts", queryset=Discount.objects.filter(active=True))
             )
+            .order_by("-created_at")
         )
         
         # Pagination
