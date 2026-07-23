@@ -44,7 +44,7 @@ const DiscountComponent = () => {
   }, [discountedItems.length]);
 
   return (
-    <div className="flex bg-slate-100 py-20 px-6 justify-center w-full sm:flex-col md:flex-col lg:flex-row items-center gap-10">
+    <div className="flex flex-col bg-slate-100 py-20 px-6 justify-center w-full  lg:flex-row items-center gap-10">
       {/* ✅ Slideshow */}
       <div className="relative w-full max-w-md h-64 overflow-hidden rounded-xl bg-white shadow">
         {discountedItems.length > 0 ? (

@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { getPasswordStrength, generatePassword, getPasswordRules } from "../../utils/passwords";
 import PasswordStrength from "../../components/PasswordStrength";
 import { apiFetch } from "../../api/api";
+import { Link } from "react-router-dom";
+import { FaEnvelope, FaLock, FaUser } from "react-icons/fa";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -51,13 +53,13 @@ const SignUp = () => {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <>
       
       <form
         onSubmit={handleSubmit((data) => mutation.mutate(data))}
-        className="w-full max-w-md border border-slate-300 rounded-xl p-6"
+        className="flex w-full mx-auto flex-col items-center justify-center max-w-lg xl:max-w-100 lg:max-w-96"
       >
-        <h2 className="text-2xl font-bold mb-4">Create Account</h2>
+        <h2 className="text-4xl font-medium text-gray-900">Create Account</h2>
 
         {mutation.isError && (
           <p className="bg-red-500 text-white p-1 rounded text-sm mb-4">
@@ -66,51 +68,65 @@ const SignUp = () => {
         )}
 
 
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           {/* Username */}
+            <div className="flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-orange-300 bg-transparent pl-5 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600">
+              <FaUser className="text-orange-600 mr-2"/>            
+            <input
+              placeholder="Username"
+              className="pl-2 h-full w-full bg-transparent text-sm placeholder-gray-400 outline-none"
+              {...register("username", { required: "Username is required" })}
+            />
+            {errors.username && (
+              <p className="bg-red-500 text-white p-1 rounded text-sm mb-2">{errors.username.message}</p>
+            )}
 
-          <input
-            placeholder="Username"
-            className="w-full mb-3 p-2 rounded border border-slate-400"
-            {...register("username", { required: "Username is required" })}
-          />
-          {errors.username && (
-            <p className="bg-red-500 text-white p-1 rounded text-sm mb-2">{errors.username.message}</p>
-          )}
+          </div>
+
 
           {/* Email */}
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full mb-3 p-2 rounded border border-slate-400"
-            {...register("email", {
-              required: "Email is required",
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: "Invalid email address",
-              },
-            })}
-          />
-          {errors.email && (
-            <p className="bg-red-500 text-white p-1 rounded text-red-500 text-sm mb-2">{errors.email.message}</p>
-          )}
+            <div className="flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-orange-300 bg-transparent pl-5 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600">
+              <FaEnvelope className="text-orange-600 mr-2"/>
+            <input
+              type="email"
+              placeholder="Email"
+              className="pl-2 h-full w-full bg-transparent text-sm placeholder-gray-400 outline-none"
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Invalid email address",
+                },
+              })}
+            />            
+            {errors.email && (
+              <p className="bg-red-500 text-white p-1 rounded text-red-500 text-sm mb-2">{errors.email.message}</p>
+            )}          
+          </div>
+
+
 
           {/* Password */}
           
           <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              className="w-full p-2 pr-10 rounded border border-slate-400"
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 8,
-                  message: "Password must be at least 8 characters",
-                },
-              })}
-            />
+             <div className="relative mt-4 flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-orange-300 bg-transparent pl-5 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600">
+                <FaLock className="text-orange-600 mr-2"/>
+              
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                className="pl-2 h-full w-full bg-transparent text-sm placeholder-gray-400 outline-none"
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters",
+                  },
+                })}
+              />
 
+
+            </div>
             <span
               role="button"
               aria-label="Toggle password visibility"
@@ -180,19 +196,25 @@ const SignUp = () => {
 
 
           <div className="relative">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirm Password"
-              className="w-full p-2 pr-10 rounded border border-slate-400"
-              {...register("confirmPassword", {
-                validate: (value) =>
-                  value === password || "Passwords do not match",
-              })}
-            />
+            <div className="relative mt-4 flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-orange-300 bg-transparent pl-5 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600">
+              <FaLock className="text-orange-600 mr-2"/>
+
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm Password"
+                className="pl-2 h-full w-full bg-transparent text-sm placeholder-gray-400 outline-none"
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) =>
+                    value === password || "Passwords do not match",
+                })}
+              />
+
+            </div>
             <span
               role="button"
               aria-label="Toggle password visibility"
-              tab
+              tabIndex={0}
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3 top-3 cursor-pointer text-gray-500"
             >
@@ -201,21 +223,17 @@ const SignUp = () => {
 
           </div>
 
-          {password && confirmPassword && (
-            <p className={`text-xs mt-2 ${
-              password === watch("confirmPassword")
-                ? "text-green-600"
-                : "text-red-500"
-            }`}>
-              {password === watch("confirmPassword")
-                ? "Passwords match ✅"
-                : "Passwords do not match ❌"}
-            </p>
+          {password &&
+            confirmPassword &&
+            password === confirmPassword && (
+              <p className="mt-2 rounded bg-green-600 p-2 text-xs text-white">
+                Passwords match
+              </p>
           )}
 
 
           {errors.confirmPassword && (
-            <p className="bg-red-500 text-white p-1 rounded text-red-500 text-sm mb-2">
+            <p className="mb-2 rounded bg-red-500 p-2 text-xs text-white">
               {errors.confirmPassword.message}
             </p>
           )}
@@ -228,12 +246,24 @@ const SignUp = () => {
             strength.label !== "Very Strong 💪" || 
             password !== confirmPassword
           }
-          className="w-full gap-2 justify-center cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900 px-3 py-2 disabled:opacity-50"
+          className="mt-8 h-11 w-full cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900"
         >
           {mutation.isLoading ? "Signing up..." : "Sign Up"}
         </button>
+        
+        <div className="mt-5">
+          <p className="text-gray-500 text-sm">
+            Already have an account?{" "}
+            <Link
+              to="/signin"
+              className="text-orange-600 hover:underline font-medium"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </form>
-    </div>
+    </>
   );
 };
 

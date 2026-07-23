@@ -17,7 +17,7 @@ const Footer = () => {
         {/* Company Info */}
         <div>
           <h2 className="text-2xl font-bold mb-4">
-            Admat<span className="text-orange-600">Furniture</span>
+            footer<span className="text-orange-600">Furniture</span>
           </h2>
 
           <p className="text-sm text-gray-600">
@@ -116,9 +116,9 @@ const Footer = () => {
             <div>
               <h4 className="font-medium">Address</h4>
               <p className="text-sm text-gray-600">
-                548 Market Street, Suite 410
+                Furniture building, old town
                 <br />
-                San Francisco, United States
+                Lilongwe, Malawi
               </p>
             </div>
           </div>
@@ -132,7 +132,7 @@ const Footer = () => {
             <div>
               <h4 className="font-medium">Phone</h4>
               <p className="text-sm text-gray-600">
-                +1 (555) 123-4567
+                +265 (999) 999-9999
               </p>
             </div>
           </div>
@@ -146,7 +146,7 @@ const Footer = () => {
             <div>
               <h4 className="font-medium">Email</h4>
               <p className="text-sm text-gray-600">
-                admin@admin.com
+                furniture@furniture.com
               </p>
             </div>
           </div>

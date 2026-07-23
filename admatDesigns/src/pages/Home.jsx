@@ -55,7 +55,7 @@ const Home = () => {
     navigate("/products")
   }
   return (
-    <div className="w-full mx-auto">
+    <div className="w-full">
       <Hero />
 
       {/* ✅ Products section */}

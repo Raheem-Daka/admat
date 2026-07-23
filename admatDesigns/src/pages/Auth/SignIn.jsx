@@ -115,10 +115,10 @@ const SignIn = () => {
     <>
       <form 
       onSubmit={handleSubmit}
-      className="flex w-full mx-auto flex-col items-center justify-center xl:max-w-100 lg:max-w-96">
+      className="flex w-full mx-auto flex-col items-center justify-center max-w-lg xl:max-w-100 lg:max-w-96">
         
         <h2 className="text-4xl font-medium text-gray-900">Sign in</h2>
-        <p className="mt-3 text-sm text-gray-500/90 bg-orange-200 w-full text-center text-orange-600 rounded py-1 ">Welcome back! Please sign in to continue</p>
+        <p className="mt-3 text-sm text-gray-500/90 bg-orange-200 w-full text-center text-orange-600 rounded py-1 ">Welcome! Please sign in to continue</p>
         <div className="mt-10 mb-2 grid w-full grid-cols-3 gap-6">
                 <button type="button" className="flex items-center justify-center rounded border border-gray-200 py-2.5 hover:bg-gray-50 focus:border-gray-300 cursor-pointer">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
