@@ -207,7 +207,7 @@ const Navbar = () => {
 
       {/* ✅ Mobile Menu */}
       {isOpen && (
-        <div className="fixed inset-0 text-white bg-black/100 min-h-screen backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-50">
+        <div className="fixed inset-0 z-50 flex min-h-dvh flex-col items-center justify-center gap-4 bg-black text-white">
           <FaTimes
             size={24}
             className="flex items-center absolute top-5 left-5 cursor-pointer text-orange-500"
@@ -237,7 +237,7 @@ const Navbar = () => {
                   <FaCartPlus size={24} className="text-orange-500"/>
 
                   {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-[18px] h-[18px] flex items-center justify-center rounded-full">
+                    <span className="absolute -top-2 -right-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 text-xs text-white">
                       {cartCount}
                     </span>
                   )}
@@ -249,7 +249,7 @@ const Navbar = () => {
                 <button
                   onClick={() => setProfileOpen((prev) => !prev)}
                   
-                  className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center border hover:ring-2 hover:ring-orange-400 transition"
+                  className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border transition hover:ring-2 hover:ring-orange-400"
                 >
                   {user?.imageUrl ? (
                     <img
