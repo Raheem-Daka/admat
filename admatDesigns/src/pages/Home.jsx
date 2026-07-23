@@ -55,7 +55,7 @@ const Home = () => {
     navigate("/products")
   }
   return (
-    <div className="w-full">
+    <div className="max-w-full">
       <Hero />
 
       {/* ✅ Products section */}
@@ -80,7 +80,7 @@ const Home = () => {
           <p className="text-center text-red-500 mt-10">{error}</p>
         ) : (
           <div className="p-5">
-            <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+            <div className="grid sm:grid-cols-2 gap-6 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
               {items.slice(0, 18).map((item) => (
                 <DesignCard
                   key={item.id}

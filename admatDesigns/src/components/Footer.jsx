@@ -155,7 +155,7 @@ const Footer = () => {
 
       {/* Bottom Bar */}
       <div className="border-t border-orange-200 text-center py-4 text-sm text-gray-600">
-        © {new Date().getFullYear()} AdmatFurniture. All rights reserved.
+        © {new Date().getFullYear()} footerFurniture. All rights reserved.
       </div>
     </footer>
   );
