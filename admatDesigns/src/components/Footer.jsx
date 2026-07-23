@@ -60,10 +60,10 @@ const Footer = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4">Follow Us</h2>
 
-          <div className="lg:flex flex flex-col items-start gap-4 text-sm">
+          <div className=" flex sm:flex-col items-start gap-4 text-sm">
             <Link
               to="#"
-              className="flex flex-col items-center hover:text-orange-600 transition"
+              className="flex lg:flex-col gap-2 items-center hover:text-orange-600 transition"
             >
               <span className="p-2 rounded-full bg-white shadow-sm mb-1">
                 <FaLinkedin />
@@ -73,7 +73,7 @@ const Footer = () => {
 
             <Link
               to="#"
-              className="flex flex-col items-center hover:text-orange-600 transition"
+              className="flex lg:flex-col gap-2 items-center hover:text-orange-600 transition"
             >
               <span className="p-2 rounded-full bg-white shadow-sm mb-1">
                 <FaTwitter />
@@ -83,7 +83,7 @@ const Footer = () => {
 
             <Link
               to="#"
-              className="flex flex-col items-center hover:text-orange-600 transition"
+              className="flex lg:flex-col gap-2 items-center hover:text-orange-600 transition"
             >
               <span className="p-2 rounded-full bg-white shadow-sm mb-1">
                 <FaFacebook />
@@ -93,7 +93,7 @@ const Footer = () => {
 
             <Link
               to="#"
-              className="flex flex-col items-center hover:text-orange-600 transition"
+              className="flex lg:flex-col gap-2 items-center hover:text-orange-600 transition"
             >
               <span className="p-2 rounded-full bg-white shadow-sm mb-1">
                 <FaCamera />
