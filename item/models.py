@@ -49,6 +49,9 @@ class Category(models.Model):
 
 
 class Item(models.Model):
+    class Meta:
+        ordering = ["-created_at"]
+        
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="items")
     name = models.CharField(max_length=100)
     description = models.TextField()
