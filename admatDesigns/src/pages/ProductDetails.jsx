@@ -270,14 +270,14 @@ const ProductDetails = () => {
             <div className="flex items-center gap-2">
               <span className="font-semibold text-md text-gray-500">Was:</span>
               <p className="text-red-500 line-through flex items-center border rounded bg-red-600 text-white px-2">
-                MWK {item.price}
+                MWK {Number(item.price).toLocaleString("en-US")}
               </p>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="font-semibold text-md text-gray-500">Now:</span>
               <p className="text-green-600 text-xl font-semibold">
-                MWK {item.current_price}
+                MWK {Number(item.current_price).toLocaleString("en-US")}
               </p>
             </div>
 
@@ -285,7 +285,7 @@ const ProductDetails = () => {
         ) : (
           /* ✅ NORMAL ITEM (NO DISCOUNT) */
           <p className="text-green-600 text-2xl font-semibold">
-            MWK {item.price}
+            MWK {Number(item.price).toLocaleString("en-US")}
           </p>
         )}
       </div>
