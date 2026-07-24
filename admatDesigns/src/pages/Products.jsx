@@ -70,7 +70,7 @@ const Products = () => {
         </p>
       ) : (
         <div
-          className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]"
+          className="grid sm:grid-cols-2 gap-6 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]"
         >
           {items.map(item => (
             <DesignCard

@@ -7,6 +7,7 @@ import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../utils/authKeys";
 import { apiFetch } from "../api/api";
 import RatingInput from "../components/Rating";
 import { useAuth } from "../utils/AuthContext";
+import { Loader2 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -131,13 +132,15 @@ const ProductDetails = () => {
     navigate(`/product/${item.id}/${item.slug}`);
   };
 
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-xl text-gray-500 animate-pulse">
+      <div className="flex h-64 flex-col items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <p className="text-gray-500">
           Loading item details...
         </p>
-      </div>
+      </div>    
     );
   }
 

@@ -24,8 +24,8 @@ const PriceRangeSlider = ({ min = 0, max = 1000, onChange }) => {
     <div className="w-full sm:max-w-[400px] lg:max-w-[500px] px-2 text-xs">
       
       <div className="flex justify-between text-xs sm:text-sm mb-2 text-gray-600">
-        <span title={`Min: ${minVal}`}>MWK{minVal}</span>
-        <span>MWK{maxVal}</span>
+        <span title={`Min: ${minVal}`}>MWK{minVal.toLocaleString("en-US")}</span>
+        <span>MWK{maxVal.toLocaleString("en-US")}</span>
       </div>
 
       <div className="relative h-8">

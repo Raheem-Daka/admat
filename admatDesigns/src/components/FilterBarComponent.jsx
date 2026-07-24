@@ -61,18 +61,18 @@ const FilterBar = () => {
       </div>
       <div className={`${showFilters ? "block" : "hidden"} lg:block`}>  
         <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center mt-5 mb-4 gap-4">
-          {minPrice && (
+          {/*minPrice && (
             <Chip
               label={`Min: ${minPrice}`}
               onRemove={() => updateParams({ min_price: null, maxPrice: null })}
             />
-          )}
+          )*/}
 
           <PriceRangeSlider
             min={0} 
-            max={2000}
+            max={2000000}
             initialMin={Number(minPrice) || 0}
-            initialMax={Number(maxPrice) || 2000}
+            initialMax={Number(maxPrice) || 2000000}
             onChange={({ min, max }) => {
               clearTimeout(debounceRef.current);
 
@@ -90,12 +90,12 @@ const FilterBar = () => {
             }}
           />
 
-          {maxPrice && (
+          {/*maxPrice && (
             <Chip
               label={`Max: ${maxPrice}`}
               onRemove={() => updateParams({ max_price: null })}
             />
-          )}            
+          )*/}            
 
         </div>      
 
