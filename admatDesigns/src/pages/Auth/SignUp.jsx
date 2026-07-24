@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -7,9 +7,8 @@ import { getPasswordStrength, generatePassword, getPasswordRules } from "../../u
 import PasswordStrength from "../../components/PasswordStrength";
 import { apiFetch } from "../../api/api";
 import { Link } from "react-router-dom";
-import { FaEnvelope, FaLock, FaUser } from "react-icons/fa";
+import { FaCheck, FaEnvelope, FaLock, FaUser } from "react-icons/fa";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const SignUp = () => {
 
@@ -21,10 +20,15 @@ const SignUp = () => {
     register,
     handleSubmit,
     watch,
+    getValues,
+    trigger,
     reset,
     setValue,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode: "onChange",
+  });
+
 
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
@@ -52,6 +56,10 @@ const SignUp = () => {
     },
   });
 
+  useEffect(() => {
+    trigger("confirmPassword");
+  }, [password, trigger]);
+
   return (
     <div className="p-5">
       
@@ -61,6 +69,8 @@ const SignUp = () => {
       >
         <h2 className="text-4xl font-medium text-gray-900">Sign Up</h2>
 
+
+        <div className="mt-10 space-y-4 w-full">
         {mutation.isError && (
           <p className="bg-red-500 text-white p-1 rounded text-sm mb-4">
             {mutation.error.message}
@@ -68,7 +78,6 @@ const SignUp = () => {
         )}
 
 
-        <div className="mt-10 space-y-4 w-full">
           {/* Username */}
             <div className="flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-orange-300 bg-transparent pl-5 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600">
               <FaUser className="text-orange-600 mr-2"/>            
@@ -100,7 +109,7 @@ const SignUp = () => {
               })}
             />            
             {errors.email && (
-              <p className="bg-red-500 text-white p-1 rounded text-red-500 text-sm mb-2">{errors.email.message}</p>
+              <p className="mb-2 rounded bg-red-500 p-2 text-sm text-white">{errors.email.message}</p>
             )}          
           </div>
 
@@ -147,8 +156,8 @@ const SignUp = () => {
             </button>
 
             {suggested && (
-              <div className="mt-2 p-2 border rounded bg-gray-50 text-sm flex justify-between items-center">
-                <span className="font-mono">{suggested}</span>
+              <div className="mt-2 flex flex-col gap-2 rounded border border-gray-300 bg-gray-50 p-2 text-sm sm:flex-row sm:items-center sm:justify-between">
+                <span className="font-mono break-all">{suggested}</span>
 
                 <div className="flex gap-2">
                   {/* COPY BUTTON */}
@@ -159,7 +168,7 @@ const SignUp = () => {
                       setValue("confirmPassword", suggested, { shouldValidate: true });          
                       setSuggested("");
                     }}
-                    className="text-orange-600 hover:underline text-xs"
+                    className="text-white bg-orange-600 p-1 rounded transition cursor-pointer text-xs"
                   >
                     Use
                   </button>
@@ -167,7 +176,7 @@ const SignUp = () => {
                   <button
                     type="button"
                     onClick={() => setSuggested(generatePassword())}
-                    className="text-orange-600 hover:underline text-xs"
+                    className="text-white bg-orange-600 p-1 rounded transition cursor-pointer text-xs"
                   >
                     Regenerate
                   </button>
@@ -175,7 +184,7 @@ const SignUp = () => {
                   <button
                     type="button"
                     onClick={() => navigator.clipboard.writeText(suggested)}
-                    className="text-orange-600 hover:underline text-xs hover:underline"
+                    className="text-white bg-orange-600 p-1 rounded transition cursor-pointer text-xs"
                   >
                     Copy
                   </button>
@@ -193,8 +202,6 @@ const SignUp = () => {
           />
 
           {/* Confirm Password */}
-
-
           <div className="relative">
             <div className="relative mt-4 flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-orange-300 bg-transparent pl-5 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600">
               <FaLock className="text-orange-600 mr-2"/>
@@ -203,10 +210,11 @@ const SignUp = () => {
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm Password"
                 className="pl-2 h-full w-full bg-transparent text-sm placeholder-gray-400 outline-none"
+
                 {...register("confirmPassword", {
                   required: "Please confirm your password",
                   validate: (value) =>
-                    value === password || "Passwords do not match",
+                    value === getValues("password") || "Passwords do not match",
                 })}
               />
 
@@ -223,32 +231,32 @@ const SignUp = () => {
 
           </div>
 
-          {password &&
-            confirmPassword &&
-            password === confirmPassword && (
-              <p className="mt-2 rounded bg-green-600 p-2 text-xs text-white">
-                Passwords match
+          {confirmPassword && (
+            errors.confirmPassword ? (
+              <p className="mb-2 rounded bg-red-500 p-2 text-xs text-white">
+                {errors.confirmPassword.message}
               </p>
-          )}
-
-
-          {errors.confirmPassword && (
-            <p className="mb-2 rounded bg-red-500 p-2 text-xs text-white">
-              {errors.confirmPassword.message}
-            </p>
+            ) : (
+              password === confirmPassword && (
+                <p className="mt-2 flex items-center gap-2 rounded bg-green-600 p-2 text-xs text-white">
+                  <FaCheck />
+                  Passwords match
+                </p>
+              )
+            )
           )}
         </div>
 
 
         <button
           disabled={
-            mutation.isLoading || 
+            mutation.isPending || 
             strength.label !== "Very Strong 💪" || 
             password !== confirmPassword
           }
           className="mt-8 h-11 w-full cursor-pointer rounded bg-linear-to-b from-orange-600 to-orange-800 text-orange-100 transition hover:from-orange-700 hover:to-orange-900"
         >
-          {mutation.isLoading ? "Signing up..." : "Sign Up"}
+          {mutation.isPending ? "Signing up..." : "Sign Up"}
         </button>
         
         <div className="mt-5">
