@@ -78,7 +78,7 @@ const DesignCard = ({ item, onClick }) => {
       {/* Price */}
       <div className="flex items-center gap-2 mt-1">
         <span className="text-sm font-semibold text-orange-600">
-          MWK {item.current_price}
+          MWK {Number(item.current_price).toLocaleString("en-US")}
         </span>
       </div>
 
