@@ -111,15 +111,15 @@ const Cart = () => {
                 {Number(ci.item.current_price) !== Number(ci.item.price) ? (
                   <div className="text-sm">
                     <p className="text-red-500 line-through">
-                      Was: MWK {ci.item.price}
+                      Was: MWK {Number(ci.item.price).toLocaleString("en-US")}
                     </p>
                     <p className="text-green-600 font-semibold">
-                      Now: MWK {ci.item.current_price}
+                      Now: MWK {Number(ci.item.current_price).toLocaleString("en-US")}
                     </p>
                   </div>
                 ) : (
                   <p className="text-green-600 font-semibold">
-                    MWK {ci.item.current_price}
+                    MWK {Number(ci.item.current_price).toLocaleString("en-US")}
                   </p>
                 )}
               </div>
@@ -160,14 +160,14 @@ const Cart = () => {
       </div>
 
       {/* ✅ Total */}
-      <div className="mt-8 flex justify-between items-center border-t border-gray-300 pt-6">
-        <h2 className="text-xl text-gray-500 font-semibold">
-          Total: MWK {total.toFixed(2)}
+      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-gray-300 pt-6">
+        <h2 className="text-xl font-semibold text-gray-500 break-words">
+          Total: MWK {formatMWK(total)}
         </h2>
 
         <button
           onClick={() => navigate("/checkout")}
-          className="rounded bg-linear-to-b from-orange-600 to-orange-800 hover:from-orange-700 hover:to-orange-900 text-white px-4 py-2"
+          className="w-full sm:w-auto rounded bg-linear-to-b from-orange-600 to-orange-800 px-4 py-2 text-white"
         >
           Checkout
         </button>
