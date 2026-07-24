@@ -53,13 +53,13 @@ const SignUp = () => {
   });
 
   return (
-    <>
+    <div className="p-5">
       
       <form
         onSubmit={handleSubmit((data) => mutation.mutate(data))}
         className="flex w-full mx-auto flex-col items-center justify-center max-w-lg xl:max-w-100 lg:max-w-96"
       >
-        <h2 className="text-4xl font-medium text-gray-900">Create Account</h2>
+        <h2 className="text-4xl font-medium text-gray-900">Sign Up</h2>
 
         {mutation.isError && (
           <p className="bg-red-500 text-white p-1 rounded text-sm mb-4">
@@ -68,7 +68,7 @@ const SignUp = () => {
         )}
 
 
-        <div className="space-y-4 w-full">
+        <div className="mt-10 space-y-4 w-full">
           {/* Username */}
             <div className="flex h-12 w-full items-center gap-2 overflow-hidden rounded border border-orange-300 bg-transparent pl-5 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600">
               <FaUser className="text-orange-600 mr-2"/>            
@@ -263,7 +263,7 @@ const SignUp = () => {
           </p>
         </div>
       </form>
-    </>
+    </div>
   );
 };
 
