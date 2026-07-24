@@ -33,7 +33,7 @@ const CategoryList = () => {
     <section className="">
       <h2 className="text-lg font-semibold mb-3">Shop by Category</h2>
 
-      <div className="flex gap-3 overflow-x-scroll rounded py-1 px-2 bg-orange-300 items-center w-full max-w-full">
+      <div className="flex gap-3 overflow-x-auto rounded py-1 px-2 bg-orange-50 items-center w-full max-w-full">
         {categories.map((cat) => (
           <NavLink
             key={cat.id}
