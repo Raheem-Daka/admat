@@ -64,6 +64,12 @@ const Cart = () => {
     }
   };
 
+  const formatMWK = (value) =>
+    Number(value).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center py-10">
@@ -111,15 +117,15 @@ const Cart = () => {
                 {Number(ci.item.current_price) !== Number(ci.item.price) ? (
                   <div className="text-sm">
                     <p className="text-red-500 line-through">
-                      Was: MWK {Number(ci.item.price).toLocaleString("en-US")}
+                      Was: MWK {formatMWK(ci.item.price)}
                     </p>
                     <p className="text-green-600 font-semibold">
-                      Now: MWK {Number(ci.item.current_price).toLocaleString("en-US")}
+                      Now: MWK {formatMWK(ci.item.current_price)}
                     </p>
                   </div>
                 ) : (
                   <p className="text-green-600 font-semibold">
-                    MWK {Number(ci.item.current_price).toLocaleString("en-US")}
+                    MWK {formatMWK(ci.item.current_price)}
                   </p>
                 )}
               </div>
